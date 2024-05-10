@@ -1,10 +1,10 @@
 const db = require("../models");
-const VehicleTypeModel = db.VehicleTypeModel
+const ProjectModel = db.ProjectModel
 
 //------- GET -------//
-exports.vehicletype_get_all = async (req, res, next) => {
+exports.project_get_all = async (req, res, next) => {
   try {
-    const data = await VehicleTypeModel.findAll()
+    const data = await ProjectModel.findAll()
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -12,10 +12,10 @@ exports.vehicletype_get_all = async (req, res, next) => {
   }
 }
 
-exports.vehicletype_get_one = async (req, res, next) => {
+exports.project_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id
-    const data = await VehicleTypeModel.findOne(
+    const data = await ProjectModel.findOne(
       { where: {id: get_id} }
     )
     if (data == null) {
@@ -29,11 +29,11 @@ exports.vehicletype_get_one = async (req, res, next) => {
 }
 
 //------- POST -------//
-exports.vehicletype_post = async (req, res, next) => {
+exports.project_post = async (req, res, next) => {
   try {
-    const { vehicletype_name } = req.body
-    await VehicleTypeModel.create({
-      vehicletype_name: vehicletype_name
+    const { project_name } = req.body
+    await ProjectModel.create({
+      project_name: project_name
     })
     res.send({message: 'Add Data Success'})
   } catch (error) {
@@ -43,12 +43,12 @@ exports.vehicletype_post = async (req, res, next) => {
 }
 
 //------- PUT -------//
-exports.vehicletype_put = async (req, res, next) => {
+exports.project_put = async (req, res, next) => {
   try {
-    const { vehicletype_name } = req.body
+    const { project_name } = req.body
     const edit_id = req.params.id
-    const data = await VehicleTypeModel.update({
-      vehicletype_name: vehicletype_name
+    const data = await ProjectModel.update({
+      project_name: project_name
     }, { where: { id: edit_id } }
     )
     if (data == 0) {
@@ -62,10 +62,10 @@ exports.vehicletype_put = async (req, res, next) => {
 }
 
 //------- DELETE -------//
-exports.vehicletype_delete = async (req, res, next) => {
+exports.project_delete = async (req, res, next) => {
   try {
     const delete_id = req.params.id
-    const data = await VehicleTypeModel.destroy(
+    const data = await ProjectModel.destroy(
       { where: { id: delete_id } }
     )
     if (data == 0) {

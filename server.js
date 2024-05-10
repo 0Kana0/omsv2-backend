@@ -11,6 +11,7 @@ const app = express()
 app.use(cors())
 app.use(morgan('dev'))
 
+// ตั้งค่าให้ body สามารถรับข้อมูลได้หลายชนิด
 app.use(bodyParser.json({limit:'20mb'}))
 app.use(bodyParser.text());
 app.use(bodyParser.text({ type: 'application/xml' }));

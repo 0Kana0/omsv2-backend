@@ -1,10 +1,10 @@
 const db = require("../models");
-const VehicleTypeModel = db.VehicleTypeModel
+const GasStationModel = db.GasStationModel
 
 //------- GET -------//
-exports.vehicletype_get_all = async (req, res, next) => {
+exports.gasstation_get_all = async (req, res, next) => {
   try {
-    const data = await VehicleTypeModel.findAll()
+    const data = await GasStationModel.findAll()
     res.send(data);
   } catch (error) {
     console.log(error);
@@ -12,10 +12,10 @@ exports.vehicletype_get_all = async (req, res, next) => {
   }
 }
 
-exports.vehicletype_get_one = async (req, res, next) => {
+exports.gasstation_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id
-    const data = await VehicleTypeModel.findOne(
+    const data = await GasStationModel.findOne(
       { where: {id: get_id} }
     )
     if (data == null) {
@@ -29,11 +29,11 @@ exports.vehicletype_get_one = async (req, res, next) => {
 }
 
 //------- POST -------//
-exports.vehicletype_post = async (req, res, next) => {
+exports.gasstation_post = async (req, res, next) => {
   try {
-    const { vehicletype_name } = req.body
-    await VehicleTypeModel.create({
-      vehicletype_name: vehicletype_name
+    const { gasstation_name } = req.body
+    await GasStationModel.create({
+      gasstation_name: gasstation_name
     })
     res.send({message: 'Add Data Success'})
   } catch (error) {
@@ -43,12 +43,12 @@ exports.vehicletype_post = async (req, res, next) => {
 }
 
 //------- PUT -------//
-exports.vehicletype_put = async (req, res, next) => {
+exports.gasstation_put = async (req, res, next) => {
   try {
-    const { vehicletype_name } = req.body
+    const { gasstation_name } = req.body
     const edit_id = req.params.id
-    const data = await VehicleTypeModel.update({
-      vehicletype_name: vehicletype_name
+    const data = await GasStationModel.update({
+      gasstation_name: gasstation_name
     }, { where: { id: edit_id } }
     )
     if (data == 0) {
@@ -62,10 +62,10 @@ exports.vehicletype_put = async (req, res, next) => {
 }
 
 //------- DELETE -------//
-exports.vehicletype_delete = async (req, res, next) => {
+exports.gasstation_delete = async (req, res, next) => {
   try {
     const delete_id = req.params.id
-    const data = await VehicleTypeModel.destroy(
+    const data = await GasStationModel.destroy(
       { where: { id: delete_id } }
     )
     if (data == 0) {
