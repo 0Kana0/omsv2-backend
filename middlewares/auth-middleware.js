@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+// middleware สำหรับตรวจสอบ token ของ PTmax
 exports.verifyTokenPTMAX = async (req, res, next) => {
   try {
     const authHeader = req.headers['authorization'];

@@ -23,36 +23,48 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.VehicleTypeModel = require("./vehicletype-model.js")(sequelize, Sequelize);
+//------- MODEL ส่วนที่ไม่มี MODEL อื่นๆมา JOIN ด้วย -------//
 
-db.TypeModel = require("./type-model.js")(sequelize, Sequelize);
-
-db.TeamModel = require("./team-model.js")(sequelize, Sequelize);
-
-db.ServiceTypeModel = require("./servicetype-model.js")(sequelize, Sequelize);
-
-db.MonthModel = require("./month-model.js")(sequelize, Sequelize);
-
-db.GasStationModel = require("./gasstation-model.js")(sequelize, Sequelize);
-
-db.CustomerModel = require("./customer-model.js")(sequelize, Sequelize);
-
-db.ClientModel = require("./client-model.js")(sequelize, Sequelize);
-
-db.DepartmentModel = require("./department-model")(sequelize, Sequelize);
-
+// MODEL ส่วนของการ Auth
 db.UserModel = require("./user-model.js")(sequelize, Sequelize);
 
-db.MDSModel = require("./mds-model")(sequelize, Sequelize);
+// MODEL สำหรับใช้กับ Google Script รันเช็คกูเกิ้ลไดร์ฟ
+db.SuppliersAlertModel = require("./suppliersalert-model.js")(sequelize, Sequelize);
 
+// MODEL ส่วนของการเเจ้งเตือน Line และ Email
+db.DailyStatusModel = require("./dailystatus-model.js")(sequelize, Sequelize);
+
+// MODEL ส่วนของ Fleetcard SHELL
+db.GasStationModel = require("./gasstation-model.js")(sequelize, Sequelize);
+
+// MODEL ที่ใช้ JOIN ข้อมูลกับ Tripdetail VehicleBooking Driver
+db.VehicleTypeModel = require("./vehicletype-model.js")(sequelize, Sequelize);
+db.TypeModel = require("./type-model.js")(sequelize, Sequelize);
+db.TeamModel = require("./team-model.js")(sequelize, Sequelize);
+db.ServiceTypeModel = require("./servicetype-model.js")(sequelize, Sequelize);
+db.MonthModel = require("./month-model.js")(sequelize, Sequelize);
+db.ProjectModel = require("./project-model.js")(sequelize, Sequelize);
+db.CustomerModel = require("./customer-model.js")(sequelize, Sequelize);
+
+// MODEL ส่วนของการรับข้อมูล GPS ของรถยนต์มาจาก 8GPS 
+db.MDSModel = require("./mds-model")(sequelize, Sequelize);
+db.DepartmentModel = require("./department-model")(sequelize, Sequelize);
 db.VehicleRealtimeModel = require('./vehiclerealtime-model.js')(sequelize, Sequelize);
 
+// MODEL ส่วนของการรับข้อมูล Pricetransaction จาก PTmax
 db.PTmaxUserModel = require("./ptmaxuser-model")(sequelize, Sequelize);
-
 db.PTmaxPricetransactionModel = require("./ptmaxpricetransaction-model")(sequelize, Sequelize);
 
-db.ProjectModel = require("./project-model.js")(sequelize, Sequelize);
+// MODEL ส่วนของการจัดการข้อมูล Client
+db.ClientModel = require("./client-model.js")(sequelize, Sequelize);
+db.SectorModel = require("./sector-model.js")(sequelize, Sequelize);
+db.BusinessTypeModel = require("./businesstype-model.js")(sequelize, Sequelize);
+db.OperationTypeModel = require("./operationtype-model.js")(sequelize, Sequelize);
 
-db.SuppliersAlertModel = require("./suppliersalert-model.js")(sequelize, Sequelize);
+//------- MODEL ส่วนที่ต้องมี MODEL อื่นๆมา JOIN ด้วย -------//
+
+// MODEL ส่วนของการจัดการข้อมูล TEAM NETWORK
+db.NetworkModel = require("./network-model.js")(sequelize, Sequelize);
+db.NetworkModel.belongsTo(db.TeamModel)
 
 module.exports = db;

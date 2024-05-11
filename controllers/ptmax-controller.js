@@ -19,7 +19,7 @@ exports.ptmax_login = async (req, res, next) => {
       });
     }
 
-    const user = await PTMAXUserModel.findOne(
+    const user = await PTmaxUserModel.findOne(
       { where: {username: username} }
     )
 
