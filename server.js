@@ -31,6 +31,8 @@ db.sequelize
 readdirSync('./routes')
 .map((r) => app.use('/api', require('./routes/' + r)))
 
+console.log('dasdasdaddd');
+
 const port = process.env.PORT
 app.listen(port, function () {
   console.log('CORS-enabled web server listening on port ' + port)
