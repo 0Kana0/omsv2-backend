@@ -1,4 +1,21 @@
 const jwt = require('jsonwebtoken');
+const admin = require('../configs/firebase-config')
+
+// middleware สำหรับทำการ Google Login ด้วย firebase
+exports.authCheck = async (req, res, next) => {
+  try {
+    // console.log('Middleware Check', req.headers);
+    const firebaseUser = await admin
+    .auth()
+    .verifyIdToken(req.headers.authtoken)
+
+    req.user = firebaseUser
+    // console.log(req.user);
+    next()
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 // middleware สำหรับตรวจสอบ token ของ PTmax
 exports.verifyTokenPTMAX = async (req, res, next) => {
