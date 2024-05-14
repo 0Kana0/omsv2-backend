@@ -703,16 +703,16 @@ exports.vehiclebookingstatus_get_one = async (req, res, next) => {
 
     const dataVehicleTypeResult = dataVehicleType.find(index => index.id === data.vehicle.vehicletypeId);
 
-    if (item.problemIssue == 'parkingNoJob') {
-      item.problemIssue = 'Parking (No job)'
-    } else if (item.problemIssue == 'parkingNoDriver') {
-      item.problemIssue = 'Parking (No driver)'
-    } else if (item.problemIssue == 'parkingNoJobAndDriver') {
-      item.problemIssue = 'Parking (No job & No driver)'
-    } else if (item.problemIssue == 'parkingDriverAbsence') {
-      item.problemIssue = 'Parking (Driver absence)'
-    } else if (item.problemIssue == 'parkingLegalCase') {
-      item.problemIssue = 'Parking (Legal case)'
+    if (data.problemIssue == 'parkingNoJob') {
+      data.problemIssue = 'Parking (No job)'
+    } else if (data.problemIssue == 'parkingNoDriver') {
+      data.problemIssue = 'Parking (No driver)'
+    } else if (data.problemIssue == 'parkingNoJobAndDriver') {
+      data.problemIssue = 'Parking (No job & No driver)'
+    } else if (data.problemIssue == 'parkingDriverAbsence') {
+      data.problemIssue = 'Parking (Driver absence)'
+    } else if (data.problemIssue == 'parkingLegalCase') {
+      data.problemIssue = 'Parking (Legal case)'
     }
 
     const transformedData = {
@@ -725,7 +725,7 @@ exports.vehiclebookingstatus_get_one = async (req, res, next) => {
       "reason": data.reason,
       "approve": data.approve,
       "approveStatus": data.approveStatus,
-      "available": item.available,
+      "available": data.available,
       "createdAt": data.createdAt,
       "updatedAt": data.updatedAt,
       "vehicleId": data.vehicleId,

@@ -1,3 +1,4 @@
+const { google } = require("googleapis");
 const axios = require('axios')
 const db = require("../models");
 const moment = require('moment');
@@ -222,7 +223,7 @@ exports.vehiclebooking_daily_createstatus = async (req, res) => {
 exports.vehiclebooking_addmaintenancedate = async (req, res) => {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: __dirname + "../../config/credentials.json",
+      keyFile: __dirname + "../../configs/credentials.json",
       scopes: "https://www.googleapis.com/auth/spreadsheets",
     })
 

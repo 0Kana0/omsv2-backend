@@ -7,11 +7,11 @@ const cron = require("node-cron");
 const { readdirSync } = require('fs')
 
 const db = require("./models");
-const { lazada_test } = require('./functions/test')
 const { 
   vehiclebooking_notifyLine,
   vehiclebooking_daily_create,
   vehiclebooking_daily_createstatus,
+  vehiclebooking_addmaintenancedate
 } = require('./functions/vehiclebooking-function')
 const { 
   get_alert, 

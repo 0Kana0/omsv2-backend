@@ -182,9 +182,14 @@ exports.gps_offline_alert = async() => {
       }
 
       // ข้อมูลรถทั้งหมด
-      const get_deviceList = await axios.get(
-        `http://api.18gps.net//GetDateServices.asmx/GetDate?method=getDeviceListByCustomId&mds=${selectMDS}&id=${dataDepartment[index].departmentID}`
-      );
+      let get_deviceList
+      try {
+        get_deviceList = await axios.get(
+          `http://api.18gps.net//GetDateServices.asmx/GetDate?method=getDeviceListByCustomId&mds=${selectMDS}&id=${dataDepartment[index].departmentID}`
+        );
+      } catch (error) {
+        console.log('8GPS Axios Error');
+      }
 
       // console.log(get_deviceList.data.data.records)
       const dataCarFromDept = get_deviceList.data.data[0].records;

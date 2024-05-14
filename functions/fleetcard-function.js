@@ -9,7 +9,7 @@ const GasStationModel = db.GasStationModel
 exports.fleetcard_monitoring_daily = async (req, res, next) => {
   try {
     const auth = new google.auth.GoogleAuth({
-      keyFile: __dirname + "../configs/credentials.json",
+      keyFile: __dirname + "../../configs/credentials.json",
       scopes: "https://www.googleapis.com/auth/spreadsheets",
     })
 
