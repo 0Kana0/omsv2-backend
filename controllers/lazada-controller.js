@@ -7,11 +7,22 @@ const db = require("../models");
 exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log(req.body);
+    console.log(data);
+    console.log(typeof data);
 
     const response = { 
-      "RespCode": "200", 
-      "RespMessage": "TPS_LOGISTICS_PICKUPORDER_CREATION Success" 
+      "success":true, 
+      // Whether the operation is successful 
+      "errorCode":null, 
+      //Error code 
+      "errorMsg":null, 
+      //Error message 
+      "data": { 
+        "pickUpOrderCode":"", 
+        //Platform collection order number 
+        "fulfillPickUpOrderCode":"", 
+        // Collection order number of external logistics service provider, if not available, return the collection order number of the platform
+      }
     }
 
     res.status(200).json(response);
@@ -23,11 +34,22 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
 exports.TPS_LOGISTICS_PICKUPORDER_CANCELLATION = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log(req.body);
+    console.log(data);
+    console.log(typeof data);
 
     const response = { 
-      "RespCode": "200", 
-      "RespMessage": "TPS_LOGISTICS_PICKUPORDER_CANCELLATION Success" 
+      "success":true, 
+      // Whether the operation is successful 
+      "errorCode":null, 
+      //Error code 
+      "errorMsg":null, 
+      //Error message 
+      "data": { 
+        "pickUpOrderCode":"", 
+        //Platform collection order number 
+        "fulfillPickUpOrderCode":"", 
+        // Collection order number of external logistics service provider, if not available, return the collection order number of the platform
+      }
     }
 
     res.status(200).json(response);
@@ -39,11 +61,16 @@ exports.TPS_LOGISTICS_PICKUPORDER_CANCELLATION = async (req, res, next) => {
 exports.TPS_LOGISTICS_PICKUPORDER_UPDATE = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log(req.body);
+    console.log(data);
+    console.log(typeof data);
 
     const response = { 
-      "RespCode": "200", 
-      "RespMessage": "TPS_LOGISTICS_PICKUPORDER_UPDATE Success" 
+      "success":true, 
+      // Whether the operation is successful 
+      "errorCode":null, 
+      //Error code 
+      "errorMsg":null, 
+      //Error message 
     }
 
     res.status(200).json(response);
