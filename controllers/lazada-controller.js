@@ -6,6 +6,9 @@ const db = require("../models");
 //------- POST -------//
 exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
   try {
+    const data = req.body;
+    console.log(req.body);
+
     const response = { 
       "RespCode": "200", 
       "RespMessage": "TPS_LOGISTICS_PICKUPORDER_CREATION Success" 
@@ -19,6 +22,9 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
 
 exports.TPS_LOGISTICS_PICKUPORDER_CANCELLATION = async (req, res, next) => {
   try {
+    const data = req.body;
+    console.log(req.body);
+
     const response = { 
       "RespCode": "200", 
       "RespMessage": "TPS_LOGISTICS_PICKUPORDER_CANCELLATION Success" 
@@ -32,6 +38,9 @@ exports.TPS_LOGISTICS_PICKUPORDER_CANCELLATION = async (req, res, next) => {
 
 exports.TPS_LOGISTICS_PICKUPORDER_UPDATE = async (req, res, next) => {
   try {
+    const data = req.body;
+    console.log(req.body);
+
     const response = { 
       "RespCode": "200", 
       "RespMessage": "TPS_LOGISTICS_PICKUPORDER_UPDATE Success" 
