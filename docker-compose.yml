@@ -1,0 +1,17 @@
+version: "3.9"
+services:
+  node:
+    image: naterkana/omsv2-backend:0.1
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      TZ: 'Asia/Bangkok' 
+    volumes:
+      - /path/on/host:/path/in/container
+    networks:
+      - node-backend
+  
+networks:
+  node-backend:
+    driver: bridge
