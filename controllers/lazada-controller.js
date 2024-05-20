@@ -10,16 +10,18 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
     //console.log(data);
     //console.log(typeof data);
 
+    // console.log(typeof data);
+    // const logistics_interface = JSON.parse(data);
+
     console.log(typeof data.logistics_interface);
-    //console.log(data.logistics_interface);
-    console.log(data.logistics_interface.uniqueCode);
-    console.log(data.logistics_interface.pickUpOrderCode);
-    console.log(data.logistics_interface.receiverInfo.country);
+    console.log(data.logistics_interface);
+    const logistics_interface = JSON.parse(data.logistics_interface);
+
     console.log(data.data_digest);
-    console.log(data.partner_code)
-    console.log(data.from_code)
-    console.log(data.msg_type)
-    console.log(data.msg_id)
+    console.log(data.partner_code);
+    console.log(data.from_code);
+    console.log(data.msg_type);
+    console.log(data.msg_id);
 
     const response = { 
       "success":true, 
@@ -29,9 +31,9 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
       "errorMsg":null, 
       //Error message 
       "data": { 
-        "pickUpOrderCode":"", 
+        "pickUpOrderCode":logistics_interface.pickUpOrderCode, 
         //Platform collection order number 
-        "fulfillPickUpOrderCode":"", 
+        "fulfillPickUpOrderCode":logistics_interface.uniqueCode, 
         // Collection order number of external logistics service provider, if not available, return the collection order number of the platform
       }
     }
