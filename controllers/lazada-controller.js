@@ -7,10 +7,14 @@ const db = require("../models");
 exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
   try {
     const data = req.body;
-    console.log(data);
-    console.log(typeof data);
+    //console.log(data);
+    //console.log(typeof data);
 
-    console.log(data.logistics_interface);
+    console.log(typeof data.logistics_interface);
+    //console.log(data.logistics_interface);
+    console.log(data.logistics_interface.uniqueCode);
+    console.log(data.logistics_interface.pickUpOrderCode);
+    console.log(data.logistics_interface.receiverInfo.country);
     console.log(data.data_digest);
     console.log(data.partner_code)
     console.log(data.from_code)
