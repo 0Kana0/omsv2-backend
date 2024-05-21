@@ -33,7 +33,7 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
       "data": { 
         "pickUpOrderCode":logistics_interface.pickUpOrderCode, 
         //Platform collection order number 
-        "fulfillPickUpOrderCode":logistics_interface.uniqueCode, 
+        "fulfillPickUpOrderCode":logistics_interface.pickUpOrderCode, 
         // Collection order number of external logistics service provider, if not available, return the collection order number of the platform
       }
     }
