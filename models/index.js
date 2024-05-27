@@ -64,6 +64,11 @@ db.SectorModel = require("./sector-model.js")(sequelize, Sequelize);
 db.BusinessTypeModel = require("./businesstype-model.js")(sequelize, Sequelize);
 db.OperationTypeModel = require("./operationtype-model.js")(sequelize, Sequelize);
 
+// MODEL ส่วนของการรับข้อมูล PUO จาก Lazada
+db.LazadaReceiverModel = require("./lazadareceiver-model.js")(sequelize, Sequelize);
+db.LazadaSenderModel = require("./lazadasender-model.js")(sequelize, Sequelize);
+db.LazadaPUOModel = require("./lazadapuo-model.js")(sequelize, Sequelize);
+
 //------- MODEL ส่วนที่ต้องมี MODEL อื่นๆมา JOIN ด้วย -------//
 
 // MODEL ส่วนของการจัดการข้อมูล TEAM NETWORK
