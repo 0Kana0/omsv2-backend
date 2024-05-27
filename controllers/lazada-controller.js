@@ -76,7 +76,7 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
     const data = req.body;
 
     console.log(data.logistics_interface);
-    //const logistics_interface = JSON.parse(data.logistics_interface);
+    const logistics_interface = JSON.parse(data.logistics_interface);
 
     console.log(data.data_digest);
     console.log(data.partner_code);
@@ -84,7 +84,7 @@ exports.TPS_LOGISTICS_PICKUPORDER_CREATION = async (req, res, next) => {
     console.log(data.msg_type);
     console.log(data.msg_id);
 
-    const logistics_interface = data.logistics_interface
+    //const logistics_interface = data.logistics_interface
 
     // ใช้ moment เพื่อสร้าง object วันที่และเวลา
     const dateTime = moment(logistics_interface.expectPickUpTime, "YYYY-MM-DD HH:mm:ss");
