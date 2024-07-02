@@ -4,9 +4,9 @@ services:
     image: naterkana/omsv2-backend:0.3
     restart: unless-stopped
     ports:
-      - NODE_OPTIONS=--max-old-space-size=4096
       - "8081:8081"
     environment:
+      NODE_OPTIONS: --max-old-space-size=4096
       TZ: 'Asia/Bangkok' 
     volumes:
       - /path/on/host:/path/in/container
