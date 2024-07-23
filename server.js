@@ -27,6 +27,10 @@ const {
 const { 
   tripcomparebooking_balance_adapt 
 } = require('./functions/tripcomparebooking-function')
+const { 
+  fleetcardtracking_daily, 
+  fleetcardtracking_reset_database 
+} = require("./functions/fleetcardtracking-function")
 
 const app = express()
 app.use(cors())
@@ -108,6 +112,17 @@ cron.schedule('*/30 0-23 * * *', () => {
 cron.schedule('*/10 0-23 * * *', () => {
   tripcomparebooking_balance_adapt();
 });
+
+//------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
+
+cron.schedule('01 00 * * *', () => {
+  fleetcardtracking_daily();
+});
+
+cron.schedule('*/30 0-23 * * *', () => {
+  fleetcardtracking_reset_database();
+});
+
 
 const port = process.env.PORT
 app.listen(port, function () {
