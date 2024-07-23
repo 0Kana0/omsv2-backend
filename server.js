@@ -115,13 +115,13 @@ cron.schedule('*/10 0-23 * * *', () => {
 
 //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
 
-cron.schedule('01 00 * * *', () => {
-  fleetcardtracking_daily();
-});
+// cron.schedule('01 00 * * *', () => {
+//   fleetcardtracking_daily();
+// });
 
-cron.schedule('*/30 0-23 * * *', () => {
-  fleetcardtracking_reset_database();
-});
+// cron.schedule('*/30 0-23 * * *', () => {
+//   fleetcardtracking_reset_database();
+// });
 
 
 const port = process.env.PORT
