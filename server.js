@@ -5,6 +5,7 @@ const morgan = require('morgan')
 require('dotenv').config()
 const cron = require("node-cron");
 const { readdirSync } = require('fs')
+const path = require('path');
 
 const db = require("./models");
 const { 
@@ -41,6 +42,9 @@ app.use(bodyParser.json({limit:'20mb'}))
 app.use(bodyParser.text());
 app.use(bodyParser.text({ type: 'application/xml' }));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Static middleware สำหรับให้บริการไฟล์สาธารณะ
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ตรวจสอบว่าเชื่อมต่อ Database สำเร็จหรือไม่
 db.sequelize

@@ -125,4 +125,10 @@ db.TripCompareBookingModel = require("./tripcomparebooking-model.js")(sequelize,
 db.TripCompareBookingModel.belongsTo(db.VehicleBookingStatusModel)
 db.TripCompareBookingModel.belongsTo(db.VehicleModel)
  
+// MODEL ส่วนของการจัดการ MA Summary
+db.MaintenanceSummaryModel = require("./maintenancesummary-model.js")(sequelize, Sequelize);
+db.MaintenanceSummaryModel.belongsTo(db.CustomerModel)
+db.MaintenanceSummaryModel.belongsTo(db.NetworkModel)
+db.MaintenanceSummaryModel.belongsTo(db.ServiceTypeModel)
+
 module.exports = db;
