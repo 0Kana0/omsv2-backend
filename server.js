@@ -32,6 +32,9 @@ const {
   fleetcardtracking_daily, 
   fleetcardtracking_reset_database 
 } = require("./functions/fleetcardtracking-function")
+const { 
+  shell_updatefleetcarddata_hour 
+} = require("./functions/shellfleetcard-function")
 
 const app = express()
 app.use(cors())
@@ -59,6 +62,8 @@ db.sequelize
 // เข้าถึงไฟล์ route ทั้งหมดด้วย readdirSync
 readdirSync('./routes')
 .map((r) => app.use('/api', require('./routes/' + r)))
+
+//shell_updatefleetcarddata_hour()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//
@@ -117,13 +122,13 @@ cron.schedule('*/10 0-23 * * *', () => {
   tripcomparebooking_balance_adapt();
 });
 
-//------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
+// //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
 
 // cron.schedule('01 00 * * *', () => {
 //   fleetcardtracking_daily();
 // });
 
-// cron.schedule('*/30 0-23 * * *', () => {
+// cron.schedule('*/10 0-23 * * *', () => {
 //   fleetcardtracking_reset_database();
 // });
 

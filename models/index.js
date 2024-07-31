@@ -81,6 +81,8 @@ db.DriverModel.belongsTo(db.VehicleCompanyModel)
 db.DriverModel.belongsTo(db.ProjectModel)
 
 // MODEL ส่วนของการจัดการ Fleetcard SHELL
+db.ShellFleetCardModel = require("./shellfleetcard-model.js")(sequelize, Sequelize);
+
 db.FleetCardModel = require("./fleetcard-model.js")(sequelize, Sequelize);
 db.FleetCardModel.belongsTo(db.GasStationModel)
 

@@ -37,7 +37,6 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
           model: NetworkModel,
           attributes: ['id', 'network_name']
         },
-        
         {
           model: ServiceTypeModel,
           attributes: ['id', 'servicetype_name']
@@ -61,7 +60,6 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
           where: {plateNumber: item.plateNumber} 
         }
       )
-
       let vehicleType
       if (dataVehicle == null) {
         vehicleType = 'N/A'
@@ -113,6 +111,100 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
 
     res.send({
       length: transformedData.length,
+      status: 'success',
+      message: 'Get Maintenance Summary Success',
+      data: transformedData
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.maintenancesummary_get_one = async (req, res, next) => {
+  try {
+    const get_id = req.params.id
+
+    const dMS = await MaintenanceSummaryModel.findOne(
+      {
+        include: [{
+          model: CustomerModel,
+          attributes: ['id', 'customer_name']
+        },
+        {
+          model: NetworkModel,
+          attributes: ['id', 'network_name']
+        },
+        {
+          model: ServiceTypeModel,
+          attributes: ['id', 'servicetype_name']
+        }],
+        where: { id: get_id }
+      }
+    )
+
+    if (dMS == null) {
+      return res.send({
+        status: 'fail',
+        message: 'No Data Found',
+        data: dMS
+      })
+    }
+
+    const dataVehicle = await VehicleModel.findOne(
+      {
+        include: [{
+          model: VehicleTypeModel,
+          attributes: ['id', 'vehicletype_name']
+        }],
+        where: {plateNumber: dMS.plateNumber} 
+      }
+    )
+    let vehicleType
+    if (dataVehicle == null) {
+      vehicleType = 'N/A'
+    } else {
+      vehicleType = dataVehicle.vehicletype.vehicletype_name
+    }
+
+    const transformedData = {
+      "id": dMS.id,
+      "inform_code": dMS.inform_code,
+      "inform_date": dMS.inform_date,
+      "month": moment(dMS.inform_date).month() + 1,
+      "plateNumber": dMS.plateNumber,
+      "vehicletype_name": vehicleType,
+      "customer_id": dMS.customer.id,
+      "customer_name": dMS.customer.customer_name,
+      "network_id": dMS.network.id,
+      "network_name": dMS.network.network_name,
+      "servicetype_id": dMS.servicetype.id,
+      "servicetype_name": dMS.servicetype.servicetype_name,
+      "driver_name": dMS.driver_name,
+      "distance_mile": dMS.distance_mile,
+      "problem_detail": dMS.problem_detail,
+      "maintenance_detail": dMS.maintenance_detail,
+      "maintenance_type": dMS.maintenance_type,
+      "maintenance_weight": dMS.maintenance_weight,
+      "maintenance_status": dMS.maintenance_status,
+      "quotation_number": dMS.quotation_number,
+      "repair_shop": dMS.repair_shop,
+      "payment": dMS.payment,
+      "accounting_number": dMS.accounting_number,
+      "price": dMS.price,
+      "driver_price": dMS.driver_price,
+      "driver_price_status": dMS.driver_price_status,
+      "note": dMS.note,
+      "sma_date": dMS.sma_date,
+      "sma_date_count": dMS.sma_date_count,
+      "pfma_date": dMS.pfma_date,
+      "fma_date": dMS.fma_date,
+      "fma_date_count": dMS.fma_date_count,
+      "receive_date": dMS.receive_date,
+      "ma_file": dMS.ma_file,
+      "debt_account": dMS.debt_account,
+      "note_front": dMS.note_front
+    }
+
+    res.send({
       status: 'success',
       message: 'Get Maintenance Summary Success',
       data: transformedData

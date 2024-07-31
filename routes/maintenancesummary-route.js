@@ -21,6 +21,7 @@ const upload = multer({ storage });
 
 //------- GET -------//
 router.get('/getmaintenancesummarysbymonthbyyear/:month/:year', controller.maintenancesummary_get_all_bymonth_byyear)
+router.get('/getmaintenancesummary/:id', controller.maintenancesummary_get_one)
 
 //------- POST -------//
 router.post('/postmaintenancesummary', controller.maintenancesummary_post)
