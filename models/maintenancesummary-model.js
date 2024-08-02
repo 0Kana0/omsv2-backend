@@ -1,5 +1,8 @@
 module.exports = (sequelize, Sequelize) => {
   const MaintenanceSummaryModel = sequelize.define('MaintenanceSummary', {
+    check_code: {
+      type: Sequelize.STRING,
+    },
     inform_code: {
       type: Sequelize.STRING,
     },

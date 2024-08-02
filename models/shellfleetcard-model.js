@@ -21,6 +21,12 @@ module.exports = (sequelize, Sequelize) => {
     team_sheet: {
       type: Sequelize.STRING,
     },
+    api_check: {
+      type: Sequelize.BOOLEAN,
+    },
+    monitor_check: {
+      type: Sequelize.BOOLEAN,
+    },
   })
 
   return ShellFleetCardModel

@@ -49,8 +49,7 @@ exports.gasstation_put = async (req, res, next) => {
     const edit_id = req.params.id
     const data = await GasStationModel.update({
       gasstation_name: gasstation_name
-    }, { where: { id: edit_id } }
-    )
+    }, { where: { id: edit_id } })
     if (data == 0) {
       return res.send({message: 'No Data Found'})
     }

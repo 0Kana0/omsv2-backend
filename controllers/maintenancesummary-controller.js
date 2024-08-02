@@ -69,6 +69,7 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
 
       const dataindex = {
         "id": item.id,
+        "check_code": item.check_code,
         "inform_code": item.inform_code,
         "inform_date": item.inform_date,
         "month": selectMonth,
@@ -167,6 +168,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
 
     const transformedData = {
       "id": dMS.id,
+      "check_code": dMS.check_code,
       "inform_code": dMS.inform_code,
       "inform_date": dMS.inform_date,
       "month": moment(dMS.inform_date).month() + 1,
@@ -218,6 +220,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
 exports.maintenancesummary_post = async (req, res, next) => {
   try {
     const {
+        inform_code,
         inform_date,
         plateNumber,
         customer_id,
@@ -254,22 +257,30 @@ exports.maintenancesummary_post = async (req, res, next) => {
     // แปลงปีเป็นพุทธศักราช (พ.ศ.)
     const yearBE = parseInt(yearAD) + 543;
 
-    // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู inform_code ล่าสุด
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${yearAD}-${month}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+    // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู check_code ล่าสุด
     const dataMaintenanceSummary = await MaintenanceSummaryModel.findOne(
       {
-        where: { inform_date: inform_date },
+        where: {
+          inform_date: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
         order: [['createdAt', 'DESC']]
       }
     )
 
-    let inform_code
+    let check_code
     // ถ้าเดือนนี้ยังไม่มีข้อมูล
     if (dataMaintenanceSummary == null) {
-      inform_code = `001/${month}/${yearBE}`
+      check_code = `001/${month}/${yearBE}`
     // ถ้าเดือนนี้มีข้อมูล
     } else {
       // ดึงลำดับออกมาเป็น int
-      const fullInformCode = dataMaintenanceSummary.inform_code
+      const fullInformCode = dataMaintenanceSummary.check_code
       const numberInformCode = fullInformCode.substring(0, 3);
       const intNumberInformCode = parseInt(numberInformCode);
 
@@ -279,10 +290,11 @@ exports.maintenancesummary_post = async (req, res, next) => {
 
       console.log(newNumberInformCode); // "001"
 
-      inform_code = `${newNumberInformCode}/${month}/${yearBE}`
+      check_code = `${newNumberInformCode}/${month}/${yearBE}`
     }
 
     const createMaintenanceSummary = await MaintenanceSummaryModel.create({
+      check_code: check_code,
       inform_code: inform_code,
       inform_date: inform_date,
       plateNumber: plateNumber,
@@ -341,22 +353,30 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
     // แปลงปีเป็นพุทธศักราช (พ.ศ.)
     const yearBE = parseInt(yearAD) + 543;
 
-    // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู inform_code ล่าสุด
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${yearAD}-${month}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+    // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู check_code ล่าสุด
     const dataMaintenanceSummary = await MaintenanceSummaryModel.findOne(
       {
-        where: { inform_date: formData.inform_date },
+        where: {
+          inform_date: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
         order: [['createdAt', 'DESC']]
       }
     )
 
-    let inform_code
+    let check_code
     // ถ้าเดือนนี้ยังไม่มีข้อมูล
     if (dataMaintenanceSummary == null) {
-      inform_code = `001/${month}/${yearBE}`
+      check_code = `001/${month}/${yearBE}`
     // ถ้าเดือนนี้มีข้อมูล
     } else {
       // ดึงลำดับออกมาเป็น int
-      const fullInformCode = dataMaintenanceSummary.inform_code
+      const fullInformCode = dataMaintenanceSummary.check_code
       const numberInformCode = fullInformCode.substring(0, 3);
       const intNumberInformCode = parseInt(numberInformCode);
 
@@ -366,11 +386,12 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
 
       console.log(newNumberInformCode); // "001"
 
-      inform_code = `${newNumberInformCode}/${month}/${yearBE}`
+      check_code = `${newNumberInformCode}/${month}/${yearBE}`
     }
 
     const createMaintenanceSummary = await MaintenanceSummaryModel.create({
-      inform_code: inform_code,
+      check_code: check_code,
+      inform_code: formData.inform_code,
       inform_date: formData.inform_date,
       plateNumber: formData.plateNumber,
       customerId: formData.customer_id,
@@ -432,6 +453,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
   }
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+    inform_code: formData.inform_code,
     plateNumber: formData.plateNumber,
     customerId: formData.customer_id,
     networkId: formData.network_id,
@@ -484,6 +506,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
 exports.maintenancesummary_put = async (req, res, next) => {
   try {
     const {
+      inform_code,
       plateNumber,
       customer_id,
       network_id,
@@ -517,6 +540,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
   const edit_id = req.params.id
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+    inform_code: inform_code,
     plateNumber: plateNumber,
     customerId: customer_id,
     networkId: network_id,
@@ -565,7 +589,49 @@ exports.maintenancesummary_put = async (req, res, next) => {
   }
 }
 
-//------- DELETE -------//
+//------- DELETE -------// 
+// ฟังก์ชันสำหรับรันเลข check_code ใหม่เมื่อมีการลบเกิดขึ้น
+const maintenancesummary_reset_checkcode = async (inform_date) => {
+  try {
+    // ดึงเดือนและปี
+    const month = moment(inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
+    const yearAD = moment(inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
+    // แปลงปีเป็นพุทธศักราช (พ.ศ.)
+    const yearBE = parseInt(yearAD) + 543;
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${yearAD}-${month}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+    const dataMaintenanceSummary = await MaintenanceSummaryModel.findAll(
+      {
+        attributes: ['id'],
+        where: {
+          inform_date: {
+            [Op.between]: [startDate, endDate],
+          },
+        },
+      }
+    )
+
+    let count = 1;
+    // นำข้อมูลทุกตัวของเดือนมารันเลข check_code ใหม่ทั้งหมด
+    for (const item of dataMaintenanceSummary) {
+      // เเปลงเป็น string
+      const newNumberInformCode = count.toString().padStart(3, '0'); // เติม '0' ข้างหน้าให้มีความยาวรวม 3 ตัวอักษร
+      let check_code = `${newNumberInformCode}/${month}/${yearBE}`
+
+      const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+        check_code: check_code
+      }, { where: { id: item.id } })
+
+      count += 1;
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
 exports.maintenancesummary_delete = async (req, res, next) => {
   try {
     const delete_id = req.params.id
@@ -613,6 +679,10 @@ exports.maintenancesummary_delete = async (req, res, next) => {
       message: 'Delete Maintenance Summary Success',
       data: deleteMaintenanceSummary,
     })
+
+    // รันเลข check_code ของเดือนใหม่ทั้งหมด
+    maintenancesummary_reset_checkcode(deleteDataMaintenanceSummary.inform_date)
+
   } catch (error) {
     console.log(error);
   }
