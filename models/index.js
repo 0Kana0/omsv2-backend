@@ -57,6 +57,8 @@ db.VehicleRealtimeModel = require('./vehiclerealtime-model.js')(sequelize, Seque
 // MODEL ส่วนของการรับข้อมูล Pricetransaction จาก PTmax
 db.PTmaxUserModel = require("./ptmaxuser-model")(sequelize, Sequelize);
 db.PTmaxPricetransactionModel = require("./ptmaxpricetransaction-model")(sequelize, Sequelize);
+db.PTmaxTransactionModel = require("./ptmaxtransaction-model")(sequelize, Sequelize);
+db.PTmaxFleetCardModel = require("./ptmaxfleetcard-model")(sequelize, Sequelize);
 
 // MODEL ส่วนของการจัดการข้อมูล Client
 db.ClientModel = require("./client-model.js")(sequelize, Sequelize);

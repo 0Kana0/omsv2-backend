@@ -7,7 +7,7 @@ const { verifyTokenPTMAX } = require('../middlewares/auth-middleware')
 
 //------- POST -------//
 router.post('/kdr/gettoken', controller.ptmax_login);
-router.post('/kdr/webhooks', verifyTokenPTMAX, controller.ptmax_pricedtransaction);
+router.post('/kdr/webhooks', verifyTokenPTMAX, controller.ptmax_transaction);
 
 //------- PUT -------//
 
