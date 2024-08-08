@@ -33,8 +33,12 @@ const {
   fleetcardtracking_reset_database 
 } = require("./functions/fleetcardtracking-function")
 const { 
-  shell_updatefleetcarddata_hour 
+  shell_updatefleetcarddata_30min ,
+  shell_fleetcardmonitoring_daily
 } = require("./functions/shellfleetcard-function")
+const { 
+  ptmax_updatefleetcarddata_30min ,
+} = require("./functions/ptmaxfleetcard-function")
 
 const app = express()
 app.use(cors())
@@ -63,20 +67,23 @@ db.sequelize
 readdirSync('./routes')
 .map((r) => app.use('/api', require('./routes/' + r)))
 
-//shell_updatefleetcarddata_hour()
+// shell_updatefleetcarddata_30min()
+// shell_fleetcardmonitoring_daily()
+
+// ptmax_updatefleetcarddata_30min()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//
 
 // FUNCTION สำหรับการเเจ้งเตือนไลน์ (ทุก 30 นาทีตั้งแต่เวลา 10:00 ถึง 18:00)
-cron.schedule('*/30 10-18 * * *', () => {
-  vehiclebooking_notifyLine()
-});
+// cron.schedule('*/30 10-18 * * *', () => {
+//   vehiclebooking_notifyLine()
+// });
 
 // FUNCTION สำหรับสร้าง Vehiclebooking และ Status ต่างๆในเเต่ละวัน (ทำงานเวลา 00:01)
 cron.schedule('01 00 * * *', () => {
   vehiclebooking_daily_create();
-  vehiclebooking_daily_createstatus();
+  // vehiclebooking_daily_createstatus();
 });
 
 // FUNCTION สำหรับการดึงข้อมูล maintenancedate จากไฟล์ New MA Summary Template 2024 (ทุก 10 นาทีตั้งแต่เวลา 00:00 ถึง 23:00)
@@ -131,7 +138,6 @@ cron.schedule('*/10 0-23 * * *', () => {
 // cron.schedule('*/10 0-23 * * *', () => {
 //   fleetcardtracking_reset_database();
 // });
-
 
 const port = process.env.PORT
 app.listen(port, function () {

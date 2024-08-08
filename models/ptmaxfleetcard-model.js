@@ -1,5 +1,11 @@
 module.exports = (sequelize, Sequelize) => {
   const PTmaxFleetCardModel = sequelize.define("ptmaxfleetcard", {
+    date: {
+      type: Sequelize.DATEONLY,
+    },
+    api_check: {
+      type: Sequelize.BOOLEAN,
+    },
     fleetCardNumber: {
       type: Sequelize.STRING,
     },

@@ -1,7 +1,10 @@
 module.exports = (sequelize, Sequelize) => {
   const ShellFleetCardModel = sequelize.define("shellfleetcard", {
-    status: {
-      type: Sequelize.STRING,
+    date: {
+      type: Sequelize.DATEONLY,
+    },
+    api_check: {
+      type: Sequelize.BOOLEAN,
     },
     fleetCardNumber: {
       type: Sequelize.STRING,
@@ -20,12 +23,6 @@ module.exports = (sequelize, Sequelize) => {
     },
     team_sheet: {
       type: Sequelize.STRING,
-    },
-    api_check: {
-      type: Sequelize.BOOLEAN,
-    },
-    monitor_check: {
-      type: Sequelize.BOOLEAN,
     },
   })
 
