@@ -10,12 +10,11 @@ exports.ptmax_updatefleetcarddata_30min = async (req, res) => {
     console.log('Start Add PTMAX Fleetcard From API')
     // หาวันที่ปัจจุบัน
     //const currentDate = moment().format('YYYY-MM-DD');
-    const currentDate = '2024-07-02';
+    const currentDate = '2024-08-01';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(currentDate).subtract(1, 'days').format('YYYY-MM-DD');
     // หาวันถัดไป
     const nextDay = moment(currentDate).add(1, 'days').format('YYYY-MM-DD');
-    console.log(nextDay);
     // Reset api_check ให้เป็น 0 เพื่อตรวจสอบว่าข้อมูลไหนตรวจพบใน Api บ้าง
     const editPTmaxFleetCard = await PTmaxFleetCardModel.update({
       api_check: 0
@@ -64,6 +63,8 @@ exports.ptmax_updatefleetcarddata_30min = async (req, res) => {
             )
           }
         }
+
+        console.log(ptmaxData.length);
       }
 
     // ระหว่างการเช็ค มีการเปลี่ยนวันที่

@@ -20,6 +20,10 @@ const VehicleBookingStatusModel = db.VehicleBookingStatusModel
 const ClientGroupByTeamModel = db.ClientGroupByTeamModel;
 const VehicleCompanyModel = db.VehicleCompanyModel
 const ProjectModel = db.ProjectModel
+
+const ShellFleetCardModel = db.ShellFleetCardModel;
+const PTmaxFleetCardModel = db.PTmaxFleetCardModel;
+
 const exceljs = require('exceljs')
 const moment = require("moment");
 const Sequelize = require("sequelize");
@@ -2909,6 +2913,1859 @@ exports.tripdetail_post_byexcel = async (req, res, next) => {
                       let placeNumberWithoutDot = placeNumberWithoutTrailingChars.replace(/\./g, '');
                       let formatPlaceNumber = placeNumberWithoutDot.trim();
     
+                      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+                      let gasstationId
+                      let fleetCardNumber
+    
+                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
+    
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        gasstationId = dataGasStationNA.id
+                        fleetCardNumber = null
+                      } else if (dataFleetCardResult.length == 1) {
+                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
+                      } else if (dataFleetCardResult.length > 1) {
+                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    
+                        gasstationId = dataFleetCardResult[0].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
+                      }
+                      
+                      let formattedDate = moment(filteredData[index].date, 'MMMM DD, YYYY').format('YYYY-MM-DD');
+                      const findYearFormatted = moment(formattedDate).year();
+                      const findYearCurrent = moment().year();
+        
+                      if (findYearFormatted - findYearCurrent > 2) {
+                        formattedDate = moment(formattedDate, "YYYY-MM-DD").subtract(543, 'years').format("YYYY-MM-DD");
+                      }
+        
+                      // หาเลขเดือน
+                      const findMonth = moment(formattedDate);
+                      const month = findMonth.month();
+            
+                      const formattedDateKdr = formattedDate.split("-").join("");
+            
+                      // รันเลข JobOrderNumber แบบ Auto
+                      let JobOrderNumber
+                      let kdr = "KDR"
+            
+                      // หาข้อมูลก่อนหน้าของวัน formattedDate
+                      const data = await TripDetailModel.findAll(
+                        { where: {date: formattedDate + " 07:00:00"} }
+                      )
+                      // console.log(kdr + formattedDate + "-");
+                      // console.log(data.length);
+                      if (data.length == 0) {
+                        // ถ้าไม่เจอให้เริ่มนับตั้งเเต่ 0001
+                        const runNumber = "0001"
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + runNumber
+                      } else {
+                        // ถ้าเจอให้นับต่อจากตัวล่าสุด
+                        // console.log(data[data.length-1].JobOrderNumber);
+                        const lastKdr = data[data.length-1].JobOrderNumber
+                        const lastRunNumber = lastKdr.slice(12)
+                        let lastRunNumberInt = parseInt(lastRunNumber, 10);
+                        // console.log(lastRunNumberInt);
+                        lastRunNumberInt += 1
+                        // console.log(lastRunNumberInt);
+                        const lastRunNumberStr = lastRunNumberInt.toString().padStart(4, '0')
+                        // console.log(lastRunNumberStr);
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + lastRunNumberStr
+                      }
+                      // console.log(JobOrderNumber);
+            
+                      // หา id โดยข้อมูลนี้จะไม่เว้นว่าง
+                      const customerData = await CustomerModel.findOne(
+                        { where: {customer_name: filteredData[index].customer} }
+                      )
+                      const typeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].type} }
+                      )
+                      const teamData = await TeamModel.findOne(
+                        { where: {team_name: filteredData[index].team} }
+                      )
+                      const networkData = await NetworkModel.findOne(
+                        { where: {network_name: filteredData[index].network} }
+                      )
+                      const serviceTypeData = await ServiceTypeModel.findOne(
+                        { where: {servicetype_name: filteredData[index].serviceType} }
+                      )
+            
+                      // จัดการ Vehicle
+                      const vehicleData = await VehicleModel.findOne(
+                        { where: {plateNumber: formatPlaceNumber} }
+                      )
+            
+                      if (vehicleData == null) {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+            
+                        await VehicleModel.create({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        })
+                      } else {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+    
+                        await VehicleModel.update({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        }, { where: {plateNumber: formatPlaceNumber} })
+                      }
+            
+                      if (filteredData[index].driverOne != null) {
+                        // ตรวจสอบว่า driverOne มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverOneData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverOne} }
+                        )
+                        if (driverOneData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredData[index].driverOne,
+                            projectId: projectData.id
+                          })
+                        }
+                      } 
+            
+                      if (filteredData[index].driverTwo != null) {
+                        // ตรวจสอบว่า driverTwo มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverTwoData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverTwo} }
+                        )
+                        if (driverTwoData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName:filteredData[index]. driverTwo,
+                            projectId: projectData.id
+                          })
+                        }
+                      }
+            
+                      const dataCheck = await TripDetailModel.findAll(
+                        { where: 
+                          {
+                            date: formattedDate + " 07:00:00",
+                            plateNumber: formatPlaceNumber,
+                            typeId: typeData.id,
+                            customerId: customerData.id,
+                            servicetypeId: serviceTypeData.id,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            createBy: findCreateBy,
+                          },
+                          order: [['remark', 'ASC']],
+                        }
+                      )
+            
+                      if (dataCheck[0] == undefined) {
+                        // console.log({
+                        //   date: formattedDate,
+                        //   JobOrderNumber: JobOrderNumber,
+                        //   numberoftrip: filteredData[index].numberOfTrip,
+                        //   totalDistance: filteredData[index].totalDistance,
+                        //   remark: filteredData[index].remark,
+                        //   plateNumber: formatPlaceNumber,
+                        //   driverOne: filteredData[index].driverOne,
+                        //   driverTwo: filteredData[index].driverTwo,
+                        //   monthId: month + 1,
+                        //   customerId: customerData.id,
+                        //   typeId: typeData.id,
+                        //   teamId: teamData.id,
+                        //   networkId: networkData.id,
+                        //   servicetypeId: serviceTypeData.id,
+                        //   createBy: filteredData[index].createBy,
+                        //   updateBy: filteredData[index].updateBy
+                        // });
+            
+                        await TripDetailModel.create({
+                          date: formattedDate,
+                          JobOrderNumber: JobOrderNumber,
+                          numberoftrip: filteredData[index].numberOfTrip,
+                          totalDistance: filteredData[index].totalDistance,
+                          remark: filteredData[index].remark,
+                          plateNumber: formatPlaceNumber,
+                          driverOne: filteredData[index].driverOne,
+                          driverTwo: filteredData[index].driverTwo,
+                          fleetCardNumber: fleetCardNumber,
+                          monthId: month + 1,
+                          customerId: customerData.id,
+                          typeId: typeData.id,
+                          teamId: teamData.id,
+                          networkId: networkData.id,
+                          servicetypeId: serviceTypeData.id,
+                          gasstationId: gasstationId,
+                          createBy: filteredData[index].createBy,
+                          updateBy: filteredData[index].updateBy,
+                        })
+                      } else {
+                        // console.log('check', dataCheck[dataCheck.length - 1].remark);
+                        if (dataCheck[dataCheck.length - 1].remark == null) {
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: 'copy 1',
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredData[index].createBy,
+                          //   updateBy: filteredData[index].updateBy
+                          // });   
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: 'copy 1',
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredData[index].createBy,
+                            updateBy: filteredData[index].updateBy,
+                          })
+                        } else {
+                          let remark = dataCheck[dataCheck.length - 1].remark
+                          let remarkArray = remark.split(' ')
+                          let remarkNum = remarkArray[1]
+                          let remarkNumStr = parseInt(remarkNum)
+                          remarkNumStr += 1
+                          let remarkEdit = 'copy ' + remarkNumStr
+            
+                          // console.log(remarkEdit);
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: remarkEdit,
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredData[index].createBy,
+                          //   updateBy: filteredData[index].updateBy
+                          // });
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: remarkEdit,
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredData[index].createBy,
+                            updateBy: filteredData[index].updateBy,
+                          })
+                        }
+                      }
+                      
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                // 
+                } 
+                // กรณีที่ข้อมูลใน Database เท่ากับข้อมูลใน Excel หมายถึงบันทึกข้อมูลเดืม ให้ทำการบันทึกข้อมูลใน Excel แทนข้อมูลใน Database
+                else if (previouslength == length) {
+                  const dataTripdetailReset = await TripDetailModel.update(
+                    {
+                      numberoftrip: null,
+                      totalDistance: null,
+                      remark: null,
+                      plateNumber: 2,
+                      driverOne: null,
+                      driverTwo: null,
+                      typeId: null,
+                      servicetypeId: null,
+                    },
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                  )
+        
+                  for (let index = 0; index < length; index++) {
+                    try {
+                      let noneFormatPlaceNumber = filteredData[index].plateNumber;
+                      let stringNoneFormatPlaceNumber = noneFormatPlaceNumber.toString();
+                      let placeNumberWithoutSpaces = stringNoneFormatPlaceNumber.replace(/\s/g, '');
+                      let placeNumberWithoutTrailingChars = placeNumberWithoutSpaces.replace(/[^\d]+$/g, '');
+                      let placeNumberWithoutDot = placeNumberWithoutTrailingChars.replace(/\./g, '');
+                      let formatPlaceNumber = placeNumberWithoutDot.trim();
+    
+                      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+                      let gasstationId
+                      let fleetCardNumber
+    
+                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
+    
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        gasstationId = dataGasStationNA.id
+                        fleetCardNumber = null
+                      } else if (dataFleetCardResult.length == 1) {
+                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
+                      } else if (dataFleetCardResult.length > 1) {
+                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    
+                        gasstationId = dataFleetCardResult[0].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
+                      }
+    
+                      // หา id โดยข้อมูลนี้จะไม่เว้นว่าง
+                      const customerData = await CustomerModel.findOne(
+                        { where: {customer_name: filteredData[index].customer} }
+                      )
+                      const typeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].type} }
+                      )
+                      const teamData = await TeamModel.findOne(
+                        { where: {team_name: filteredData[index].team} }
+                      )
+                      const networkData = await NetworkModel.findOne(
+                        { where: {network_name: filteredData[index].network} }
+                      )
+                      const serviceTypeData = await ServiceTypeModel.findOne(
+                        { where: {servicetype_name: filteredData[index].serviceType} }
+                      )
+            
+                      // จัดการ Vehicle
+                      const vehicleData = await VehicleModel.findOne(
+                        { where: {plateNumber: formatPlaceNumber} }
+                      )
+            
+                      if (vehicleData == null) {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+            
+                        await VehicleModel.create({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        })
+                      } else {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+    
+                        await VehicleModel.update({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        }, { where: {plateNumber: formatPlaceNumber} })
+                      }
+            
+                      if (filteredData[index].driverOne != null) {
+                        // ตรวจสอบว่า driverOne มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverOneData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverOne} }
+                        )
+                        if (driverOneData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredData[index].driverOne,
+                            projectId: projectData.id
+                          })
+                        }
+                      } 
+            
+                      if (filteredData[index].driverTwo != null) {
+                        // ตรวจสอบว่า driverTwo มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverTwoData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverTwo} }
+                        )
+                        if (driverTwoData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredData[index].driverTwo,
+                            projectId: projectData.id
+                          })
+                        }
+                      }
+        
+                      // console.log('dataCompare', dataTripdetailPrevious[index].JobOrderNumber);
+                      // console.log('dataInput', formatPlaceNumber);
+        
+                      const dataCheck = await TripDetailModel.findAll(
+                        { where: 
+                          {
+                            date: dataTripdetailPrevious[index].date,
+                            plateNumber: formatPlaceNumber,
+                            typeId: typeData.id,
+                            customerId: customerData.id,
+                            servicetypeId: serviceTypeData.id,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            createBy: findCreateBy,
+                          },
+                          order: [['remark', 'ASC']], 
+                        }
+                      )
+        
+                      // console.log(dataCheck);
+            
+                      if (dataCheck[0] == undefined) {
+                        // console.log({
+                        //   numberoftrip: filteredData[index].numberOfTrip,
+                        //   totalDistance: filteredData[index].totalDistance,
+                        //   remark: filteredData[index].remark,
+                        //   plateNumber: formatPlaceNumber,
+                        //   driverOne: filteredData[index].driverOne,
+                        //   driverTwo: filteredData[index].driverTwo,
+                        //   customerId: customerData.id,
+                        //   typeId: typeData.id,
+                        //   teamId: teamData.id,
+                        //   networkId: networkData.id,
+                        //   servicetypeId: serviceTypeData.id,
+                        //   updateBy: filteredData[index].createBy
+                        // });
+            
+                        await TripDetailModel.update({
+                          numberoftrip: filteredData[index].numberOfTrip,
+                          totalDistance: filteredData[index].totalDistance,
+                          remark: filteredData[index].remark,
+                          plateNumber: formatPlaceNumber,
+                          driverOne: filteredData[index].driverOne,
+                          driverTwo: filteredData[index].driverTwo,
+                          fleetCardNumber: fleetCardNumber,
+                          customerId: customerData.id,
+                          typeId: typeData.id,
+                          teamId: teamData.id,
+                          networkId: networkData.id,
+                          servicetypeId: serviceTypeData.id,
+                          gasstationId: gasstationId,
+                          updateBy: filteredData[index].createBy
+                        }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                      } else {
+                        // console.log('check', dataCheck[dataCheck.length - 1].remark);
+                        if (dataCheck[dataCheck.length - 1].remark == null) {
+                          // console.log({
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: 'copy 1',
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   updateBy: filteredData[index].createBy
+                          // });   
+                
+                          await TripDetailModel.update({
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: 'copy 1',
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            updateBy: filteredData[index].createBy
+                          }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                        } else {
+                          let remark = dataCheck[dataCheck.length - 1].remark
+                          let remarkArray = remark.split(' ')
+                          let remarkNum = remarkArray[1]
+                          let remarkNumStr = parseInt(remarkNum)
+                          remarkNumStr += 1
+                          let remarkEdit = 'copy ' + remarkNumStr
+            
+                          // console.log(remarkEdit);
+                          // console.log({
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: remarkEdit,
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   updateBy: filteredData[index].createBy
+                          // });
+                
+                          await TripDetailModel.update({
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: remarkEdit,
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            updateBy: filteredData[index].createBy
+                          }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                        }
+                      }
+        
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                } 
+                // กรณีที่ข้อมูลใน Database น้อยกว่าข้อมูลใน Excel หมายถึงข้อมูลใน Excel เพิ่มขึ้น ให้ทำการบันทึกข้อมูลใน Excel แทนข้อมูลใน Database และบันทึกข้อมูลที่เพิ่มมาใหม่ด้วย
+                else if (previouslength < length) {
+                  const filteredDataOld = filteredData.slice(0, previouslength)
+                  const filteredDataNew = filteredData.slice(previouslength)
+        
+                  console.log("filteredDataOld", filteredDataOld.length);
+                  console.log("filteredDataNew", filteredDataNew.length);
+        
+                  const dataTripdetailReset = await TripDetailModel.update(
+                    {
+                      numberoftrip: null,
+                      totalDistance: null,
+                      remark: null,
+                      plateNumber: 3,
+                      driverOne: null,
+                      driverTwo: null,
+                      typeId: null,
+                      servicetypeId: null,
+                    },
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                  )
+        
+                  for (let index = 0; index < filteredDataOld.length; index++) {
+                    try {
+                      let noneFormatPlaceNumber = filteredDataOld[index].plateNumber;
+                      let stringNoneFormatPlaceNumber = noneFormatPlaceNumber.toString();
+                      let placeNumberWithoutSpaces = stringNoneFormatPlaceNumber.replace(/\s/g, '');
+                      let placeNumberWithoutTrailingChars = placeNumberWithoutSpaces.replace(/[^\d]+$/g, '');
+                      let placeNumberWithoutDot = placeNumberWithoutTrailingChars.replace(/\./g, '');
+                      let formatPlaceNumber = placeNumberWithoutDot.trim();
+    
+                      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+                      let gasstationId
+                      let fleetCardNumber
+    
+                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
+    
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        gasstationId = dataGasStationNA.id
+                        fleetCardNumber = null
+                      } else if (dataFleetCardResult.length == 1) {
+                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
+                      } else if (dataFleetCardResult.length > 1) {
+                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    
+                        gasstationId = dataFleetCardResult[0].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
+                      }
+    
+                      // หา id โดยข้อมูลนี้จะไม่เว้นว่าง
+                      const customerData = await CustomerModel.findOne(
+                        { where: {customer_name: filteredDataOld[index].customer} }
+                      )
+                      const typeData = await TypeModel.findOne(
+                        { where: {type_name: filteredDataOld[index].type} }
+                      )
+                      const teamData = await TeamModel.findOne(
+                        { where: {team_name: filteredDataOld[index].team} }
+                      )
+                      const networkData = await NetworkModel.findOne(
+                        { where: {network_name: filteredDataOld[index].network} }
+                      )
+                      const serviceTypeData = await ServiceTypeModel.findOne(
+                        { where: {servicetype_name: filteredDataOld[index].serviceType} }
+                      )
+            
+                      // จัดการ Vehicle
+                      const vehicleData = await VehicleModel.findOne(
+                        { where: {plateNumber: formatPlaceNumber} }
+                      )
+            
+                      if (vehicleData == null) {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+            
+                        await VehicleModel.create({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        })
+                      } else {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+    
+                        await VehicleModel.update({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        }, { where: {plateNumber: formatPlaceNumber} })
+                      }
+            
+                      if (filteredDataOld[index].driverOne != null) {
+                        // ตรวจสอบว่า driverOne มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverOneData = await DriverModel.findOne(
+                          { where: {fullName: filteredDataOld[index].driverOne} }
+                        )
+                        if (driverOneData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredDataOld[index].driverOne,
+                            projectId: projectData.id
+                          })
+                        }
+                      } 
+            
+                      if (filteredDataOld[index].driverTwo != null) {
+                        // ตรวจสอบว่า driverTwo มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverTwoData = await DriverModel.findOne(
+                          { where: {fullName: filteredDataOld[index].driverTwo} }
+                        )
+                        if (driverTwoData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredDataOld[index].driverTwo,
+                            projectId: projectData.id
+                          })
+                        }
+                      }
+        
+                      // console.log('dataCompare', dataTripdetailPrevious[index].JobOrderNumber);
+                      // console.log('dataInput', formatPlaceNumber);
+        
+                      const dataCheck = await TripDetailModel.findAll(
+                        { where: 
+                          {
+                            date: dataTripdetailPrevious[index].date,
+                            plateNumber: formatPlaceNumber,
+                            typeId: typeData.id,
+                            customerId: customerData.id,
+                            servicetypeId: serviceTypeData.id,
+                            driverOne: filteredDataOld[index].driverOne,
+                            driverTwo: filteredDataOld[index].driverTwo,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            createBy: findCreateBy,
+                          },
+                          order: [['remark', 'ASC']], 
+                        }
+                      )
+        
+                      // console.log(dataCheck);
+            
+                      if (dataCheck[0] == undefined) {
+                        // console.log({
+                        //   numberoftrip: filteredDataOld[index].numberOfTrip,
+                        //   totalDistance: filteredDataOld[index].totalDistance,
+                        //   remark: filteredDataOld[index].remark,
+                        //   plateNumber: formatPlaceNumber,
+                        //   driverOne: filteredDataOld[index].driverOne,
+                        //   driverTwo: filteredDataOld[index].driverTwo,
+                        //   customerId: customerData.id,
+                        //   typeId: typeData.id,
+                        //   teamId: teamData.id,
+                        //   networkId: networkData.id,
+                        //   servicetypeId: serviceTypeData.id,
+                        //   updateBy: filteredDataOld[index].createBy
+                        // });
+            
+                        await TripDetailModel.update({
+                          numberoftrip: filteredDataOld[index].numberOfTrip,
+                          totalDistance: filteredDataOld[index].totalDistance,
+                          remark: filteredDataOld[index].remark,
+                          plateNumber: formatPlaceNumber,
+                          driverOne: filteredDataOld[index].driverOne,
+                          driverTwo: filteredDataOld[index].driverTwo,
+                          fleetCardNumber: fleetCardNumber,
+                          customerId: customerData.id,
+                          typeId: typeData.id,
+                          teamId: teamData.id,
+                          networkId: networkData.id,
+                          servicetypeId: serviceTypeData.id,
+                          gasstationId: gasstationId,
+                          updateBy: filteredDataOld[index].createBy
+                        }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                      } else {
+                        // console.log('check', dataCheck[dataCheck.length - 1].remark);
+                        if (dataCheck[dataCheck.length - 1].remark == null) {
+                          // console.log({
+                          //   numberoftrip: filteredDataOld[index].numberOfTrip,
+                          //   totalDistance: filteredDataOld[index].totalDistance,
+                          //   remark: 'copy 1',
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredDataOld[index].driverOne,
+                          //   driverTwo: filteredDataOld[index].driverTwo,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   updateBy: filteredDataOld[index].createBy
+                          // });   
+                
+                          await TripDetailModel.update({
+                            numberoftrip: filteredDataOld[index].numberOfTrip,
+                            totalDistance: filteredDataOld[index].totalDistance,
+                            remark: 'copy 1',
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredDataOld[index].driverOne,
+                            driverTwo: filteredDataOld[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            updateBy: filteredDataOld[index].createBy
+                          }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                        } else {
+                          let remark = dataCheck[dataCheck.length - 1].remark
+                          let remarkArray = remark.split(' ')
+                          let remarkNum = remarkArray[1]
+                          let remarkNumStr = parseInt(remarkNum)
+                          remarkNumStr += 1
+                          let remarkEdit = 'copy ' + remarkNumStr
+            
+                          // console.log(remarkEdit);
+                          // console.log({
+                          //   numberoftrip: filteredDataOld[index].numberOfTrip,
+                          //   totalDistance: filteredDataOld[index].totalDistance,
+                          //   remark: remarkEdit,
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredDataOld[index].driverOne,
+                          //   driverTwo: filteredDataOld[index].driverTwo,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   updateBy: filteredDataOld[index].createBy
+                          // });
+                
+                          await TripDetailModel.update({
+                            numberoftrip: filteredDataOld[index].numberOfTrip,
+                            totalDistance: filteredDataOld[index].totalDistance,
+                            remark: remarkEdit,
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredDataOld[index].driverOne,
+                            driverTwo: filteredDataOld[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            updateBy: filteredDataOld[index].createBy
+                          }, { where: { JobOrderNumber: dataTripdetailPrevious[index].JobOrderNumber } })
+                        }
+                      }
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+        
+                  for (let index = 0; index < filteredDataNew.length; index++) {
+                    try {
+                      let noneFormatPlaceNumber = filteredDataNew[index].plateNumber;
+                      let stringNoneFormatPlaceNumber = noneFormatPlaceNumber.toString();
+                      let placeNumberWithoutSpaces = stringNoneFormatPlaceNumber.replace(/\s/g, '');
+                      let placeNumberWithoutTrailingChars = placeNumberWithoutSpaces.replace(/[^\d]+$/g, '');
+                      let placeNumberWithoutDot = placeNumberWithoutTrailingChars.replace(/\./g, '');
+                      let formatPlaceNumber = placeNumberWithoutDot.trim();
+    
+                      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+                      let gasstationId
+                      let fleetCardNumber
+    
+                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
+    
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        gasstationId = dataGasStationNA.id
+                        fleetCardNumber = null
+                      } else if (dataFleetCardResult.length == 1) {
+                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
+                      } else if (dataFleetCardResult.length > 1) {
+                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    
+                        gasstationId = dataFleetCardResult[0].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
+                      }
+    
+                      let formattedDate = moment(filteredDataNew[index].date, 'MMMM DD, YYYY').format('YYYY-MM-DD');
+                      const findYearFormatted = moment(formattedDate).year();
+                      const findYearCurrent = moment().year();
+        
+                      if (findYearFormatted - findYearCurrent > 2) {
+                        formattedDate = moment(formattedDate, "YYYY-MM-DD").subtract(543, 'years').format("YYYY-MM-DD");
+                      }
+                    
+                      // หาเลขเดือน
+                      const findMonth = moment(formattedDate);
+                      const month = findMonth.month();
+            
+                      const formattedDateKdr = formattedDate.split("-").join("");
+            
+                      // รันเลข JobOrderNumber แบบ Auto
+                      let JobOrderNumber
+                      let kdr = "KDR"
+            
+                      // หาข้อมูลก่อนหน้าของวัน formattedDate
+                      const data = await TripDetailModel.findAll(
+                        { where: {date: formattedDate + " 07:00:00"} }
+                      )
+                      // console.log(kdr + formattedDate + "-");
+                      // console.log(data.length);
+                      if (data.length == 0) {
+                        // ถ้าไม่เจอให้เริ่มนับตั้งเเต่ 0001
+                        const runNumber = "0001"
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + runNumber
+                      } else {
+                        // ถ้าเจอให้นับต่อจากตัวล่าสุด
+                        // console.log(data[data.length-1].JobOrderNumber);
+                        const lastKdr = data[data.length-1].JobOrderNumber
+                        const lastRunNumber = lastKdr.slice(12)
+                        let lastRunNumberInt = parseInt(lastRunNumber, 10);
+                        // console.log(lastRunNumberInt);
+                        lastRunNumberInt += 1
+                        // console.log(lastRunNumberInt);
+                        const lastRunNumberStr = lastRunNumberInt.toString().padStart(4, '0')
+                        // console.log(lastRunNumberStr);
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + lastRunNumberStr
+                      }
+                      // console.log(JobOrderNumber);
+            
+                      // หา id โดยข้อมูลนี้จะไม่เว้นว่าง
+                      const customerData = await CustomerModel.findOne(
+                        { where: {customer_name: filteredDataNew[index].customer} }
+                      )
+                      const typeData = await TypeModel.findOne(
+                        { where: {type_name: filteredDataNew[index].type} }
+                      )
+                      const teamData = await TeamModel.findOne(
+                        { where: {team_name: filteredDataNew[index].team} }
+                      )
+                      const networkData = await NetworkModel.findOne(
+                        { where: {network_name: filteredDataNew[index].network} }
+                      )
+                      const serviceTypeData = await ServiceTypeModel.findOne(
+                        { where: {servicetype_name: filteredDataNew[index].serviceType} }
+                      )
+            
+                      // จัดการ Vehicle
+                      const vehicleData = await VehicleModel.findOne(
+                        { where: {plateNumber: formatPlaceNumber} }
+                      )
+            
+                      if (vehicleData == null) {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+            
+                        await VehicleModel.create({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        })
+                      } else {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+    
+                        await VehicleModel.update({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        }, { where: {plateNumber: formatPlaceNumber} })
+                      }
+            
+                      if (filteredDataNew[index].driverOne != null) {
+                        // ตรวจสอบว่า driverOne มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverOneData = await DriverModel.findOne(
+                          { where: {fullName: filteredDataNew[index].driverOne} }
+                        )
+                        if (driverOneData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredDataNew[index].driverOne,
+                            projectId: projectData.id
+                          })
+                        }
+                      } 
+            
+                      if (filteredDataNew[index].driverTwo != null) {
+                        // ตรวจสอบว่า driverTwo มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverTwoData = await DriverModel.findOne(
+                          { where: {fullName: filteredDataNew[index].driverTwo} }
+                        )
+                        if (driverTwoData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName:filteredDataNew[index]. driverTwo,
+                            projectId: projectData.id
+                          })
+                        }
+                      }
+            
+                      const dataCheck = await TripDetailModel.findAll(
+                        { where: 
+                          {
+                            date: formattedDate + " 07:00:00",
+                            plateNumber: formatPlaceNumber,
+                            typeId: typeData.id,
+                            customerId: customerData.id,
+                            servicetypeId: serviceTypeData.id,
+                            driverOne: filteredDataNew[index].driverOne,
+                            driverTwo: filteredDataNew[index].driverTwo,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            createBy: findCreateBy,
+                          },
+                          order: [['remark', 'ASC']], 
+                        }
+                      )
+            
+                      if (dataCheck[0] == undefined) {
+                        // console.log({
+                        //   date: formattedDate,
+                        //   JobOrderNumber: JobOrderNumber,
+                        //   numberoftrip: filteredDataNew[index].numberOfTrip,
+                        //   totalDistance: filteredDataNew[index].totalDistance,
+                        //   remark: filteredDataNew[index].remark,
+                        //   plateNumber: formatPlaceNumber,
+                        //   driverOne: filteredDataNew[index].driverOne,
+                        //   driverTwo: filteredDataNew[index].driverTwo,
+                        //   monthId: month + 1,
+                        //   customerId: customerData.id,
+                        //   typeId: typeData.id,
+                        //   teamId: teamData.id,
+                        //   networkId: networkData.id,
+                        //   servicetypeId: serviceTypeData.id,
+                        //   createBy: filteredDataNew[index].createBy,
+                        //   updateBy: filteredDataNew[index].updateBy
+                        // });
+            
+                        await TripDetailModel.create({
+                          date: formattedDate,
+                          JobOrderNumber: JobOrderNumber,
+                          numberoftrip: filteredDataNew[index].numberOfTrip,
+                          totalDistance: filteredDataNew[index].totalDistance,
+                          remark: filteredDataNew[index].remark,
+                          plateNumber: formatPlaceNumber,
+                          driverOne: filteredDataNew[index].driverOne,
+                          driverTwo: filteredDataNew[index].driverTwo,
+                          fleetCardNumber: fleetCardNumber,
+                          monthId: month + 1,
+                          customerId: customerData.id,
+                          typeId: typeData.id,
+                          teamId: teamData.id,
+                          networkId: networkData.id,
+                          servicetypeId: serviceTypeData.id,
+                          gasstationId: gasstationId,
+                          createBy: filteredDataNew[index].createBy,
+                          updateBy: filteredDataNew[index].updateBy
+                        })
+                      } else {
+                        // console.log('check', dataCheck[dataCheck.length - 1].remark);
+                        if (dataCheck[dataCheck.length - 1].remark == null) {
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredDataNew[index].numberOfTrip,
+                          //   totalDistance: filteredDataNew[index].totalDistance,
+                          //   remark: 'copy 1',
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredDataNew[index].driverOne,
+                          //   driverTwo: filteredDataNew[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredDataNew[index].createBy,
+                          //   updateBy: filteredDataNew[index].updateBy
+                          // });   
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredDataNew[index].numberOfTrip,
+                            totalDistance: filteredDataNew[index].totalDistance,
+                            remark: 'copy 1',
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredDataNew[index].driverOne,
+                            driverTwo: filteredDataNew[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredDataNew[index].createBy,
+                            updateBy: filteredDataNew[index].updateBy
+                          })
+                        } else {
+                          let remark = dataCheck[dataCheck.length - 1].remark
+                          let remarkArray = remark.split(' ')
+                          let remarkNum = remarkArray[1]
+                          let remarkNumStr = parseInt(remarkNum)
+                          remarkNumStr += 1
+                          let remarkEdit = 'copy ' + remarkNumStr
+            
+                          // console.log(remarkEdit);
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredDataNew[index].numberOfTrip,
+                          //   totalDistance: filteredDataNew[index].totalDistance,
+                          //   remark: remarkEdit,
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredDataNew[index].driverOne,
+                          //   driverTwo: filteredDataNew[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredDataNew[index].createBy,
+                          //   updateBy: filteredDataNew[index].updateBy
+                          // });
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredDataNew[index].numberOfTrip,
+                            totalDistance: filteredDataNew[index].totalDistance,
+                            remark: remarkEdit,
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredDataNew[index].driverOne,
+                            driverTwo: filteredDataNew[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredDataNew[index].createBy,
+                            updateBy: filteredDataNew[index].updateBy
+                          })
+                        }
+                      }
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                } 
+                // กรณีที่ข้อมูลใน Database มากกว่าข้อมูลใน Excel หมายถึงข้อมูลใน Excel ลดลง ให้ทำการลบข้อมูลใน Database ทั้งหมดแล้วจีงอัพข้อมูลใหม่เข้าไปแทน
+                else if (previouslength > length) {
+                  resetStatus = true;
+
+                  await TripDetailModel.destroy(
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                  )
+
+                  for (let index = 0; index < length; index++) {
+                    // แปลง date ให้อยู่ในรูปแบบ YYYY-MM-DD
+            
+                    try {
+                      let noneFormatPlaceNumber = filteredData[index].plateNumber;
+                      let stringNoneFormatPlaceNumber = noneFormatPlaceNumber.toString();
+                      let placeNumberWithoutSpaces = stringNoneFormatPlaceNumber.replace(/\s/g, '');
+                      let placeNumberWithoutTrailingChars = placeNumberWithoutSpaces.replace(/[^\d]+$/g, '');
+                      let placeNumberWithoutDot = placeNumberWithoutTrailingChars.replace(/\./g, '');
+                      let formatPlaceNumber = placeNumberWithoutDot.trim();
+    
+                      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+                      let gasstationId
+                      let fleetCardNumber
+    
+                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
+    
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
+                      }
+                      if (dataFleetCardResult.length == 0) {
+                        gasstationId = dataGasStationNA.id
+                        fleetCardNumber = null
+                      } else if (dataFleetCardResult.length == 1) {
+                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
+                      } else if (dataFleetCardResult.length > 1) {
+                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+    
+                        gasstationId = dataFleetCardResult[0].gasstationId;
+                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
+                      }
+                      
+                      let formattedDate = moment(filteredData[index].date, 'MMMM DD, YYYY').format('YYYY-MM-DD');
+                      const findYearFormatted = moment(formattedDate).year();
+                      const findYearCurrent = moment().year();
+        
+                      if (findYearFormatted - findYearCurrent > 2) {
+                        formattedDate = moment(formattedDate, "YYYY-MM-DD").subtract(543, 'years').format("YYYY-MM-DD");
+                      }
+        
+                      // หาเลขเดือน
+                      const findMonth = moment(formattedDate);
+                      const month = findMonth.month();
+            
+                      const formattedDateKdr = formattedDate.split("-").join("");
+            
+                      // รันเลข JobOrderNumber แบบ Auto
+                      let JobOrderNumber
+                      let kdr = "KDR"
+            
+                      // หาข้อมูลก่อนหน้าของวัน formattedDate
+                      const data = await TripDetailModel.findAll(
+                        { where: {date: formattedDate + " 07:00:00"} }
+                      )
+                      // console.log(kdr + formattedDate + "-");
+                      // console.log(data.length);
+                      if (data.length == 0) {
+                        // ถ้าไม่เจอให้เริ่มนับตั้งเเต่ 0001
+                        const runNumber = "0001"
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + runNumber
+                      } else {
+                        // ถ้าเจอให้นับต่อจากตัวล่าสุด
+                        // console.log(data[data.length-1].JobOrderNumber);
+                        const lastKdr = data[data.length-1].JobOrderNumber
+                        const lastRunNumber = lastKdr.slice(12)
+                        let lastRunNumberInt = parseInt(lastRunNumber, 10);
+                        // console.log(lastRunNumberInt);
+                        lastRunNumberInt += 1
+                        // console.log(lastRunNumberInt);
+                        const lastRunNumberStr = lastRunNumberInt.toString().padStart(4, '0')
+                        // console.log(lastRunNumberStr);
+                        JobOrderNumber = kdr + formattedDateKdr + "-" + lastRunNumberStr
+                      }
+                      // console.log(JobOrderNumber);
+            
+                      // หา id โดยข้อมูลนี้จะไม่เว้นว่าง
+                      const customerData = await CustomerModel.findOne(
+                        { where: {customer_name: filteredData[index].customer} }
+                      )
+                      const typeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].type} }
+                      )
+                      const teamData = await TeamModel.findOne(
+                        { where: {team_name: filteredData[index].team} }
+                      )
+                      const networkData = await NetworkModel.findOne(
+                        { where: {network_name: filteredData[index].network} }
+                      )
+                      const serviceTypeData = await ServiceTypeModel.findOne(
+                        { where: {servicetype_name: filteredData[index].serviceType} }
+                      )
+            
+                      // จัดการ Vehicle
+                      const vehicleData = await VehicleModel.findOne(
+                        { where: {plateNumber: formatPlaceNumber} }
+                      )
+            
+                      if (vehicleData == null) {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+            
+                        await VehicleModel.create({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        })
+                      } else {
+                        // ถ้าไม่มีข้อมูลของรถยนต์ ให้เพิ่มเข้าไปใหม่
+                        const VehicleCompanyData = await VehicleCompanyModel.findOne(
+                          { where: {vehiclecompany_name: 'N/A'} }
+                        )
+            
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
+    
+                        await VehicleModel.update({
+                          plateNumber: formatPlaceNumber,
+                          vehicletypeId: VehicleTypeData.id,
+                          vehiclecompanyId: VehicleCompanyData.id,
+                          servicetypeId: serviceTypeData.id
+                        }, { where: {plateNumber: formatPlaceNumber} })
+                      }
+            
+                      if (filteredData[index].driverOne != null) {
+                        // ตรวจสอบว่า driverOne มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverOneData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverOne} }
+                        )
+                        if (driverOneData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName: filteredData[index].driverOne,
+                            projectId: projectData.id
+                          })
+                        }
+                      } 
+            
+                      if (filteredData[index].driverTwo != null) {
+                        // ตรวจสอบว่า driverTwo มีข้อมูลอยู่ใหม ถ้าไม่มีบันทึกลงใน Database
+                        const driverTwoData = await DriverModel.findOne(
+                          { where: {fullName: filteredData[index].driverTwo} }
+                        )
+                        if (driverTwoData == null) {
+                          const projectData = await ProjectModel.findOne(
+                            { where: {project_name: 'N/A'} }
+                          ) 
+                          DriverModel.create({
+                            fullName:filteredData[index]. driverTwo,
+                            projectId: projectData.id
+                          })
+                        }
+                      }
+            
+                      const dataCheck = await TripDetailModel.findAll(
+                        { where: 
+                          {
+                            date: formattedDate + " 07:00:00",
+                            plateNumber: formatPlaceNumber,
+                            typeId: typeData.id,
+                            customerId: customerData.id,
+                            servicetypeId: serviceTypeData.id,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            createBy: findCreateBy,
+                          },
+                          order: [['remark', 'ASC']],
+                        }
+                      )
+            
+                      if (dataCheck[0] == undefined) {
+                        // console.log({
+                        //   date: formattedDate,
+                        //   JobOrderNumber: JobOrderNumber,
+                        //   numberoftrip: filteredData[index].numberOfTrip,
+                        //   totalDistance: filteredData[index].totalDistance,
+                        //   remark: filteredData[index].remark,
+                        //   plateNumber: formatPlaceNumber,
+                        //   driverOne: filteredData[index].driverOne,
+                        //   driverTwo: filteredData[index].driverTwo,
+                        //   monthId: month + 1,
+                        //   customerId: customerData.id,
+                        //   typeId: typeData.id,
+                        //   teamId: teamData.id,
+                        //   networkId: networkData.id,
+                        //   servicetypeId: serviceTypeData.id,
+                        //   createBy: filteredData[index].createBy,
+                        //   updateBy: filteredData[index].updateBy
+                        // });
+            
+                        await TripDetailModel.create({
+                          date: formattedDate,
+                          JobOrderNumber: JobOrderNumber,
+                          numberoftrip: filteredData[index].numberOfTrip,
+                          totalDistance: filteredData[index].totalDistance,
+                          remark: filteredData[index].remark,
+                          plateNumber: formatPlaceNumber,
+                          driverOne: filteredData[index].driverOne,
+                          driverTwo: filteredData[index].driverTwo,
+                          fleetCardNumber: fleetCardNumber,
+                          monthId: month + 1,
+                          customerId: customerData.id,
+                          typeId: typeData.id,
+                          teamId: teamData.id,
+                          networkId: networkData.id,
+                          servicetypeId: serviceTypeData.id,
+                          gasstationId: gasstationId,
+                          createBy: filteredData[index].createBy,
+                          updateBy: filteredData[index].updateBy,
+                        })
+                      } else {
+                        // console.log('check', dataCheck[dataCheck.length - 1].remark);
+                        if (dataCheck[dataCheck.length - 1].remark == null) {
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: 'copy 1',
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredData[index].createBy,
+                          //   updateBy: filteredData[index].updateBy
+                          // });   
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: 'copy 1',
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredData[index].createBy,
+                            updateBy: filteredData[index].updateBy,
+                          })
+                        } else {
+                          let remark = dataCheck[dataCheck.length - 1].remark
+                          let remarkArray = remark.split(' ')
+                          let remarkNum = remarkArray[1]
+                          let remarkNumStr = parseInt(remarkNum)
+                          remarkNumStr += 1
+                          let remarkEdit = 'copy ' + remarkNumStr
+            
+                          // console.log(remarkEdit);
+                          // console.log({
+                          //   date: formattedDate,
+                          //   JobOrderNumber: JobOrderNumber,
+                          //   numberoftrip: filteredData[index].numberOfTrip,
+                          //   totalDistance: filteredData[index].totalDistance,
+                          //   remark: remarkEdit,
+                          //   plateNumber: formatPlaceNumber,
+                          //   driverOne: filteredData[index].driverOne,
+                          //   driverTwo: filteredData[index].driverTwo,
+                          //   monthId: month + 1,
+                          //   customerId: customerData.id,
+                          //   typeId: typeData.id,
+                          //   teamId: teamData.id,
+                          //   networkId: networkData.id,
+                          //   servicetypeId: serviceTypeData.id,
+                          //   createBy: filteredData[index].createBy,
+                          //   updateBy: filteredData[index].updateBy
+                          // });
+                
+                          await TripDetailModel.create({
+                            date: formattedDate,
+                            JobOrderNumber: JobOrderNumber,
+                            numberoftrip: filteredData[index].numberOfTrip,
+                            totalDistance: filteredData[index].totalDistance,
+                            remark: remarkEdit,
+                            plateNumber: formatPlaceNumber,
+                            driverOne: filteredData[index].driverOne,
+                            driverTwo: filteredData[index].driverTwo,
+                            fleetCardNumber: fleetCardNumber,
+                            monthId: month + 1,
+                            customerId: customerData.id,
+                            typeId: typeData.id,
+                            teamId: teamData.id,
+                            networkId: networkData.id,
+                            servicetypeId: serviceTypeData.id,
+                            gasstationId: gasstationId,
+                            createBy: filteredData[index].createBy,
+                            updateBy: filteredData[index].updateBy,
+                          })
+                        }
+                      }
+                      
+                    } catch (error) {
+                      console.log(error);
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        // กรณีที่เข้าเงื่อนไขที่ 4 ให้ Reset Jobordernumber
+        if (resetStatus) {
+          tridetail_resetjob_post(findDate);
+        }
+        console.log('------------------------------------------------------------------------');
+      }
+
+      console.log('End Upload Tripdetail From Excel');
+    }
+
+    if (allTripData.length == 0) {
+      // console.log(allTripData.length);
+      console.log("ข้อมูล TripDetail มี Column ที่ข้อมูลผิดทั้งหมด โปรดตรวจสอบ Client's name, Type, Service type, Team, Network, Vehicle Type ใหม่อีกครั้งหรือ Column ของไฟล์ที่ Upload เข้ามานั้นไม่ตรงกับ Column ของไฟล์ Template");
+      res.send(
+        [
+         `ข้อมูลในไฟล์ excel ${beforeLength} รายการ ข้อมูลที่บันทึกลงฐานข้อมูล ${afterLength} รายการ`,
+         "ข้อมูล TripDetail มี Column ที่ข้อมูลผิดทั้งหมด โปรดตรวจสอบ Client's name, Type, Service type, Team, Network, Vehicle Type ใหม่อีกครั้งหรือ Column ของไฟล์ที่ Upload เข้ามานั้นไม่ตรงกับ Column ของไฟล์ Template"
+        ]
+      );
+    } else if (errorCustomerList.length == 0 && errorTypeList.length == 0 && errorServiceTypeList.length == 0 && errorTeamList.length == 0 && errorNetworkList.length == 0 && errorVehicleTypeList.length == 0) {
+      // console.log(allTripData.length);
+      console.log('เพิ่มข้อมูล TripDetail สมบูรณ์แบบ ไม่พบข้อมูลผิดพลาด');
+      res.send(
+        [
+         `ข้อมูลในไฟล์ excel ${beforeLength} รายการ ข้อมูลที่บันทึกลงฐานข้อมูล ${afterLength} รายการ`,
+         "เพิ่มข้อมูล TripDetail สมบูรณ์แบบ ไม่พบข้อมูลผิดพลาด"
+        ]
+      );
+    } else {
+      // console.log('length', allTripData.length);
+      if (errorCustomerList.length > 0) {
+        errorCustomerList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Client ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนหรือถ้าเป็น Client อันใหม่ ให้ทำการเพิ่มข้อมูล Client ที่หน้า Customer Details ก่อนแล้วทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+      if (errorTypeList.length > 0) {
+        errorTypeList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Type ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+      if (errorServiceTypeList.length > 0) {
+        errorServiceTypeList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล ServiceType ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+      if (errorTeamList.length > 0) {
+        errorTeamList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Team ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+      if (errorNetworkList.length > 0) {
+        errorNetworkList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Network ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+      if (errorVehicleTypeList.length > 0) {
+        errorVehicleTypeList.unshift('เพิ่มข้อมูล TripDetail ไม่สมบูรณ์ เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Vehicle Type ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง')
+      }
+
+      let errorList = errorCustomerList.concat(errorTypeList);
+      errorList = errorList.concat(errorServiceTypeList);
+      errorList = errorList.concat(errorTeamList);
+      errorList = errorList.concat(errorNetworkList);
+      errorList = errorList.concat(errorVehicleTypeList);
+      console.log(errorList);
+      errorList.unshift(`ข้อมูลในไฟล์ excel ${beforeLength} รายการ ข้อมูลที่บันทึกลงฐานข้อมูล ${afterLength} รายการ`)
+      res.send(errorList);
+    }
+  } catch (error) {
+    console.log(error);
+    res.send(
+      ['เกิดปัญหาบางอย่าง โปรดเเจ้งทางไอที']
+    );
+  }
+}
+
+exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
+  try {
+    const currentDateTime = moment();
+    const dataFleetCard = await FleetCardModel.findAll(
+      { 
+        where: {status: 'ACTIVE'},
+        order: [['id', 'DESC']], 
+      }
+    )
+
+    const dataGasStationNA = await GasStationModel.findOne(
+      {where: {gasstation_name: 'N/A'}}
+    )
+
+    let allTripData = req.body;
+    // const length = allTripData.length;
+    const findCreateBy = allTripData[0].createBy;
+    const findNetwork = allTripData[0].network;
+    console.log('------------------------------------------------------------------------');
+    console.log('Start Upload Tripdetail From Excel');
+
+    console.log(`Upload By ${findCreateBy}, Network ${findNetwork} At ${currentDateTime.format('YYYY-MM-DD HH:mm:ss')}`);
+
+    console.log('All Data In Excel', allTripData.length);
+    const beforeLength = allTripData.length;
+
+    allTripData = allTripData.map(function(item) {
+      if (item.customer === 42) {
+        item.type = 'N/A';
+      }
+      if (item.type === 42) {
+        item.type = 'N/A';
+      }
+      if (item.serviceType === 42) {
+        item.type = 'N/A';
+      }
+      return item;
+    });
+
+    allTripData.map((item) => {
+      const findThisYear = moment().year();
+      const comparisonDate = `${findThisYear + 1}-01-01`;
+      const thaiMoment = moment(item.date, 'MMMM D, YYYY');
+
+      const comparisonMoment = moment(comparisonDate, 'YYYY-MM-DD');
+
+      const isAfter = thaiMoment.isAfter(comparisonMoment);
+      
+      // console.log(isAfter);
+
+      if (isAfter) {
+        const christianDate = thaiMoment.subtract(543, 'years').format('MMMM D, YYYY');
+        // console.log(christianDate);
+        item.date = christianDate;
+      }
+    });
+
+    let errorCustomerList = []
+    let errorTypeList = []
+    let errorServiceTypeList = []
+    let errorTeamList = []
+    let errorNetworkList = []
+    let errorVehicleTypeList = []
+    
+    const uniqueDates = [...new Set(allTripData.map(item => item.date))];
+    const uniqueCustomers = [...new Set(allTripData.map(item => item.customer))];
+    const uniqueTypes = [...new Set(allTripData.map(item => item.type))];
+    const uniqueServiceTypes = [...new Set(allTripData.map(item => item.serviceType))];
+    const uniqueTeams = [...new Set(allTripData.map(item => item.team))];
+    const uniqueNetworks = [...new Set(allTripData.map(item => item.network))];
+    const uniqueVehicleTypes = [...new Set(allTripData.map(item => item.vehicleType))];
+
+    console.log(uniqueDates);
+    console.log(uniqueTypes);
+    // console.log(uniqueServiceTypes);
+    // console.log(uniqueTeams);
+    // console.log(uniqueNetworks);
+
+    for (let index = 0; index < uniqueCustomers.length; index++) {
+      const dataCustomerCheck = await CustomerModel.findOne(
+        {where: {customer_name: uniqueCustomers[index]}}
+      )
+      if (dataCustomerCheck == null) {
+        console.log('found uniqueCustomers');
+        errorCustomerList.push(uniqueCustomers[index])
+        allTripData = allTripData.filter(item => item.customer !== uniqueCustomers[index]);
+      }
+    }
+    for (let index = 0; index < uniqueTypes.length; index++) {
+      const dataTypeCheck = await TypeModel.findOne(
+        {where: {type_name: uniqueTypes[index]}}
+      )
+      if (dataTypeCheck == null) {
+        console.log('found uniqueTypes');
+        errorTypeList.push(uniqueTypes[index])
+        allTripData = allTripData.filter(item => item.type !== uniqueTypes[index]);
+      }
+
+      
+    }
+    for (let index = 0; index < uniqueServiceTypes.length; index++) {
+      const dataServiceTypeCheck = await ServiceTypeModel.findOne(
+        {where: {servicetype_name: uniqueServiceTypes[index]}}
+      )
+      if (dataServiceTypeCheck == null) {
+        console.log('found uniqueServiceTypes');
+        errorServiceTypeList.push(uniqueServiceTypes[index])
+        allTripData = allTripData.filter(item => item.serviceType !== uniqueServiceTypes[index]);
+      }
+    }
+    for (let index = 0; index < uniqueTeams.length; index++) {
+      const dataTeamCheck = await TeamModel.findOne(
+        {where: {team_name: uniqueTeams[index]}}
+      )
+      if (dataTeamCheck == null) {
+        console.log('found uniqueTeams');
+        errorTeamList.push(uniqueTeams[index])
+        allTripData = allTripData.filter(item => item.team !== uniqueTeams[index]);
+      }
+    }
+    for (let index = 0; index < uniqueNetworks.length; index++) {
+      const dataNetworkCheck = await NetworkModel.findOne(
+        {where: {network_name: uniqueNetworks[index]}}
+      )
+      if (dataNetworkCheck == null) {
+        console.log('found uniqueNetworks');
+        errorNetworkList.push(uniqueNetworks[index])
+        allTripData = allTripData.filter(item => item.network !== uniqueNetworks[index]);
+      }
+    }
+    for (let index = 0; index < uniqueVehicleTypes.length; index++) {
+      const dataVehicleTypeCheck = await VehicleTypeModel.findOne(
+        {where: {vehicletype_name: uniqueVehicleTypes[index]}}
+      )
+      if (dataVehicleTypeCheck == null) {
+        console.log('found uniqueVehicleTypes');
+        errorVehicleTypeList.push(uniqueVehicleTypes[index])
+        allTripData = allTripData.filter(item => item.vehicleType !== uniqueVehicleTypes[index]);
+      }
+    }
+
+    console.log('Data Dont Error In Excel', allTripData.length);
+    console.log('------------------------------------------------------------------------');
+    const afterLength = allTripData.length;
+
+    if (allTripData.length !== 0) {
+      for (let index = 0; index < uniqueDates.length; index++) {
+        let resetStatus = false;
+        const findDate = moment(uniqueDates[index], 'MMMM DD, YYYY').format('YYYY-MM-DD');
+        console.log(findDate);
+
+        const filteredDataNoCus = allTripData.filter(find => find.date === uniqueDates[index]);
+
+        const dataTripdetailPreviousNoCus = await TripDetailModel.findAll(
+          { 
+            include: [{
+              model: CustomerModel,
+              attributes: ['id', 'customer_name']
+            },{
+              model: NetworkModel,
+              attributes: ['id', 'network_name']
+            },{
+              model: TypeModel,
+              attributes: ['id', 'type_name']
+            }],
+            where: {date: findDate + " 07:00:00"} 
+          }
+        )
+
+        console.log('Data In Excel Of Date', filteredDataNoCus.length);
+        console.log('Data In Database Of Date', dataTripdetailPreviousNoCus.length);
+
+        for (let index1 = 0; index1 < uniqueCustomers.length; index1++) {
+          const filteredDataNoType = filteredDataNoCus.filter(find => find.customer.toLowerCase() === uniqueCustomers[index1].toLowerCase());
+          const lengthCus = filteredDataNoType.length;
+
+          const dataTripdetailPreviousNoNetwork = dataTripdetailPreviousNoCus.filter(find => find.customer.customer_name.toLowerCase() === uniqueCustomers[index1].toLowerCase());
+          const dataTripdetailPreviousNotype = dataTripdetailPreviousNoNetwork.filter(find => find.network.network_name === findNetwork);
+             
+          const previouslengthCus = dataTripdetailPreviousNotype.length;
+
+          if (lengthCus !== 0) {
+            console.log('------------------------------------------------');
+            console.log(uniqueCustomers[index1]);
+            console.log('Data In Excel Of Date Of Customer', lengthCus);
+            console.log('Data In Database Of Date Of Customer', previouslengthCus);
+          
+            for (let index2 = 0; index2 < uniqueTypes.length; index2++) {
+              const findType = uniqueTypes[index2];
+  
+              const filteredData = filteredDataNoType.filter(find => find.type.toLowerCase() === findType.toLowerCase());
+              const length = filteredData.length;
+              
+              const dataTripdetailPrevious = dataTripdetailPreviousNotype.filter(find => find.type.type_name.toLowerCase() === findType.toLowerCase());
+              const previouslength = dataTripdetailPrevious.length;
+            
+              if (length !== 0) {
+                console.log('----------------------');
+                console.log(findType);
+                console.log('Data In Excel Of Date Of Customer Of Type', length);
+                console.log('Data In Database Of Date Of Customer Of Type', previouslength);
+
+                const findCustomerID = await CustomerModel.findOne(
+                  { where: {customer_name: uniqueCustomers[index1]} }
+                )
+                const findNetworkID = await NetworkModel.findOne(
+                  { where: {network_name: findNetwork} }
+                )
+                const findTypeID = await TypeModel.findOne(
+                  { where: {type_name: findType} }
+                )
+    
+                // กรณีที่ไม่มีข้อมูลใน Database ให้บันทึกข้อมูลใน Excel เข้าไปใหม่
+                if (previouslength == 0) {
+                  for (let index = 0; index < length; index++) {
+                    // แปลง date ให้อยู่ในรูปแบบ YYYY-MM-DD
+            
+                    try {
+                      let formatPlaceNumber = filteredData[index].plateNumber;
+                      // เเปลง platenumber ทุกแบบให้กลายเป็น String
+                      formatPlaceNumber = formatPlaceNumber.toString();
+                      console.log(formatPlaceNumber);
+                      // เอาภาษาอังกฤษออกจาก String
+                      formatPlaceNumber = formatPlaceNumber.replace(/[a-zA-Z]/g, '');
+                      console.log(formatPlaceNumber);
+                      // ลบช่องว่างใน String ทั้งหมด
+                      formatPlaceNumber = formatPlaceNumber.replace(/\s+/g, '');
+                      console.log(formatPlaceNumber);
+                      // ลบช่องว่างที่อยู่ต้นและท้ายของ String
+                      formatPlaceNumber = formatPlaceNumber.trim();
+                      console.log(formatPlaceNumber);
+                      // ลบจุดทั้งหมดออกจาก String
+                      formatPlaceNumber = formatPlaceNumber.replace(/\./g, '');
+                      console.log(formatPlaceNumber);
+                      // ลบ String ด้านหลัง platenumber
+                      formatPlaceNumber = formatPlaceNumber.replace(/[^\d]+$/g, '');
+                      console.log(formatPlaceNumber);
+                      // ลบ กรุงเทพ, ทะเบียน, ทบ, "ทบรถ(" ออกจาก platenumber
+                      formatPlaceNumber = formatPlaceNumber.replace(/กรุงเทพ|ทะเบียน|ทบรถ\(|ทบ/g, '');
+                      console.log(formatPlaceNumber);
+                      // ลบสระและวรรณยุกต์ทั้งหมดออกจาก String
+                      formatPlaceNumber = formatPlaceNumber.replace(/[ะาำิีึืุูเแโใไ็่้๊๋ั็่้๊๋]/g, '');
+                      console.log(formatPlaceNumber);
+
+                      // // ลบ String ด้านหน้า platenumber ถ้า string ยาวเกิน 2
+                      // formatPlaceNumber = formatPlaceNumber.replace(/^[^\d-]{3,}/g, '');
+                      // console.log(formatPlaceNumber);
+                      
                       const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
                       let gasstationId
                       let fleetCardNumber

@@ -60,17 +60,11 @@ module.exports = (sequelize, Sequelize) => {
     sma_date: {
       type: Sequelize.DATEONLY,
     },
-    sma_date_count: {
-      type: Sequelize.INTEGER,
-    },
     pfma_date: {
       type: Sequelize.DATEONLY,
     },
     fma_date: {
       type: Sequelize.DATEONLY,
-    },
-    fma_date_count: {
-      type: Sequelize.INTEGER,
     },
     receive_date: {
       type: Sequelize.DATEONLY,
@@ -85,11 +79,14 @@ module.exports = (sequelize, Sequelize) => {
           this.setDataValue('ma_file', JSON.stringify(value));
       }
     },
-    debt_account: {
-      type: Sequelize.BOOLEAN,
-    },
     note_front: {
       type: Sequelize.TEXT,
+    },
+    original_doc: {
+      type: Sequelize.BOOLEAN,
+    },
+    cd_date: {
+      type: Sequelize.DATEONLY,
     },
   })
   return MaintenanceSummaryModel

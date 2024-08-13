@@ -23,6 +23,7 @@ router.get('/gettripdetailpivotdailybyclientwithexcel/:month/:year', controller.
 //------- POST -------//s
 router.post('/posttripdetail', controller.tripdetail_post)
 router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel)
+router.post('/posttripdetailfromexcelv2', controller.tripdetail_post_byexcel_v2)
 
 //------- PUT -------//
 router.put('/puttripdetail/:id', controller.tripdetail_put)

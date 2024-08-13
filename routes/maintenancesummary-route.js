@@ -23,6 +23,8 @@ const upload = multer({ storage });
 router.get('/getmaintenancesummarysbymonthbyyear/:month/:year', controller.maintenancesummary_get_all_bymonth_byyear)
 router.get('/getmaintenancesummary/:id', controller.maintenancesummary_get_one)
 
+router.get('/getmaintenancesummarysbymonthbyyearwithexcel/:month/:year', controller.maintenancesummary_get_all_bymonth_byyear_withexcel)
+
 //------- POST -------//
 router.post('/postmaintenancesummary', controller.maintenancesummary_post)
 router.post('/postmaintenancesummarywithfile', 
@@ -33,6 +35,8 @@ router.post('/putmaintenancesummarywithfile/:id',
   upload.array('ma_files[]', 10),
   controller.maintenancesummarywithfile_put
 )
+
+router.post('/postmaintenancesummarybyexcel', controller.maintenancesummary_post_byexcel)
 
 //------- PUT -------//
 
