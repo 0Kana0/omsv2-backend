@@ -564,6 +564,13 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
       ma_file_array.push(item.originalname);
     })
 
+    // แปลงค่า 'null' เป็น null
+    Object.keys(formData).forEach(key => {
+      if (formData[key] === 'null') {
+        formData[key] = null;
+      }
+    });
+
     // ดึงเดือนและปี
     const month = moment(formData.inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
     const yearAD = moment(formData.inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
@@ -667,6 +674,13 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
   } else {
     ma_file_array = formData.ma_file.split(',');
   }
+
+  // แปลงค่า 'null' เป็น null
+  Object.keys(formData).forEach(key => {
+    if (formData[key] === 'null') {
+      formData[key] = null;
+    }
+  });
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
     inform_code: formData.inform_code,

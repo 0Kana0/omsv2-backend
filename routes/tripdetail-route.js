@@ -20,6 +20,9 @@ router.get('/gettripdetailpivotmonthlywithexcel/:monthOne/:monthTwo/:yearOne/:ye
 router.get('/gettripdetailpivotdailywithexcel/:month/:year', controller.tripdetail_get_pivot_daily_withexcel)
 router.get('/gettripdetailpivotdailybyclientwithexcel/:month/:year', controller.tripdetail_get_pivot_daily_byclient_withexcel)
 
+router.get('/gettripdetailgroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_groupby_customer_bymonth_byyear)
+router.get('/gettripdetailgroupbycustomerbyyear/:year', controller.tripdetail_groupby_customer_byyear)
+
 //------- POST -------//s
 router.post('/posttripdetail', controller.tripdetail_post)
 router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel)

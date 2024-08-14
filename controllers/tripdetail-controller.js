@@ -2470,6 +2470,99 @@ exports.tripdetail_get_pivot_daily_byclient = async (req, res, next) => {
   }
 }
 
+exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
+  try {
+    const selectMonth = req.params.month;
+    const selectYear = req.params.year;
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+    const tripdetailGroupByCustomer = await TripDetailModel.findAll(
+      {
+        attributes: [
+          // นำ numberoftrip ของเเต่ละ customer มารวมกัน
+          [Sequelize.cast(Sequelize.fn('SUM', Sequelize.col('numberoftrip')), 'INTEGER'), 'totalTrips']
+        ],
+        where: {
+          date: {
+            [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+          },
+        },
+        include: [{
+          model: CustomerModel,
+          attributes: ['customer_name']
+        }],
+        // จัดกลุ่มโดย customer
+        group: ['customerId']
+      }
+    )
+
+    // หาจำนวน trips ทั้งหมด
+    let allTotalTrips = 0
+    for (const item of tripdetailGroupByCustomer) {
+      const num = parseInt(item.get('totalTrips'), 10);
+      allTotalTrips = allTotalTrips + num
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Groupby Customer Success',
+      allTotalTrips: allTotalTrips,
+      data: tripdetailGroupByCustomer
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${selectYear}-01-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(`${selectYear}-12-31`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+
+    const tripdetailGroupByCustomer = await TripDetailModel.findAll(
+      {
+        attributes: [
+          // นำ numberoftrip ของเเต่ละ customer มารวมกัน
+          [Sequelize.cast(Sequelize.fn('SUM', Sequelize.col('numberoftrip')), 'INTEGER'), 'totalTrips']
+        ],
+        where: {
+          date: {
+            [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+          },
+        },
+        include: [{
+          model: CustomerModel,
+          attributes: ['customer_name']
+        }],
+        // จัดกลุ่มโดย customer
+        group: ['customerId']
+      }
+    )
+
+    // หาจำนวน trips ทั้งหมด
+    let allTotalTrips = 0
+    for (const item of tripdetailGroupByCustomer) {
+      const num = parseInt(item.get('totalTrips'), 10);
+      allTotalTrips = allTotalTrips + num
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Groupby Customer Success',
+      allTotalTrips: allTotalTrips,
+      data: tripdetailGroupByCustomer
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 //------- POST -------//
 const tridetail_resetjob_post = async(selectDate) => {
   try {
