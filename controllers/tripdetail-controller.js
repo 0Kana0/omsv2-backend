@@ -27,7 +27,7 @@ const PTmaxFleetCardModel = db.PTmaxFleetCardModel;
 const exceljs = require('exceljs')
 const moment = require("moment");
 const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
+const { Op, literal } = require('sequelize');
 
 //------- GET -------//
 exports.tripdetail_get_all_bymonth_withexcel = async (req, res, next) => {
@@ -2470,6 +2470,7 @@ exports.tripdetail_get_pivot_daily_byclient = async (req, res, next) => {
   }
 }
 
+// Tripdetail ที่จัดกลุ่มโดยใช้ Customer
 exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
   try {
     const selectMonth = req.params.month;
@@ -2516,20 +2517,102 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
     console.log(error);
   }
 }
-
 exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
   try {
     const selectYear = req.params.year;
 
-    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
-    let startDate = moment(`${selectYear}-01-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
-    let endDate = moment(`${selectYear}-12-31`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    // เเยกข้อมูลของเเต่ละเดือน
+    const allTripYear = [];
+    // trip ทั้งหมดของปี
+    let allYearTotalTrips = 0;
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
 
-    const tripdetailGroupByCustomer = await TripDetailModel.findAll(
+      const tripdetailGroupByCustomer = await TripDetailModel.findAll(
+        {
+          attributes: [
+            // นำ numberoftrip ของเเต่ละ customer มารวมกัน
+            [Sequelize.cast(Sequelize.fn('SUM', Sequelize.col('numberoftrip')), 'INTEGER'), 'totalTrips']
+          ],
+          where: {
+            date: {
+              [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+            },
+          },
+          include: [{
+            model: CustomerModel,
+            attributes: ['customer_name']
+          }],
+          // จัดกลุ่มโดย customer
+          group: ['customerId']
+        }
+      )
+
+      // หาจำนวน trips ทั้งหมดของเดือน
+      let allTotalTrips = 0;
+      for (const item of tripdetailGroupByCustomer) {
+        const num = parseInt(item.get('totalTrips'), 10);
+        allTotalTrips = allTotalTrips + num;
+      }
+
+      //console.log(allTotalTrips);
+      // หาจำนวน trips ทั้งหมดของปี
+      allYearTotalTrips = allYearTotalTrips + allTotalTrips;
+      const dataindex = {
+        allTotalTrips: allTotalTrips,
+        data: tripdetailGroupByCustomer
+      }
+
+      // เก็บข้อมูลของ trip เเต่ละเดือน
+      allTripYear.push(dataindex);
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Groupby Customer Success',
+      allYearTotalTrips: allYearTotalTrips,
+      allData: allTripYear
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// Driver ที่อยู่ใน Tripdetail แบบไม่ซ้ำคนที่จัดกลุ่มโดยใช้ Customer
+exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, next) => {
+  try {
+    const selectMonth = req.params.month;
+    const selectYear = req.params.year;
+
+    // หาจำนวนคนขับทั้งหมด
+    const countDriver = await DriverModel.count({
+      col: 'fullName'
+    });
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+    const tripdetailDriverGroupByCustomer = await TripDetailModel.findAll(
       {
         attributes: [
-          // นำ numberoftrip ของเเต่ละ customer มารวมกัน
-          [Sequelize.cast(Sequelize.fn('SUM', Sequelize.col('numberoftrip')), 'INTEGER'), 'totalTrips']
+          // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A'
+          [
+            literal(`
+                    COUNT(DISTINCT CASE 
+                        WHEN driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
+                        THEN driverOne 
+                      END) + 
+                    COUNT(DISTINCT CASE 
+                        WHEN driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
+                        THEN driverTwo 
+                      END)`
+                    ),
+            'count'
+          ]
         ],
         where: {
           date: {
@@ -2545,18 +2628,101 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
       }
     )
 
-    // หาจำนวน trips ทั้งหมด
-    let allTotalTrips = 0
-    for (const item of tripdetailGroupByCustomer) {
-      const num = parseInt(item.get('totalTrips'), 10);
-      allTotalTrips = allTotalTrips + num
+    // หาจำนวน drivers ทั้งหมด
+    let allTotalDrivers = 0
+    for (const item of tripdetailDriverGroupByCustomer) {
+      const num = parseInt(item.get('count'), 10);
+      allTotalDrivers = allTotalDrivers + num
     }
 
     res.send({
       status: 'success',
-      message: 'Get Tripdetail Groupby Customer Success',
-      allTotalTrips: allTotalTrips,
-      data: tripdetailGroupByCustomer
+      message: 'Get Tripdetail Driver Groupby Customer Success',
+      allTotalDrivers: allTotalDrivers,
+      countDriver: countDriver,
+      data: tripdetailDriverGroupByCustomer
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    // หาจำนวนคนขับทั้งหมด
+    const countDriver = await DriverModel.count({
+      col: 'fullName'
+    });
+
+    // เเยกข้อมูลของเเต่ละเดือน
+    const allDriverYear = [];
+    // trip ทั้งหมดของปี
+    let allYearTotalDrivers = 0;
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+
+      const tripdetailDriverGroupByCustomer = await TripDetailModel.findAll(
+        {
+          attributes: [
+            // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A'
+            [
+              literal(`
+                      COUNT(DISTINCT CASE 
+                          WHEN driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
+                          THEN driverOne 
+                        END) + 
+                      COUNT(DISTINCT CASE 
+                          WHEN driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
+                          THEN driverTwo 
+                        END)`
+                      ),
+              'count'
+            ]
+          ],
+          where: {
+            date: {
+              [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+            },
+          },
+          include: [{
+            model: CustomerModel,
+            attributes: ['customer_name']
+          }],
+          // จัดกลุ่มโดย customer
+          group: ['customerId']
+        }
+      )
+
+      // หาจำนวน drivers ทั้งหมด
+      let allTotalDrivers = 0
+      for (const item of tripdetailDriverGroupByCustomer) {
+        const num = parseInt(item.get('count'), 10);
+        allTotalDrivers = allTotalDrivers + num
+      }
+
+      //console.log(allTotalDrivers);
+      // หาจำนวน trips ทั้งหมดของปี
+      allYearTotalDrivers = allYearTotalDrivers + allTotalDrivers;
+      const dataindex = {
+        allTotalDrivers: allTotalDrivers,
+        data: tripdetailDriverGroupByCustomer
+      }
+
+      // เก็บข้อมูลของ trip เเต่ละเดือน
+      allDriverYear.push(dataindex);
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Driver Groupby Customer Success',
+      allYearTotalDrivers: allYearTotalDrivers,
+      countDriver: countDriver,
+      allData: allDriverYear
     });
   } catch (error) {
     console.log(error);

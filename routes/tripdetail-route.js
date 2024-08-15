@@ -20,8 +20,13 @@ router.get('/gettripdetailpivotmonthlywithexcel/:monthOne/:monthTwo/:yearOne/:ye
 router.get('/gettripdetailpivotdailywithexcel/:month/:year', controller.tripdetail_get_pivot_daily_withexcel)
 router.get('/gettripdetailpivotdailybyclientwithexcel/:month/:year', controller.tripdetail_get_pivot_daily_byclient_withexcel)
 
+// Tripdetail ที่จัดกลุ่มโดยใช้ Customer
 router.get('/gettripdetailgroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_groupby_customer_bymonth_byyear)
 router.get('/gettripdetailgroupbycustomerbyyear/:year', controller.tripdetail_groupby_customer_byyear)
+
+// Driver ที่อยู่ใน Tripdetail แบบไม่ซ้ำคนที่จัดกลุ่มโดยใช้ Customer
+router.get('/gettripdetaildrivergroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_driver_groupby_customer_bymonth_byyear)
+router.get('/gettripdetaildrivergroupbycustomerbyyear/:year', controller.tripdetail_driver_groupby_customer_byyear)
 
 //------- POST -------//s
 router.post('/posttripdetail', controller.tripdetail_post)
