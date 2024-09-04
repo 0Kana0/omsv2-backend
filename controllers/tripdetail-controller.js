@@ -2504,7 +2504,7 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
     // หาวันปัจจุบันและวันก่อนหน้า 1 วันเพื่อดึงข้้อมูลของวันก่อนหน้า
     const today = moment()
     const yesterday = today.clone().subtract(1, 'days');
-    // หาจำนวนคนขับทั้งหมด
+    // หาจำนวน Tripdetail ของเมื่อวาน
     const countTripdetailYesterday = await TripDetailModel.count({
       col: 'id',
       where: {
@@ -2786,9 +2786,10 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
         )
-        SELECT  tripdetails.customerId, SUM(shelltransactions.quantity) as count
+        SELECT customers.customer_name, SUM(shelltransactions.quantity) as count
         FROM tripdetails
         LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
         WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
         GROUP BY tripdetails.customerId
         ORDER BY tripdetails.customerId ASC;
@@ -2804,9 +2805,10 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
         )
-        SELECT  tripdetails.customerId, SUM(ptmaxtransactions.prodqty) as count
+        SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count
         FROM tripdetails
         LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
         WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
         GROUP BY tripdetails.customerId
         ORDER BY tripdetails.customerId ASC;
@@ -2820,15 +2822,15 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
       // รวมข้อมูล shelltransactions กับ ptmaxtransactions
       const combined = [...array1, ...array2];
 
-      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
       const result = combined.reduce((acc, current) => {
-        const found = acc.find(item => item.customerId === current.customerId);
+        const found = acc.find(item => item.customer_name === current.customer_name);
         if (found) {
           // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
           found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
         } else {
           // ใช้ toFixed กับค่า count ใหม่
-          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
         }
         return acc;
       }, []);
@@ -2841,15 +2843,15 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
       // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
       const combinedAll = [...usageAllMonth, ...finalResult];
 
-      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
       const resultAll = combinedAll.reduce((acc, current) => {
-        const found = acc.find(item => item.customerId === current.customerId);
+        const found = acc.find(item => item.customer_name === current.customer_name);
         if (found) {
           // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
           found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
         } else {
           // ใช้ toFixed กับค่า count ใหม่
-          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
         }
         return acc;
       }, []);
@@ -2966,9 +2968,10 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
           )
-          SELECT  tripdetails.customerId, SUM(shelltransactions.quantity) as count
+          SELECT customers.customer_name, SUM(shelltransactions.quantity) as count
           FROM tripdetails
           LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+          LEFT JOIN customers ON tripdetails.customerId = customers.id
           WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
           GROUP BY tripdetails.customerId
           ORDER BY tripdetails.customerId ASC;
@@ -2984,9 +2987,10 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
           )
-          SELECT  tripdetails.customerId, SUM(ptmaxtransactions.prodqty) as count
+          SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count
           FROM tripdetails
           LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+          LEFT JOIN customers ON tripdetails.customerId = customers.id
           WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
           GROUP BY tripdetails.customerId
           ORDER BY tripdetails.customerId ASC;
@@ -3000,15 +3004,15 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
         // รวมข้อมูล shelltransactions กับ ptmaxtransactions
         const combined = [...array1, ...array2];
 
-        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
         const result = combined.reduce((acc, current) => {
-          const found = acc.find(item => item.customerId === current.customerId);
+          const found = acc.find(item => item.customer_name === current.customer_name);
           if (found) {
             // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
             found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
           } else {
             // ใช้ toFixed กับค่า count ใหม่
-            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+            acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
           }
           return acc;
         }, []);
@@ -3021,15 +3025,15 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
         // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
         const combinedAll = [...usageAllMonth, ...finalResult];
 
-        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
         const resultAll = combinedAll.reduce((acc, current) => {
-          const found = acc.find(item => item.customerId === current.customerId);
+          const found = acc.find(item => item.customer_name === current.customer_name);
           if (found) {
             // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
             found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
           } else {
             // ใช้ toFixed กับค่า count ใหม่
-            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+            acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
           }
           return acc;
         }, []);
@@ -3118,9 +3122,10 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
         )
-        SELECT  tripdetails.customerId, SUM(shelltransactions.transactionNetAmount) as count
+        SELECT customers.customer_name, SUM(shelltransactions.transactionNetAmount) as count
         FROM tripdetails
         LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
         WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
         GROUP BY tripdetails.customerId
         ORDER BY tripdetails.customerId ASC;
@@ -3136,9 +3141,10 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
         )
-        SELECT  tripdetails.customerId, SUM(ptmaxtransactions.amount) as count
+        SELECT customers.customer_name, SUM(ptmaxtransactions.amount) as count
         FROM tripdetails
         LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
         WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
         GROUP BY tripdetails.customerId
         ORDER BY tripdetails.customerId ASC;
@@ -3152,15 +3158,15 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
       // รวมข้อมูล shelltransactions กับ ptmaxtransactions
       const combined = [...array1, ...array2];
 
-      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
       const result = combined.reduce((acc, current) => {
-        const found = acc.find(item => item.customerId === current.customerId);
+        const found = acc.find(item => item.customer_name === current.customer_name);
         if (found) {
           // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
           found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
         } else {
           // ใช้ toFixed กับค่า count ใหม่
-          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
         }
         return acc;
       }, []);
@@ -3173,15 +3179,15 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
       // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
       const combinedAll = [...costAllMonth, ...finalResult];
 
-      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
       const resultAll = combinedAll.reduce((acc, current) => {
-        const found = acc.find(item => item.customerId === current.customerId);
+        const found = acc.find(item => item.customer_name === current.customer_name);
         if (found) {
           // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
           found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
         } else {
           // ใช้ toFixed กับค่า count ใหม่
-          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
         }
         return acc;
       }, []);
@@ -3284,9 +3290,10 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
           )
-          SELECT  tripdetails.customerId, SUM(shelltransactions.transactionNetAmount) as count
+          SELECT customers.customer_name, SUM(shelltransactions.transactionNetAmount) as count
           FROM tripdetails
           LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+          LEFT JOIN customers ON tripdetails.customerId = customers.id
           WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
           GROUP BY tripdetails.customerId
           ORDER BY tripdetails.customerId ASC;
@@ -3302,9 +3309,10 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
           )
-          SELECT  tripdetails.customerId, SUM(ptmaxtransactions.amount) as count
+          SELECT customers.customer_name, SUM(ptmaxtransactions.amount) as count
           FROM tripdetails
           LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+          LEFT JOIN customers ON tripdetails.customerId = customers.id
           WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
           GROUP BY tripdetails.customerId
           ORDER BY tripdetails.customerId ASC;
@@ -3318,15 +3326,15 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
         // รวมข้อมูล shelltransactions กับ ptmaxtransactions
         const combined = [...array1, ...array2];
 
-        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
         const result = combined.reduce((acc, current) => {
-          const found = acc.find(item => item.customerId === current.customerId);
+          const found = acc.find(item => item.customer_name === current.customer_name);
           if (found) {
             // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
             found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
           } else {
             // ใช้ toFixed กับค่า count ใหม่
-            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+            acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
           }
           return acc;
         }, []);
@@ -3339,15 +3347,15 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
         // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
         const combinedAll = [...costAllMonth, ...finalResult];
 
-        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
         const resultAll = combinedAll.reduce((acc, current) => {
-          const found = acc.find(item => item.customerId === current.customerId);
+          const found = acc.find(item => item.customer_name === current.customer_name);
           if (found) {
             // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
             found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
           } else {
             // ใช้ toFixed กับค่า count ใหม่
-            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+            acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
           }
           return acc;
         }, []);
