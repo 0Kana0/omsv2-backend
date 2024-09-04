@@ -27,7 +27,7 @@ const PTmaxFleetCardModel = db.PTmaxFleetCardModel;
 const exceljs = require('exceljs')
 const moment = require("moment");
 const Sequelize = require("sequelize");
-const { Op, literal } = require('sequelize');
+const { Op, literal, query, fn, col } = require('sequelize');
 
 //------- GET -------//
 exports.tripdetail_get_all_bymonth_withexcel = async (req, res, next) => {
@@ -1529,14 +1529,14 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
     const transformedData = []
 
     data.map((item, index) => {
-      // console.log(item.id);
+      //console.log(index+1, item.plateNumber);
       const dataClientGroupResult = dataClientGroup.find(index => index.customerId === item.customer.id);
 
       const dataVehicleResult = dataVehicle.find(index => index.plateNumber === item.plateNumber);
       const dataDriverOneResult = dataDriver.find(index => index.fullName === item.driverOne);
       const dataDriverTwoResult = dataDriver.find(index => index.fullName === item.driverTwo);
 
-      // console.log(dataVehicleResult);
+      //console.log(dataVehicleResult);
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === dataVehicleResult.vehicletypeId);
 
       let sector
@@ -2500,6 +2500,21 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
       }
     )
 
+    // ส่วนของการดึงข้อมูลค่า yesterdayTotalTrip
+    // หาวันปัจจุบันและวันก่อนหน้า 1 วันเพื่อดึงข้้อมูลของวันก่อนหน้า
+    const today = moment()
+    const yesterday = today.clone().subtract(1, 'days');
+    // หาจำนวนคนขับทั้งหมด
+    const countTripdetailYesterday = await TripDetailModel.count({
+      col: 'id',
+      where: {
+          date: {
+            [Op.between]: [yesterday.format('YYYY-MM-DD') + " 07:00:00", yesterday.format('YYYY-MM-DD') + " 07:00:00"],
+          },
+        },
+    });
+
+    // ส่วนของการดึงข้อมูลค่า monthTotalTrip
     // หาจำนวน trips ทั้งหมด
     let allTotalTrips = 0
     for (const item of tripdetailGroupByCustomer) {
@@ -2510,7 +2525,8 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
     res.send({
       status: 'success',
       message: 'Get Tripdetail Groupby Customer Success',
-      allTotalTrips: allTotalTrips,
+      yesterdayTotalTrip: countTripdetailYesterday,
+      monthTotalTrip: allTotalTrips,
       data: tripdetailGroupByCustomer
     });
   } catch (error) {
@@ -2551,6 +2567,7 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
         }
       )
 
+      // ส่วนของการดึงข้อมูลค่า monthTotalTrip
       // หาจำนวน trips ทั้งหมดของเดือน
       let allTotalTrips = 0;
       for (const item of tripdetailGroupByCustomer) {
@@ -2559,10 +2576,11 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
       }
 
       //console.log(allTotalTrips);
+      // ส่วนของการดึงข้อมูลค่า yearlyTotalTrip
       // หาจำนวน trips ทั้งหมดของปี
       allYearTotalTrips = allYearTotalTrips + allTotalTrips;
       const dataindex = {
-        allTotalTrips: allTotalTrips,
+        monthTotalTrip: allTotalTrips,
         data: tripdetailGroupByCustomer
       }
 
@@ -2573,7 +2591,7 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
     res.send({
       status: 'success',
       message: 'Get Tripdetail Groupby Customer Success',
-      allYearTotalTrips: allYearTotalTrips,
+      yearlyTotalTrip: allYearTotalTrips,
       allData: allTripYear
     });
   } catch (error) {
@@ -2587,6 +2605,7 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
     const selectMonth = req.params.month;
     const selectYear = req.params.year;
 
+    // ส่วนของการดึงข้อมูลค่า totalDriverInfo
     // หาจำนวนคนขับทั้งหมด
     const countDriver = await DriverModel.count({
       col: 'fullName'
@@ -2628,6 +2647,7 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
       }
     )
 
+    // ส่วนของการดึงข้อมูลค่า monthlyDriverUsage
     // หาจำนวน drivers ทั้งหมด
     let allTotalDrivers = 0
     for (const item of tripdetailDriverGroupByCustomer) {
@@ -2638,8 +2658,8 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
     res.send({
       status: 'success',
       message: 'Get Tripdetail Driver Groupby Customer Success',
-      allTotalDrivers: allTotalDrivers,
-      countDriver: countDriver,
+      monthlyDriverUsage: allTotalDrivers,
+      totalDriverInfo: countDriver,
       data: tripdetailDriverGroupByCustomer
     });
 
@@ -2651,6 +2671,7 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
   try {
     const selectYear = req.params.year;
 
+    // ส่วนของการดึงข้อมูลค่า totalDriverInfo
     // หาจำนวนคนขับทั้งหมด
     const countDriver = await DriverModel.count({
       col: 'fullName'
@@ -2698,6 +2719,7 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
         }
       )
 
+      // ส่วนของการดึงข้อมูลค่า monthlyDriverUsage
       // หาจำนวน drivers ทั้งหมด
       let allTotalDrivers = 0
       for (const item of tripdetailDriverGroupByCustomer) {
@@ -2706,10 +2728,11 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
       }
 
       //console.log(allTotalDrivers);
+      // ส่วนของการดึงข้อมูลค่า yearlyDriverUsage
       // หาจำนวน trips ทั้งหมดของปี
       allYearTotalDrivers = allYearTotalDrivers + allTotalDrivers;
       const dataindex = {
-        allTotalDrivers: allTotalDrivers,
+        monthlyDriverUsage: allTotalDrivers,
         data: tripdetailDriverGroupByCustomer
       }
 
@@ -2720,10 +2743,646 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
     res.send({
       status: 'success',
       message: 'Get Tripdetail Driver Groupby Customer Success',
-      allYearTotalDrivers: allYearTotalDrivers,
-      countDriver: countDriver,
+      yearlyDriverUsage: allYearTotalDrivers,
+      totalDriverInfo: countDriver,
       allData: allDriverYear
     });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ปริมาณการใช้น้ำมันของเเต่ละ Tripdetail ที่จัดกลุ่มโดยใช้ Customer
+exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next) => {
+  try {
+    const selectMonth = req.params.month;
+    const selectYear = req.params.year;
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
+    
+    // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
+    startDate = moment(startDate);
+    endDate = moment(endDate);
+
+    // วนลูปหาวันที่อยู่ระหว่างสองวันที่กำหนด
+    let currentDate = startDate.clone();
+
+    let usageAllMonth = [];
+    // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
+    while (currentDate.isBefore(endDate)) {
+      // หาวันถัดไป 1 วัน
+      const nextDay = currentDate.clone().add(1, 'days');
+
+      //console.log(currentDate.format('YYYY-MM-DD'));
+      //console.log(nextDay.format('YYYY-MM-DD'));
+
+      // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ shelltransactions ผ่าน fleetcardnumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+      const dataTripDetailShellUsageGroupByCustomer = await db.sequelize.query(`
+        WITH tripdetails AS (
+            SELECT *,
+                  ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+            FROM tripdetails
+            WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+        )
+        SELECT  tripdetails.customerId, SUM(shelltransactions.quantity) as count
+        FROM tripdetails
+        LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+        WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
+        GROUP BY tripdetails.customerId
+        ORDER BY tripdetails.customerId ASC;
+      `);
+  
+      //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+  
+      // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+      const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
+        WITH tripdetails AS (
+            SELECT *,
+                  ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+            FROM tripdetails
+            WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+        )
+        SELECT  tripdetails.customerId, SUM(ptmaxtransactions.prodqty) as count
+        FROM tripdetails
+        LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+        WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+        GROUP BY tripdetails.customerId
+        ORDER BY tripdetails.customerId ASC;
+      `);
+  
+      //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+
+      const array1 = dataTripDetailShellUsageGroupByCustomer[0];
+      const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
+
+      // รวมข้อมูล shelltransactions กับ ptmaxtransactions
+      const combined = [...array1, ...array2];
+
+      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      const result = combined.reduce((acc, current) => {
+        const found = acc.find(item => item.customerId === current.customerId);
+        if (found) {
+          // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+          found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+        } else {
+          // ใช้ toFixed กับค่า count ใหม่
+          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+        }
+        return acc;
+      }, []);
+      
+      // แปลงค่า count จาก string เป็น number
+      const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+      //console.log(finalResult);
+
+      // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+      const combinedAll = [...usageAllMonth, ...finalResult];
+
+      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      const resultAll = combinedAll.reduce((acc, current) => {
+        const found = acc.find(item => item.customerId === current.customerId);
+        if (found) {
+          // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+          found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+        } else {
+          // ใช้ toFixed กับค่า count ใหม่
+          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+        }
+        return acc;
+      }, []);
+      
+      // แปลงค่า count จาก string เป็น number
+      const finalResultAll = resultAll.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+      //console.log(resultAll);
+      usageAllMonth = finalResultAll;
+
+      currentDate.add(1, 'days');
+    }
+
+    // ส่วนของการดึงข้อมูลค่า monthlyTotalUsage
+    // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
+    const monthlyTotalUsage = usageAllMonth.reduce((sum, current) => sum + current.count, 0);
+
+    // ส่วนของการดึงข้อมูลค่า monthlyUnusualUsage
+    // หาผลรวมของปริมาณน้ำมันของ Shell ของทั้งเดือน
+    const countShellAllUsage = await db.sequelize.query(`
+      SELECT SUM(shelltransactions.quantity) as count FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
+    `)
+    // หาผลรวมของปริมาณน้ำมันของ PTmax ของทั้งเดือน
+    const countPTmaxAllUsage = await db.sequelize.query(`
+      SELECT SUM(ptmaxtransactions.prodqty) as count FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
+    `)
+    // นำปริมาณน้ำมันทั้งหมดของทั้งเดือนมาลบกับปริมาณน้ำมันที่ใช้จริง
+    const monthlyUnusualUsage = (countShellAllUsage[0][0].count + countPTmaxAllUsage[0][0].count) - Number(monthlyTotalUsage)
+
+    // ส่วนของการดึงข้อมูลค่า yesterdayTotalUsage
+    // หาวันปัจจุบันและวันก่อนหน้า 1 วันเพื่อดึงข้้อมูลของวันก่อนหน้า
+    const today = moment()
+    const yesterday = today.clone().subtract(1, 'days');
+    // หาผลรวมของปริมาณน้ำมันของ Shell ของวันก่อนหน้า
+    const countShellUsageYesterday = await db.sequelize.query(`
+      WITH tripdetails AS (
+          SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+          FROM tripdetails
+          WHERE tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+      )
+      SELECT SUM(shelltransactions.quantity) as count
+      FROM tripdetails
+      LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+      WHERE row_num = 1 AND tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${yesterday.format('YYYY-MM-DD')}' AND shelltransactions.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7;
+    `)
+    // หาผลรวมของปริมาณน้ำมันของ PTmax ของวันก่อนหน้า
+    const countPTmaxUsageYesterday = await db.sequelize.query(`
+      WITH tripdetails AS (
+          SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+          FROM tripdetails
+          WHERE tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+      )
+      SELECT SUM(ptmaxtransactions.prodqty) as count
+      FROM tripdetails
+      LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+      WHERE row_num = 1 AND tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${yesterday.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+    `)
+
+    // นำค่าทั้งสองมาบวกกัน
+    const yesterdayTotalUsage = (countShellUsageYesterday[0][0].count + countPTmaxUsageYesterday[0][0].count)
+
+    // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Usage Groupby Customer Success',
+      yesterdayTotalUsage: Number(Number(yesterdayTotalUsage).toFixed(2)),
+      monthlyTotalUsage: Number(Number(monthlyTotalUsage).toFixed(2)),
+      monthlyUnusualUsage: Number(Number(monthlyUnusualUsage).toFixed(2)),
+      allData: usageAllMonth,
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    // เเยกข้อมูลของเเต่ละเดือน
+    const usageAllYear = [];
+    // Usage ทั้งหมดของปี
+    let yearlyTotalUsage = 0;
+    let yearlyUnusualUsage = 0;
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
+    
+      // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
+      startDate = moment(startDate);
+      endDate = moment(endDate);
+
+      // วนลูปหาวันที่อยู่ระหว่างสองวันที่กำหนด
+      let currentDate = startDate.clone();
+
+      let usageAllMonth = [];
+      // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
+      while (currentDate.isBefore(endDate)) {
+        // หาวันถัดไป 1 วัน
+        const nextDay = currentDate.clone().add(1, 'days');
+
+        //console.log(currentDate.format('YYYY-MM-DD'));
+        //console.log(nextDay.format('YYYY-MM-DD'));
+
+        // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ shelltransactions ผ่าน fleetcardnumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+        const dataTripDetailShellUsageGroupByCustomer = await db.sequelize.query(`
+          WITH tripdetails AS (
+              SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+              FROM tripdetails
+              WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+          )
+          SELECT  tripdetails.customerId, SUM(shelltransactions.quantity) as count
+          FROM tripdetails
+          LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+          WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
+          GROUP BY tripdetails.customerId
+          ORDER BY tripdetails.customerId ASC;
+        `);
+    
+        //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+    
+        // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+        const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
+          WITH tripdetails AS (
+              SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+              FROM tripdetails
+              WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+          )
+          SELECT  tripdetails.customerId, SUM(ptmaxtransactions.prodqty) as count
+          FROM tripdetails
+          LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+          WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+          GROUP BY tripdetails.customerId
+          ORDER BY tripdetails.customerId ASC;
+        `);
+    
+        //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+
+        const array1 = dataTripDetailShellUsageGroupByCustomer[0];
+        const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
+
+        // รวมข้อมูล shelltransactions กับ ptmaxtransactions
+        const combined = [...array1, ...array2];
+
+        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        const result = combined.reduce((acc, current) => {
+          const found = acc.find(item => item.customerId === current.customerId);
+          if (found) {
+            // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+            found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+          } else {
+            // ใช้ toFixed กับค่า count ใหม่
+            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          }
+          return acc;
+        }, []);
+        
+        // แปลงค่า count จาก string เป็น number
+        const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+        //console.log(finalResult);
+
+        // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+        const combinedAll = [...usageAllMonth, ...finalResult];
+
+        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        const resultAll = combinedAll.reduce((acc, current) => {
+          const found = acc.find(item => item.customerId === current.customerId);
+          if (found) {
+            // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+            found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+          } else {
+            // ใช้ toFixed กับค่า count ใหม่
+            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          }
+          return acc;
+        }, []);
+        
+        // แปลงค่า count จาก string เป็น number
+        const finalResultAll = resultAll.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+        //console.log(resultAll);
+        usageAllMonth = finalResultAll;
+
+        currentDate.add(1, 'days');
+      }
+
+      // ส่วนของการดึงข้อมูลค่า monthlyTotalUsage
+      // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
+      const monthlyTotalUsage = usageAllMonth.reduce((sum, current) => sum + current.count, 0);
+
+      // ส่วนของการดึงข้อมูลค่า monthlyUnusualUsage
+      // หาผลรวมของปริมาณน้ำมันของ Shell ของทั้งเดือน
+      const countShellAllUsage = await db.sequelize.query(`
+        SELECT SUM(shelltransactions.quantity) as count FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
+      `)
+      // หาผลรวมของปริมาณน้ำมันของ PTmax ของทั้งเดือน
+      const countPTmaxAllUsage = await db.sequelize.query(`
+        SELECT SUM(ptmaxtransactions.prodqty) as count FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
+      `)
+      // นำปริมาณน้ำมันทั้งหมดของทั้งเดือนมาลบกับปริมาณน้ำมันที่ใช้จริง
+      const monthlyUnusualUsage = (countShellAllUsage[0][0].count + countPTmaxAllUsage[0][0].count) - Number(monthlyTotalUsage)
+
+      yearlyTotalUsage = yearlyTotalUsage + monthlyTotalUsage
+      yearlyUnusualUsage = yearlyUnusualUsage + monthlyUnusualUsage
+      const dataindex = {
+        monthlyTotalUsage: Number(Number(monthlyTotalUsage).toFixed(2)),
+        monthlyUnusualUsage: Number(Number(monthlyUnusualUsage).toFixed(2)),
+        data: usageAllMonth
+      }
+
+      // เก็บข้อมูลของ trip เเต่ละเดือน
+      usageAllYear.push(dataindex);
+    }
+
+    // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Usage Groupby Customer Success',
+      yearlyTotalUsage: Number(Number(yearlyTotalUsage).toFixed(2)),
+      yearlyUnusualUsage: Number(Number(yearlyUnusualUsage).toFixed(2)),
+      allData: usageAllYear,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// ปริมาณการใช้ค่าใช้จ่ายของเเต่ละ Tripdetail ที่จัดกลุ่มโดยใช้ Customer
+exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next) => {
+  try {
+    const selectMonth = req.params.month;
+    const selectYear = req.params.year;
+
+    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+    let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
+    
+    // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
+    startDate = moment(startDate);
+    endDate = moment(endDate);
+
+    // วนลูปหาวันที่อยู่ระหว่างสองวันที่กำหนด
+    let currentDate = startDate.clone();
+
+    let costAllMonth = [];
+    // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
+    while (currentDate.isBefore(endDate)) {
+      // หาวันถัดไป 1 วัน
+      const nextDay = currentDate.clone().add(1, 'days');
+
+      //console.log(currentDate.format('YYYY-MM-DD'));
+      //console.log(nextDay.format('YYYY-MM-DD'));
+
+      // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ shelltransactions ผ่าน fleetcardnumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+      const dataTripDetailShellUsageGroupByCustomer = await db.sequelize.query(`
+        WITH tripdetails AS (
+            SELECT *,
+                  ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+            FROM tripdetails
+            WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+        )
+        SELECT  tripdetails.customerId, SUM(shelltransactions.transactionNetAmount) as count
+        FROM tripdetails
+        LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+        WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
+        GROUP BY tripdetails.customerId
+        ORDER BY tripdetails.customerId ASC;
+      `);
+  
+      //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+  
+      // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+      const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
+        WITH tripdetails AS (
+            SELECT *,
+                  ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+            FROM tripdetails
+            WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+        )
+        SELECT  tripdetails.customerId, SUM(ptmaxtransactions.amount) as count
+        FROM tripdetails
+        LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+        WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+        GROUP BY tripdetails.customerId
+        ORDER BY tripdetails.customerId ASC;
+      `);
+  
+      //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+
+      const array1 = dataTripDetailShellUsageGroupByCustomer[0];
+      const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
+
+      // รวมข้อมูล shelltransactions กับ ptmaxtransactions
+      const combined = [...array1, ...array2];
+
+      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      const result = combined.reduce((acc, current) => {
+        const found = acc.find(item => item.customerId === current.customerId);
+        if (found) {
+          // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+          found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+        } else {
+          // ใช้ toFixed กับค่า count ใหม่
+          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+        }
+        return acc;
+      }, []);
+      
+      // แปลงค่า count จาก string เป็น number
+      const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+      //console.log(finalResult);
+
+      // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+      const combinedAll = [...costAllMonth, ...finalResult];
+
+      // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+      const resultAll = combinedAll.reduce((acc, current) => {
+        const found = acc.find(item => item.customerId === current.customerId);
+        if (found) {
+          // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+          found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+        } else {
+          // ใช้ toFixed กับค่า count ใหม่
+          acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+        }
+        return acc;
+      }, []);
+      
+      // แปลงค่า count จาก string เป็น number
+      const finalResultAll = resultAll.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+      //console.log(resultAll);
+      costAllMonth = finalResultAll;
+
+      currentDate.add(1, 'days');
+    }
+
+    // ส่วนของการดึงข้อมูลค่า monthlyTotalCost
+    // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
+    const monthlyTotalCost = costAllMonth.reduce((sum, current) => sum + current.count, 0);
+
+    // ส่วนของการดึงข้อมูลค่า yesterdayTotalCost
+    // หาวันปัจจุบันและวันก่อนหน้า 1 วันเพื่อดึงข้้อมูลของวันก่อนหน้า
+    const today = moment()
+    const yesterday = today.clone().subtract(1, 'days');
+    // หาผลรวมของปริมาณน้ำมันของ Shell ของวันก่อนหน้า
+    const countShellCostYesterday = await db.sequelize.query(`
+      WITH tripdetails AS (
+          SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+          FROM tripdetails
+          WHERE tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+      )
+      SELECT SUM(shelltransactions.transactionNetAmount) as count
+      FROM tripdetails
+      LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+      WHERE row_num = 1 AND tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${yesterday.format('YYYY-MM-DD')}' AND shelltransactions.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7;
+    `)
+    // หาผลรวมของปริมาณน้ำมันของ PTmax ของวันก่อนหน้า
+    const countPTmaxCostYesterday = await db.sequelize.query(`
+      WITH tripdetails AS (
+          SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+          FROM tripdetails
+          WHERE tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+      )
+      SELECT SUM(ptmaxtransactions.amount) as count
+      FROM tripdetails
+      LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+      WHERE row_num = 1 AND tripdetails.date >= '${yesterday.format('YYYY-MM-DD')}' AND tripdetails.date < '${today.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${yesterday.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${today.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+    `)
+
+    // นำค่าทั้งสองมาบวกกัน
+    const yesterdayTotalCost = (countShellCostYesterday[0][0].count + countPTmaxCostYesterday[0][0].count)
+
+    // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Cost Groupby Customer Success',
+      yesterdayTotalCost: Number(Number(yesterdayTotalCost).toFixed(2)),
+      monthlyTotalCost: Number(Number(monthlyTotalCost).toFixed(2)),
+      allData: costAllMonth,
+    });
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    // เเยกข้อมูลของเเต่ละเดือน
+    const costAllYear = [];
+    // Usage ทั้งหมดของปี
+    let yearlyTotalCost = 0;
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+      let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
+    
+      // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
+      startDate = moment(startDate);
+      endDate = moment(endDate);
+
+      // วนลูปหาวันที่อยู่ระหว่างสองวันที่กำหนด
+      let currentDate = startDate.clone();
+
+      let costAllMonth = [];
+      // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
+      while (currentDate.isBefore(endDate)) {
+        // หาวันถัดไป 1 วัน
+        const nextDay = currentDate.clone().add(1, 'days');
+
+        //console.log(currentDate.format('YYYY-MM-DD'));
+        //console.log(nextDay.format('YYYY-MM-DD'));
+
+        // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ shelltransactions ผ่าน fleetcardnumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+        const dataTripDetailShellUsageGroupByCustomer = await db.sequelize.query(`
+          WITH tripdetails AS (
+              SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+              FROM tripdetails
+              WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
+          )
+          SELECT  tripdetails.customerId, SUM(shelltransactions.transactionNetAmount) as count
+          FROM tripdetails
+          LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
+          WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND shelltransactions.date >= '${currentDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7 
+          GROUP BY tripdetails.customerId
+          ORDER BY tripdetails.customerId ASC;
+        `);
+    
+        //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+    
+        // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
+        const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
+          WITH tripdetails AS (
+              SELECT *,
+                    ROW_NUMBER() OVER (PARTITION BY tripdetails.plateNumber ORDER BY tripdetails.JobOrderNumber ASC) AS row_num
+              FROM tripdetails
+              WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+          )
+          SELECT  tripdetails.customerId, SUM(ptmaxtransactions.amount) as count
+          FROM tripdetails
+          LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
+          WHERE row_num = 1 AND tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt >= '${currentDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
+          GROUP BY tripdetails.customerId
+          ORDER BY tripdetails.customerId ASC;
+        `);
+    
+        //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+
+        const array1 = dataTripDetailShellUsageGroupByCustomer[0];
+        const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
+
+        // รวมข้อมูล shelltransactions กับ ptmaxtransactions
+        const combined = [...array1, ...array2];
+
+        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        const result = combined.reduce((acc, current) => {
+          const found = acc.find(item => item.customerId === current.customerId);
+          if (found) {
+            // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+            found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+          } else {
+            // ใช้ toFixed กับค่า count ใหม่
+            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          }
+          return acc;
+        }, []);
+        
+        // แปลงค่า count จาก string เป็น number
+        const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+        //console.log(finalResult);
+
+        // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+        const combinedAll = [...costAllMonth, ...finalResult];
+
+        // ใช้ reduce เพื่อนำ customerId ที่ซ้ำกันมารวมค่า count
+        const resultAll = combinedAll.reduce((acc, current) => {
+          const found = acc.find(item => item.customerId === current.customerId);
+          if (found) {
+            // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+            found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+          } else {
+            // ใช้ toFixed กับค่า count ใหม่
+            acc.push({ customerId: current.customerId, count: parseFloat(current.count).toFixed(2) });
+          }
+          return acc;
+        }, []);
+        
+        // แปลงค่า count จาก string เป็น number
+        const finalResultAll = resultAll.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+        //console.log(resultAll);
+        costAllMonth = finalResultAll;
+
+        currentDate.add(1, 'days');
+      }
+
+      // ส่วนของการดึงข้อมูลค่า monthlyTotalCost
+      // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
+      const monthlyTotalCost = costAllMonth.reduce((sum, current) => sum + current.count, 0);
+
+      yearlyTotalCost = yearlyTotalCost + monthlyTotalCost
+      const dataindex = {
+        monthlyTotalCost: Number(Number(monthlyTotalCost).toFixed(2)),
+        data: costAllMonth
+      }
+
+      // เก็บข้อมูลของ trip เเต่ละเดือน
+      costAllYear.push(dataindex);
+    }
+
+    // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
+    res.send({
+      status: 'success',
+      message: 'Get Tripdetail Cost Groupby Customer Success',
+      yearlyTotalCost: Number(Number(yearlyTotalCost).toFixed(2)),
+      allData: costAllYear,
+    });
+
   } catch (error) {
     console.log(error);
   }
@@ -4924,9 +5583,19 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
 
     if (allTripData.length !== 0) {
       for (let index = 0; index < uniqueDates.length; index++) {
+
         let resetStatus = false;
         const findDate = moment(uniqueDates[index], 'MMMM DD, YYYY').format('YYYY-MM-DD');
         console.log(findDate);
+
+        // ข้อมูล ShellFleetcard ของวันนั้นๆ
+        const ShellFleetCardData = await ShellFleetCardModel.findAll(
+          { where: {date: '2024-08-01'} }
+        )
+        // ข้อมูล PTmaxFleetCard ของวันนั้นๆ
+        const PTmaxFleetCardData = await PTmaxFleetCardModel.findAll(
+          { where: {date: '2024-08-01'} }
+        )
 
         const filteredDataNoCus = allTripData.filter(find => find.date === uniqueDates[index]);
 
@@ -4998,59 +5667,115 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                       let formatPlaceNumber = filteredData[index].plateNumber;
                       // เเปลง platenumber ทุกแบบให้กลายเป็น String
                       formatPlaceNumber = formatPlaceNumber.toString();
-                      console.log(formatPlaceNumber);
                       // เอาภาษาอังกฤษออกจาก String
                       formatPlaceNumber = formatPlaceNumber.replace(/[a-zA-Z]/g, '');
-                      console.log(formatPlaceNumber);
                       // ลบช่องว่างใน String ทั้งหมด
                       formatPlaceNumber = formatPlaceNumber.replace(/\s+/g, '');
-                      console.log(formatPlaceNumber);
                       // ลบช่องว่างที่อยู่ต้นและท้ายของ String
                       formatPlaceNumber = formatPlaceNumber.trim();
-                      console.log(formatPlaceNumber);
                       // ลบจุดทั้งหมดออกจาก String
                       formatPlaceNumber = formatPlaceNumber.replace(/\./g, '');
-                      console.log(formatPlaceNumber);
                       // ลบ String ด้านหลัง platenumber
                       formatPlaceNumber = formatPlaceNumber.replace(/[^\d]+$/g, '');
-                      console.log(formatPlaceNumber);
                       // ลบ กรุงเทพ, ทะเบียน, ทบ, "ทบรถ(" ออกจาก platenumber
                       formatPlaceNumber = formatPlaceNumber.replace(/กรุงเทพ|ทะเบียน|ทบรถ\(|ทบ/g, '');
-                      console.log(formatPlaceNumber);
                       // ลบสระและวรรณยุกต์ทั้งหมดออกจาก String
                       formatPlaceNumber = formatPlaceNumber.replace(/[ะาำิีึืุูเแโใไ็่้๊๋ั็่้๊๋]/g, '');
-                      console.log(formatPlaceNumber);
+
+                      // ใช้ RegExp เพื่อตรวจสอบว่าในสตริงมีภาษาไทยหรือไม่
+                      const containsLetters = /[\u0E00-\u0E7F]/.test(formatPlaceNumber);
+
+                      // ถ้ามีภาษาไทย
+                      if (containsLetters) {
+                        formatPlaceNumber = formatPlaceNumber.replace(/[-]/g, '');
+
+                      // ถ้าไม่มีภาษาไทย
+                      } else {
+                        // string เท่ากับหรือมากกว่า 6 ตามเเพทเทิน
+                        if (formatPlaceNumber.length >= 6) {
+                          const regex = /-/;
+                          // ใน string มี - ใหม
+                          if (!regex.test(formatPlaceNumber)) {
+                            formatPlaceNumber = formatPlaceNumber.slice(0, 2) + '-' + formatPlaceNumber.slice(2);
+                          }
+                        }
+                      }
 
                       // // ลบ String ด้านหน้า platenumber ถ้า string ยาวเกิน 2
                       // formatPlaceNumber = formatPlaceNumber.replace(/^[^\d-]{3,}/g, '');
                       // console.log(formatPlaceNumber);
                       
+                      // แปลงตัวอักษรภาษาไทยทั้งหมดเป็น x
                       const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
                       let gasstationId
                       let fleetCardNumber
-    
-                      let dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === formatPlaceNumber)
-    
-                      if (dataFleetCardResult.length == 0) {
-                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === formatPlaceNumber)
+
+                      // หา shellfleetcard ที่ตรงกับ platenumber
+                      let dataShellFleetCardResult = ShellFleetCardData.filter(item => item.plateNumber === formatPlaceNumber)
+                      // ถ้าไม่เจอให้ลองหาด้วย platenumber ที่เเทนด้วย x
+                      if (dataShellFleetCardResult.length == 0) {
+                        dataShellFleetCardResult = ShellFleetCardData.filter(item => item.plateNumber === plateNumberX)
                       }
-                      if (dataFleetCardResult.length == 0) {
-                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNumber === plateNumberX)
-                      }
-                      if (dataFleetCardResult.length == 0) {
-                        dataFleetCardResult = dataFleetCard.filter(item => item.plateNo === plateNumberX)
-                      }
-                      if (dataFleetCardResult.length == 0) {
+
+                      // หา ptmaxfleetcard ที่ตรงกับ platenumber
+                      let dataPTmaxFleetCardResult = PTmaxFleetCardData.filter(item => item.plateNumber === formatPlaceNumber)
+                
+                      // เจอ platenumber ที่ตรงกับใน shellfleetcard ไม่ตรงกับ ptmaxfleetcard
+                      if (dataShellFleetCardResult.length >= 1 && dataPTmaxFleetCardResult.length == 0) {
+                        // เจอ fleetcard เเค่ 1 ข้อมูล 
+                        if (dataShellFleetCardResult.length == 1) {
+                          gasstationId = 7;
+                          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // เจอ fleetcard มากกว่า 1 ข้อมูล 
+                        } else if (dataShellFleetCardResult.length > 1) {
+                          // เลือกเอาอันที่ api_check เป็น true
+                          dataShellFleetCardResult = dataShellFleetCardResult.filter(item => item.api_check === true)
+                          gasstationId = 7;
+                          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        }
+
+                      // เจอ platenumber ที่ไม่ตรงกับ shellfleetcard ตรงกับใน ptmaxfleetcard
+                      } else if (dataShellFleetCardResult.length == 0 && dataPTmaxFleetCardResult.length >= 1) {
+                        // เจอ fleetcard เเค่ 1 ข้อมูล 
+                        if (dataPTmaxFleetCardResult.length == 1) {
+                          gasstationId = 8;
+                          fleetCardNumber = dataPTmaxFleetCardResult[dataPTmaxFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // เจอ fleetcard มากกว่า 1 ข้อมูล 
+                        } else if (dataPTmaxFleetCardResult.length > 1) {
+                          // เลือกเอาอันที่ api_check เป็น true
+                          dataPTmaxFleetCardResult = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
+                          gasstationId = 8;
+                          fleetCardNumber = dataPTmaxFleetCardResult[dataPTmaxFleetCardResult.length-1].fleetCardNumber;
+                        }
+
+                      // เจอ platenumber ที่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
+                      } else if (dataShellFleetCardResult.length >= 1 && dataPTmaxFleetCardResult.length >= 1) {
+                        // ตรวจสอบว่าวันนี้ใช้ shellfleetcard หรือ ptmaxfleetcard
+                        let dataShellFleetCardResultTrue = dataShellFleetCardResult.filter(item => item.api_check === true)
+                        let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
+
+                        // ถ้าใช้ shellfleetcard
+                        if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length == 0) {
+                          gasstationId = 7;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber;
+
+                        // ถ้าใช้ ptmaxfleetcard
+                        } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = 8;
+                          fleetCardNumber = dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
+
+                        // ถ้าไม่พบการใช้ shellfleetcard หรือ ptmaxfleetcard ของวันนี้เลย ให้ยึด shellfleetcard ไปก่อน
+                        } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
+                          gasstationId = 7;
+                          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        }
+
+                      // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
+                      } else {
                         gasstationId = dataGasStationNA.id
                         fleetCardNumber = null
-                      } else if (dataFleetCardResult.length == 1) {
-                        gasstationId = dataFleetCardResult[dataFleetCardResult.length-1].gasstationId;
-                        fleetCardNumber = dataFleetCardResult[dataFleetCardResult.length-1].fleetCardNumber;
-                      } else if (dataFleetCardResult.length > 1) {
-                        dataFleetCardResult.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-    
-                        gasstationId = dataFleetCardResult[0].gasstationId;
-                        fleetCardNumber = dataFleetCardResult[0].fleetCardNumber;
                       }
                       
                       let formattedDate = moment(filteredData[index].date, 'MMMM DD, YYYY').format('YYYY-MM-DD');

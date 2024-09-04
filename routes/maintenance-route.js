@@ -9,6 +9,9 @@ router.get('/getmaintenancerangedate/:startDate/:endDate', controller.maintenanc
 router.get('/getmaintenancebyid/:id', controller.maintenance_get_one)
 router.get('/getmaintenancecounttable/:date', controller.maintenance_get_counttable)
 
+// Maintenance (VehicleBookingStatus Inactive) ที่จัดกลุ่มโดยใช้ Remark
+router.get('/getmaintenancegroupbyremarkbyyear/:year', controller.maintenance_groupby_remark_byyear)
+
 //------- POST -------//
 router.post('/postmaintenance', controller.maintenance_post)
 

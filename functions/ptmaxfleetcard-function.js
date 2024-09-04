@@ -1,16 +1,21 @@
 const db = require("../models");
 const PTmaxFleetCardModel = db.PTmaxFleetCardModel
 const PTmaxTransactionModel = db.PTmaxTransactionModel
+
+const TripDetailModel = db.TripDetailModel
+const ShellFleetCardModel = db.ShellFleetCardModel
+const GasStationModel = db.GasStationModel
+ 
 const moment = require('moment');
 const Sequelize = require("sequelize");
-const Op = Sequelize.Op;
+const { google } = require("googleapis");
 
-exports.ptmax_updatefleetcarddata_30min = async (req, res) => {
+exports.ptmax_updatefleetcarddata_10min = async (req, res) => {
   try {
     console.log('Start Add PTMAX Fleetcard From API')
     // หาวันที่ปัจจุบัน
     //const currentDate = moment().format('YYYY-MM-DD');
-    const currentDate = '2024-08-01';
+    const currentDate = '2024-08-05';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(currentDate).subtract(1, 'days').format('YYYY-MM-DD');
     // หาวันถัดไป
@@ -33,34 +38,85 @@ exports.ptmax_updatefleetcarddata_30min = async (req, res) => {
 
       if (ptmaxData !== null) {
         for (const item of ptmaxData) {
-          console.log(item.maxcardno, item.driverlicence);
           // Object สำหรับเก็บข้อมูล Fleetcard เพื่อบันทึกลง Database
           let fleetcardObject
-  
-          fleetcardObject = {
-            date: currentDate,
-            plateNumber: item.driverlicence,
-            fleetCardNumber: item.maxcardno,
-            api_check: 1
-          };
+          
+          // ตรวจสอบว่า PlateNumber ไหนมีการใช้ Transaction มากกว่า 1
+          const findPlateNumber = ptmaxData.filter(index => index.driverlicence === item.driverlicence)
+          //console.log(findPlateNumber);
 
-          // ตรวจสอบว่า Platenumber นี้มีอยู่ใน Database ของวันนี้หรือไม่
-          const ptmaxFleetCardCheck = await PTmaxFleetCardModel.findOne({
-            where: {plateNumber: item.driverlicence, date: currentDate}
-          })
+          // ถ้ามี Transaction มากกว่า 1
+          if (findPlateNumber.length > 1) {
+            //console.log(item.maxcardno, item.driverlicence);
 
-          // ถ้า Platenumber นี้ยังไม่มีข้อมูล
-          if (ptmaxFleetCardCheck == null) {
-            await PTmaxFleetCardModel.create(fleetcardObject);
-    
-          // ถ้า Platenumber นี้มีข้อมูลอยู่แล้ว
+            //console.log(findPlateNumber[findPlateNumber.length-1].maxcardno);
+            // ให้ทำงานเมื่อพบ PlateNumber ที่ Transaction มากกว่า 1 ตัวสุดท้าย
+            if (item.maxcardno == findPlateNumber[findPlateNumber.length-1].maxcardno) {
+              // ถ้า Fleetcard ของเเต่ละ Transaction ไม่เหมือนกัน
+              if (findPlateNumber[0].maxcardno !== findPlateNumber[findPlateNumber.length-1].maxcardno) {
+                let allFleetcard = ''
+
+                // นำ Fleetcard มาต่อกันคั้นด้วย ,
+                for (const data of findPlateNumber) {
+                  //console.log(data.maxcardno);
+                  if (data.maxcardno == findPlateNumber[findPlateNumber.length-1].maxcardno) {
+                    allFleetcard = allFleetcard + data.maxcardno
+                  } else {
+                    allFleetcard = allFleetcard + data.maxcardno + ','
+                  }
+                }
+
+                //console.log(allFleetcard);
+                fleetcardObject = {
+                  date: currentDate,
+                  plateNumber: item.driverlicence,
+                  fleetCardNumber: allFleetcard,
+                  api_check: 1
+                };
+              // ถ้า Fleetcard ของเเต่ละ Transaction เหมือนกัน
+              } else {
+                fleetcardObject = {
+                  date: currentDate,
+                  plateNumber: item.driverlicence,
+                  fleetCardNumber: item.maxcardno,
+                  api_check: 1
+                };
+              }
+            }
+
+            console.log(fleetcardObject);
+          // ถ้ามี Transaction เท่ากับ 1
           } else {
-            //console.log(shellFleetCardCheck);
-            //console.log(fleetcardObject.fleetCardNumber);
-            await PTmaxFleetCardModel.update(
-              fleetcardObject,
-              { where: {plateNumber: item.driverlicence, date: currentDate} }
-            )
+            //console.log(item.maxcardno, item.driverlicence);
+            
+            fleetcardObject = {
+              date: currentDate,
+              plateNumber: item.driverlicence,
+              fleetCardNumber: item.maxcardno,
+              api_check: 1
+            };
+          }
+
+          // ถ้าใน fleetcardObject มีข้อมูล
+          if (fleetcardObject !== undefined) {
+            // ตรวจสอบว่า Platenumber นี้มีอยู่ใน Database ของวันนี้หรือไม่
+            const ptmaxFleetCardCheck = await PTmaxFleetCardModel.findOne({
+              where: {plateNumber: item.driverlicence, date: currentDate}
+            })
+
+            // ถ้า Platenumber นี้ยังไม่มีข้อมูล
+            if (ptmaxFleetCardCheck == null) {
+              await PTmaxFleetCardModel.create(fleetcardObject);
+      
+            // ถ้า Platenumber นี้มีข้อมูลอยู่แล้ว
+            } else {
+              //console.log(shellFleetCardCheck);
+              //console.log(fleetcardObject.fleetCardNumber);
+              await PTmaxFleetCardModel.update(
+                fleetcardObject,
+                { where: {plateNumber: item.driverlicence, date: currentDate} }
+              )
+            }
           }
         }
 
@@ -95,7 +151,248 @@ exports.ptmax_updatefleetcarddata_30min = async (req, res) => {
     console.log(error);
   }
 }
+exports.ptmax_fleetcardmonitoring_daily_0110 = async (req, res) => {
+  try {
+    console.log('Start Add PTmax Data From Monitor')
+    // หาวันที่ปัจจุบัน
+    //const currentDate = moment().format('YYYY-MM-DD');
+    const currentDate = '2024-08-01';
+    // ตั้งค่าการยืนยันตัวตน
+    const auth = new google.auth.GoogleAuth({
+      // ดึงข้อมูลจากไฟล์ credentials.json
+      keyFile: __dirname + "../../configs/credentials.json",
+      scopes: "https://www.googleapis.com/auth/spreadsheets",
+    })
+    const client = await auth.getClient();
+    const googleSheets = google.sheets({ version: "v4", auth: client });
+    // ได้จากตรง URL
+    const spreadsheetId = '1hrXmvJXnXjLTqVRdmmheIxMRLVLHNCrfK54MRcuyl88';
+    // ดึงข้อมูลจาก Spreadsheet
+    const getRows = await googleSheets.spreadsheets.values.get({
+      auth,
+      spreadsheetId,
+      range: "FLEET CARD DATA!A:Q",
+    })
 
+    const sheetDataFromMonitor = getRows.data.values
+    //console.log(sheetDataFromMonitor);
+
+    for (let index = 2; index < sheetDataFromMonitor.length; index++) {
+      if (sheetDataFromMonitor[index][4] == 'PTT' || sheetDataFromMonitor[index][4] == 'PT') {
+        let formatPlaceNumber = sheetDataFromMonitor[index][6];
+        // เเปลง platenumber ทุกแบบให้กลายเป็น String
+        formatPlaceNumber = formatPlaceNumber.toString()
+        // เอาภาษาอังกฤษออกจาก String
+        formatPlaceNumber = formatPlaceNumber.replace(/[a-zA-Z]/g, '');
+        // ลบช่องว่างใน String ทั้งหมด
+        formatPlaceNumber = formatPlaceNumber.replace(/\s+/g, '');
+        // ลบช่องว่างที่อยู่ต้นและท้ายของ String
+        formatPlaceNumber = formatPlaceNumber.trim();
+        // ลบจุดทั้งหมดออกจาก String
+        formatPlaceNumber = formatPlaceNumber.replace(/\./g, '');
+        // ลบ String ด้านหลัง platenumber
+        formatPlaceNumber = formatPlaceNumber.replace(/[^\d]+$/g, '');
+        // ลบ กรุงเทพ, ทะเบียน, ทบ, "ทบรถ(" ออกจาก platenumber
+        formatPlaceNumber = formatPlaceNumber.replace(/กรุงเทพ|ทะเบียน|ทบรถ\(|ทบ/g, '');
+        // ลบสระและวรรณยุกต์ทั้งหมดออกจาก String
+        formatPlaceNumber = formatPlaceNumber.replace(/[ะาำิีึืุูเแโใไ็่้๊๋ั็่้๊๋]/g, '');
+
+        // ใช้ RegExp เพื่อตรวจสอบว่าในสตริงมีภาษาไทยหรือไม่
+        const containsLetters = /[\u0E00-\u0E7F]/.test(formatPlaceNumber);
+        // ถ้ามีภาษาไทย
+        if (containsLetters) {
+          formatPlaceNumber = formatPlaceNumber.replace(/[-]/g, '');
+        // ถ้าไม่มีภาษาไทย
+        } else {
+          // string เท่ากับหรือมากกว่า 6 ตามเเพทเทิน
+          if (formatPlaceNumber.length >= 6) {
+            const regex = /-/;
+            // ใน string มี - ใหม
+            if (!regex.test(formatPlaceNumber)) {
+              formatPlaceNumber = formatPlaceNumber.slice(0, 2) + '-' + formatPlaceNumber.slice(2);
+            }
+          }
+        }
+
+        //console.log(index, sheetDataFromMonitor[index][4], formatPlaceNumber);
+
+        //console.log(index, sheetDataFromMonitor[index][0]);
+        const sheetFleetCardCheck = await PTmaxFleetCardModel.findOne(
+          {
+            where: { plateNumber: formatPlaceNumber } 
+          }
+        )
+
+        if (sheetFleetCardCheck !== null) {
+          await PTmaxFleetCardModel.update({
+            employeeName_sheet: sheetDataFromMonitor[index][9],
+            subcontractorsName_sheet: sheetDataFromMonitor[index][10],
+            project_sheet: sheetDataFromMonitor[index][15],
+            team_sheet: sheetDataFromMonitor[index][16],
+          }, {where: { plateNumber: formatPlaceNumber, date: currentDate }})
+        }
+      }
+    }
+
+    console.log('Add PTmax Data From Monitor Success')
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+exports.platenumber_format = async (req, res) => {
+  try {
+    const selectDate = '2024-08-03'
+
+    const dataTripDetail = await TripDetailModel.findAll({
+      where: {
+        date: selectDate + " 07:00:00"
+      },
+    })
+
+    for (const item of dataTripDetail) {
+      let formatPlaceNumber = item.plateNumber
+      // ใช้ RegExp เพื่อตรวจสอบว่าในสตริงมีภาษาไทยหรือไม่
+      const containsLetters = /[\u0E00-\u0E7F]/.test(formatPlaceNumber);
+      // ถ้ามีภาษาไทย
+      if (containsLetters) {
+        formatPlaceNumber = formatPlaceNumber.replace(/[-]/g, '');
+      } else {
+        // string เท่ากับหรือมากกว่า 6 ตามเเพทเทิน
+        if (formatPlaceNumber.length >= 6) {
+          const regex = /-/;
+          // ใน string มี - ใหม
+          if (!regex.test(formatPlaceNumber)) {
+            formatPlaceNumber = formatPlaceNumber.slice(0, 2) + '-' + formatPlaceNumber.slice(2);
+          }
+        }
+      }
+
+      console.log(formatPlaceNumber);
+
+      await TripDetailModel.update({
+        plateNumber: formatPlaceNumber
+      }, {where: {id: item.id}})
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.add_fleetcardnumber = async (req, res) => {
+  try {
+    const selectDate = '2024-08-03'
+
+    // ข้อมูล ShellFleetcard ของวันนั้นๆ
+    const ShellFleetCardData = await ShellFleetCardModel.findAll(
+      { where: {date: selectDate} }
+    )
+    // ข้อมูล PTmaxFleetCard ของวันนั้นๆ
+    const PTmaxFleetCardData = await PTmaxFleetCardModel.findAll(
+      { where: {date: selectDate} }
+    )
+    const dataGasStationNA = await GasStationModel.findOne(
+      {where: {gasstation_name: 'N/A'}}
+    )
+
+    const dataTripDetail = await TripDetailModel.findAll({
+      where: {
+        date: selectDate + " 07:00:00"
+      },
+    })
+
+    for (const item of dataTripDetail) {
+      let formatPlaceNumber = item.plateNumber
+
+      // แปลงตัวอักษรภาษาไทยทั้งหมดเป็น x
+      const plateNumberX = formatPlaceNumber.replace(/[ก-๙]/g, 'x');
+      let gasstationId
+      let fleetCardNumber
+
+      // หา shellfleetcard ที่ตรงกับ platenumber
+      let dataShellFleetCardResult = ShellFleetCardData.filter(item => item.plateNumber === formatPlaceNumber)
+      // ถ้าไม่เจอให้ลองหาด้วย platenumber ที่เเทนด้วย x
+      if (dataShellFleetCardResult.length == 0) {
+        dataShellFleetCardResult = ShellFleetCardData.filter(item => item.plateNumber === plateNumberX)
+      }
+
+      // หา ptmaxfleetcard ที่ตรงกับ platenumber
+      let dataPTmaxFleetCardResult = PTmaxFleetCardData.filter(item => item.plateNumber === formatPlaceNumber)
+ 
+      // เจอ platenumber ที่ตรงกับใน shellfleetcard ไม่ตรงกับ ptmaxfleetcard
+      if (dataShellFleetCardResult.length >= 1 && dataPTmaxFleetCardResult.length == 0) {
+        // เจอ fleetcard เเค่ 1 ข้อมูล 
+        if (dataShellFleetCardResult.length == 1) {
+          gasstationId = 7;
+          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+        
+        // เจอ fleetcard มากกว่า 1 ข้อมูล 
+        } else if (dataShellFleetCardResult.length > 1) {
+          // เลือกเอาอันที่ api_check เป็น true
+          dataShellFleetCardResult = dataShellFleetCardResult.filter(item => item.api_check === true)
+          gasstationId = 7;
+          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+        }
+
+      // เจอ platenumber ที่ไม่ตรงกับ shellfleetcard ตรงกับใน ptmaxfleetcard
+      } else if (dataShellFleetCardResult.length == 0 && dataPTmaxFleetCardResult.length >= 1) {
+        // เจอ fleetcard เเค่ 1 ข้อมูล 
+        if (dataPTmaxFleetCardResult.length == 1) {
+          gasstationId = 8;
+          fleetCardNumber = dataPTmaxFleetCardResult[dataPTmaxFleetCardResult.length-1].fleetCardNumber;
+        
+        // เจอ fleetcard มากกว่า 1 ข้อมูล 
+        } else if (dataPTmaxFleetCardResult.length > 1) {
+          // เลือกเอาอันที่ api_check เป็น true
+          dataPTmaxFleetCardResult = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
+          gasstationId = 8;
+          fleetCardNumber = dataPTmaxFleetCardResult[dataPTmaxFleetCardResult.length-1].fleetCardNumber;
+        }
+
+      // เจอ platenumber ที่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
+      } else if (dataShellFleetCardResult.length >= 1 && dataPTmaxFleetCardResult.length >= 1) {
+        // ตรวจสอบว่าวันนี้ใช้ shellfleetcard หรือ ptmaxfleetcard
+        let dataShellFleetCardResultTrue = dataShellFleetCardResult.filter(item => item.api_check === true)
+        let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
+
+        console.log(dataShellFleetCardResultTrue.length, dataPTmaxFleetCardResultTrue.length);
+        // ถ้าใช้ shellfleetcard
+        if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length == 0) {
+          gasstationId = 7;
+          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber;
+
+        // ถ้าใช้ ptmaxfleetcard
+        } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length >= 1) {
+          gasstationId = 8;
+          fleetCardNumber = dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
+
+        // ถ้าไม่พบการใช้ shellfleetcard หรือ ptmaxfleetcard ของวันนี้เลย ให้ยึด shellfleetcard ไปก่อน
+        } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
+          gasstationId = 7;
+          fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+        }
+
+      // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
+      } else {
+        gasstationId = dataGasStationNA.id
+        fleetCardNumber = null
+      }
+
+      console.log(formatPlaceNumber, fleetCardNumber);
+      await TripDetailModel.update(
+        {
+          fleetCardNumber: fleetCardNumber,
+          gasstationId: gasstationId
+        },
+        { where: { id: item.id }}
+      )
+
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 // exports.change_database = async (req, res) => {
 //   try {
 //     const dataPTmaxPricetransaction = await PTmaxPricetransactionModel.findAll({

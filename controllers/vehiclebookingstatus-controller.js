@@ -932,6 +932,45 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
   }
 }
 
+// VehicleBookingStatus ที่จัดกลุ่มโดยใช้ Status
+exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    const dataAllYear = []
+
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD');
+      let endDate = moment(startDate).add(1, 'month').startOf('month');
+
+      const dataVehicleBookingGroupByStatus = await db.sequelize.query(`
+        SELECT vehiclebookingstatuses.status, COUNT(vehiclebookingstatuses.status) as count
+        FROM vehiclebookingstatuses
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}'
+        GROUP BY vehiclebookingstatuses.status  
+        ORDER BY vehiclebookingstatuses.status ASC;
+      `)
+
+      const dataindex = {
+        data: dataVehicleBookingGroupByStatus[0]
+      }
+
+      // เก็บข้อมูลของ vehiclebookingstatus เเต่ละเดือน
+      dataAllYear.push(dataindex);
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get VehicleBookingStatus Groupby Status Success',
+      allData: dataAllYear,
+    });
+  } catch (error) {
+    console.log();
+  }
+}
+
 //------- POST -------//
 exports.vehiclebookingstatus_post = async (req, res, next) => {
   try {

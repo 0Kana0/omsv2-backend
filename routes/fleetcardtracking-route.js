@@ -8,6 +8,9 @@ router.get('/getfleetcardtrackingrangedatewithexcel/:startDate/:endDate', contro
 router.get('/getfleetcardtrackingrangedate/:startDate/:endDate', controller.fleetcardtracking_get_all_rangedate)
 router.get('/getfleetcardtrackings/:date', controller.fleetcardtracking_get_all_bydate)
 
+router.get('/getfleetcardtripdetailtrackingbydate/:date', controller.fleetcard_tripdetail_tracking_bydate)
+
+
 //------- POST -------//
 
 //------- PUT -------//

@@ -13,6 +13,9 @@ router.get('/getvehiclebookingstatusavailable', controller.vehiclebookingstatus_
 router.get('/getvehiclebookingstatuscheckpendinginmonth/:date', controller.vehiclebookingstatus_checkpendinginmonth)
 router.get('/getvehiclebookingstatusperpage/:date/:page/:itemsPerPage', controller.vehiclebookingstatus_get_all_bydate_perpage)
 
+// VehicleBookingStatus ที่จัดกลุ่มโดยใช้ Status
+router.get('/getvehiclebookingstatusgroupbystatusbyyear/:year', controller.vehiclebookingstatus_groupby_status_byyear)
+
 //------- POST -------//
 router.post('/postvehiclebookingstatus', controller.vehiclebookingstatus_post)
 router.post('/postvehiclebookingstatusfromexcel', controller.vehiclebookingstatus_post_byexcel)

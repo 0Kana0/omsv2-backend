@@ -491,6 +491,45 @@ exports.maintenance_get_counttable = async (req, res, next) => {
   }
 }
 
+// Maintenance (VehicleBookingStatus Inactive) ที่จัดกลุ่มโดยใช้ Remark
+exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
+  try {
+    const selectYear = req.params.year;
+
+    const dataAllYear = []
+
+    // วนลุปตั้งเเต่เดือน 1-12
+    for (let index = 0; index < 12; index++) {
+      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD');
+      let endDate = moment(startDate).add(1, 'month').startOf('month');
+
+      const dataMaintenanceGroupByRemark = await db.sequelize.query(`
+        SELECT vehiclebookingstatuses.remark, COUNT(vehiclebookingstatuses.remark) as count
+        FROM vehiclebookingstatuses
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive'
+        GROUP BY vehiclebookingstatuses.remark  
+        ORDER BY vehiclebookingstatuses.remark ASC
+      `)
+
+      const dataindex = {
+        data: dataMaintenanceGroupByRemark[0]
+      }
+
+      // เก็บข้อมูลของ maintenance เเต่ละเดือน
+      dataAllYear.push(dataindex);
+    }
+
+    res.send({
+      status: 'success',
+      message: 'Get Maintenance Groupby Remark Success',
+      allData: dataAllYear,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 //------- POST -------//
 exports.maintenance_post = async (req, res, next) => {
   try {

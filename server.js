@@ -30,14 +30,18 @@ const {
 } = require('./functions/tripcomparebooking-function')
 const { 
   fleetcardtracking_daily, 
-  fleetcardtracking_reset_database 
+  fleetcardtracking_reset_database,
+  fleetcardtracking_daily_0001
 } = require("./functions/fleetcardtracking-function")
 const { 
-  shell_updatefleetcarddata_30min ,
-  shell_fleetcardmonitoring_daily
+  shell_updatefleetcarddata_transaction_10min,
+  shell_fleetcardmonitoring_daily_0110
 } = require("./functions/shellfleetcard-function")
 const { 
-  ptmax_updatefleetcarddata_30min ,
+  ptmax_updatefleetcarddata_10min,
+  ptmax_fleetcardmonitoring_daily_0110,
+  platenumber_format,
+  add_fleetcardnumber
 } = require("./functions/ptmaxfleetcard-function")
 
 const app = express()
@@ -67,10 +71,14 @@ db.sequelize
 readdirSync('./routes')
 .map((r) => app.use('/api', require('./routes/' + r)))
 
-// shell_updatefleetcarddata_30min()
-// shell_fleetcardmonitoring_daily()
+// shell_updatefleetcarddata_transaction_10min()
+// ptmax_updatefleetcarddata_10min()
 
-// ptmax_updatefleetcarddata_30min()
+// fleetcardtracking_daily_0001()
+//platenumber_format()
+//add_fleetcardnumber()
+// shell_fleetcardmonitoring_daily_0110()
+// ptmax_fleetcardmonitoring_daily_0110()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//

@@ -2,6 +2,7 @@ const db = require("../models");
 const axios = require("axios");
 const moment = require('moment');
 const ShellFleetCardModel = db.ShellFleetCardModel;
+const ShellTransactionModel = db.ShellTransactionModel;
 const { google } = require("googleapis");
 
 // exports.shell_updatefleetcarddata_30min = async (req, res) => {
@@ -190,12 +191,12 @@ const { google } = require("googleapis");
 //     console.log(error);
 //   }
 // }
-exports.shell_updatefleetcarddata_30min = async (req, res) => {
+exports.shell_updatefleetcarddata_transaction_10min = async (req, res) => {
   try {
     console.log('Start Add Shell Fleetcard From API')
     // หาวันที่ปัจจุบัน
     //const currentDate = moment().format('YYYY-MM-DD');
-    const currentDate = '2024-08-01';
+    const currentDate = '2024-08-05';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(currentDate).subtract(1, 'days').format('YYYY-MM-DD');
     // Reset api_check ให้เป็น 0 เพื่อตรวจสอบว่าข้อมูลไหนตรวจพบใน Api บ้าง
@@ -235,7 +236,11 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
         for (const item of shellData) {
           //console.log('api', item.CardPAN, item.VehicleRegistration);
           // Object สำหรับเก็บข้อมูล Fleetcard เพื่อบันทึกลง Database
-          let fleetcardObject
+          let fleetcardObject;
+          // Object สำหรับเก็บข้อมูล Transaction เพื่อบันทึกลง Database
+          let transactionObject;
+
+          //console.log(currentDate + " " + item.TransactionTime);
   
           if (item.VehicleRegistration == 'DUMMY') {
             fleetcardObject = {
@@ -244,6 +249,19 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
               fleetCardNumber: item.CardPAN,
               api_check: 1
             };
+
+            transactionObject = {
+              date: currentDate,
+              authorisationCode: item.AuthorisationCode,
+              cardPAN: item.CardPAN,
+              vehicleRegistration: item.VehicleRegistration,
+              postingDate: currentDate + " " + item.TransactionTime,
+              quantity: item.Quantity,
+              unitPriceInTransactionCurrency: item.UnitPriceInTransactionCurrency,
+              transactionNetAmount: item.TransactionNetAmount,
+              location: item.Location.Latitude + ", " + item.Location.Longitude,
+              branchName: item.SiteGroupName + " " + item.SiteName
+            }
           } else {
             // ใช้ RegExp เพื่อตรวจสอบว่าในสตริงมีภาษาไทยหรือไม่
             const containsLetters = /[\u0E00-\u0E7F]/.test(item.VehicleRegistration);
@@ -262,6 +280,19 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
                 fleetCardNumber: item.CardPAN,
                 api_check: 1
               };
+
+              transactionObject = {
+                date: currentDate,
+                authorisationCode: item.AuthorisationCode,
+                cardPAN: item.CardPAN,
+                vehicleRegistration: plateNumber,
+                postingDate: currentDate + " " + item.TransactionTime,
+                quantity: item.Quantity,
+                unitPriceInTransactionCurrency: item.UnitPriceInTransactionCurrency,
+                transactionNetAmount: item.TransactionNetAmount,
+                location: item.Location.Latitude + ", " + item.Location.Longitude,
+                branchName: item.SiteGroupName + " " + item.SiteName
+              }
   
             // ถ้าไม่มีภาษาไทย
             } else {
@@ -286,6 +317,19 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
                     fleetCardNumber: item.CardPAN,
                     api_check: 1
                   };
+
+                  transactionObject = {
+                    date: currentDate,
+                    authorisationCode: item.AuthorisationCode,
+                    cardPAN: item.CardPAN,
+                    vehicleRegistration: plateNumber,
+                    postingDate: currentDate + " " + item.TransactionTime,
+                    quantity: item.Quantity,
+                    unitPriceInTransactionCurrency: item.UnitPriceInTransactionCurrency,
+                    transactionNetAmount: item.TransactionNetAmount,
+                    location: item.Location.Latitude + ", " + item.Location.Longitude,
+                    branchName: item.SiteGroupName + " " + item.SiteName
+                  }
   
                 // ถ้าตรงตัวอักษรมีตัวเลข
                 } else {
@@ -303,6 +347,19 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
                     fleetCardNumber: item.CardPAN,
                     api_check: 1
                   };
+
+                  transactionObject = {
+                    date: currentDate,
+                    authorisationCode: item.AuthorisationCode,
+                    cardPAN: item.CardPAN,
+                    vehicleRegistration: plateNumber,
+                    postingDate: currentDate + " " + item.TransactionTime,
+                    quantity: item.Quantity,
+                    unitPriceInTransactionCurrency: item.UnitPriceInTransactionCurrency,
+                    transactionNetAmount: item.TransactionNetAmount,
+                    location: item.Location.Latitude + ", " + item.Location.Longitude,
+                    branchName: item.SiteGroupName + " " + item.SiteName
+                  }
                 }
   
               // ไม่ต้องเพิ่มตัวอักษรเข้าไป
@@ -314,6 +371,19 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
                   fleetCardNumber: item.CardPAN,
                   api_check: 1
                 };
+
+                transactionObject = {
+                  date: currentDate,
+                  authorisationCode: item.AuthorisationCode,
+                  cardPAN: item.CardPAN,
+                  vehicleRegistration: plateNumber,
+                  postingDate: currentDate + " " + item.TransactionTime,
+                  quantity: item.Quantity,
+                  unitPriceInTransactionCurrency: item.UnitPriceInTransactionCurrency,
+                  transactionNetAmount: item.TransactionNetAmount,
+                  location: item.Location.Latitude + ", " + item.Location.Longitude,
+                  branchName: item.SiteGroupName + " " + item.SiteName
+                }
               }
             }
           }
@@ -338,6 +408,16 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
           }
   
           //console.log(fleetcardObject.plateNumber, fleetcardObject.fleetCardNumber);
+        
+          // ตรวจสอบว่า transection นี้มีอยู่ใน Database ของวันนี้หรือไม่
+          const shelltransactionCheck = await ShellTransactionModel.findOne({
+            where: {authorisationCode: item.AuthorisationCode, date: currentDate}
+          })
+
+          // ถ้า transection นี้ยังไม่มีข้อมูล
+          if (shelltransactionCheck == null) {
+            await ShellTransactionModel.create(transactionObject);
+          }
         }
       }
 
@@ -369,11 +449,12 @@ exports.shell_updatefleetcarddata_30min = async (req, res) => {
     console.log(error);
   }
 }
-exports.shell_fleetcardmonitoring_daily = async (req, res) => {
+exports.shell_fleetcardmonitoring_daily_0110 = async (req, res) => {
   try {
-    console.log('Start Add Shell Data From Monotor')
+    console.log('Start Add Shell Data From Monitor')
     // หาวันที่ปัจจุบัน
-    const currentDate = moment().format('YYYY-MM-DD');
+    //const currentDate = moment().format('YYYY-MM-DD');
+    const currentDate = '2024-08-01';
     // ตั้งค่าการยืนยันตัวตน
     const auth = new google.auth.GoogleAuth({
       // ดึงข้อมูลจากไฟล์ credentials.json
@@ -398,14 +479,12 @@ exports.shell_fleetcardmonitoring_daily = async (req, res) => {
       //console.log(index, sheetDataFromMonitor[index][0]);
       const sheetFleetCardCheck = await ShellFleetCardModel.findOne(
         {
-          where: {fleetCardNumber: sheetDataFromMonitor[index][8]} 
+          where: { fleetCardNumber: sheetDataFromMonitor[index][8] } 
         }
       )
 
       if (sheetFleetCardCheck !== null) {
         await ShellFleetCardModel.update({
-          monitor_status: sheetDataFromMonitor[index][0],
-          monitor_check: 1,
           fleetCardNumber: sheetDataFromMonitor[index][8],
           employeeName_sheet: sheetDataFromMonitor[index][9],
           subcontractorsName_sheet: sheetDataFromMonitor[index][10],
@@ -415,7 +494,7 @@ exports.shell_fleetcardmonitoring_daily = async (req, res) => {
       }
     }
 
-    console.log('Add Shell Data From Monotor Success')
+    console.log('Add Shell Data From Monitor Success')
 
   } catch (error) {
     console.log(error);

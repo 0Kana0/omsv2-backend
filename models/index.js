@@ -50,9 +50,13 @@ db.CustomerModel = require("./customer-model.js")(sequelize, Sequelize);
 db.VehicleCompanyModel = require("./vehiclecompany-model.js")(sequelize, Sequelize);
 
 // MODEL ส่วนของการรับข้อมูล GPS ของรถยนต์มาจาก 8GPS 
-db.MDSModel = require("./mds-model")(sequelize, Sequelize);
-db.DepartmentModel = require("./department-model")(sequelize, Sequelize);
+db.MDSModel = require("./mds-model.js")(sequelize, Sequelize);
+db.DepartmentModel = require("./department-model.js")(sequelize, Sequelize);
 db.VehicleRealtimeModel = require('./vehiclerealtime-model.js')(sequelize, Sequelize);
+
+// MODEL ส่วนของการจัดการ Fleetcard SHELL
+db.ShellFleetCardModel = require("./shellfleetcard-model.js")(sequelize, Sequelize);
+db.ShellTransactionModel = require("./shelltransaction-model.js")(sequelize, Sequelize);
 
 // MODEL ส่วนของการรับข้อมูล Pricetransaction จาก PTmax
 db.PTmaxUserModel = require("./ptmaxuser-model")(sequelize, Sequelize);
@@ -81,9 +85,6 @@ db.NetworkModel.belongsTo(db.TeamModel)
 db.DriverModel = require("./driver-model.js")(sequelize, Sequelize);
 db.DriverModel.belongsTo(db.VehicleCompanyModel)
 db.DriverModel.belongsTo(db.ProjectModel)
-
-// MODEL ส่วนของการจัดการ Fleetcard SHELL
-db.ShellFleetCardModel = require("./shellfleetcard-model.js")(sequelize, Sequelize);
 
 db.FleetCardModel = require("./fleetcard-model.js")(sequelize, Sequelize);
 db.FleetCardModel.belongsTo(db.GasStationModel)

@@ -28,6 +28,14 @@ router.get('/gettripdetailgroupbycustomerbyyear/:year', controller.tripdetail_gr
 router.get('/gettripdetaildrivergroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_driver_groupby_customer_bymonth_byyear)
 router.get('/gettripdetaildrivergroupbycustomerbyyear/:year', controller.tripdetail_driver_groupby_customer_byyear)
 
+// ปริมาณการใช้น้ำมันของเเต่ละ Tripdetail ที่จัดกลุ่มโดยใช้ Customer
+router.get('/gettripdetailusagegroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_usage_groupby_customer_bymonth_byyear)
+router.get('/gettripdetailusagegroupbycustomerbyyear/:year', controller.tripdetail_usage_groupby_customer_byyear)
+
+// ปริมาณการใช้ค่าใช้จ่ายของเเต่ละ Tripdetail ที่จัดกลุ่มโดยใช้ Customer
+router.get('/gettripdetailcostgroupbycustomerbymonthbyyear/:month/:year', controller.tripdetail_cost_groupby_customer_bymonth_byyear)
+router.get('/gettripdetailcostgroupbycustomerbyyear/:year', controller.tripdetail_cost_groupby_customer_byyear)
+
 //------- POST -------//s
 router.post('/posttripdetail', controller.tripdetail_post)
 router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel)
