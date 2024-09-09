@@ -2611,48 +2611,66 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
       col: 'fullName'
     });
 
-    // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
-    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
-    let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+    // นำเดือนและปีมาหาวันเเรกของเดือนนี้และวันเเรกของเดือนหน้า
+    let startDate = moment(`${selectYear}-${selectMonth}-01`, 'YYYY-MM-DD');
+    let endDate = moment(startDate).add(1, 'month').startOf('month');
 
-    const tripdetailDriverGroupByCustomer = await TripDetailModel.findAll(
-      {
-        attributes: [
-          // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A'
-          [
-            literal(`
-                    COUNT(DISTINCT CASE 
-                        WHEN driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
-                        THEN driverOne 
-                      END) + 
-                    COUNT(DISTINCT CASE 
-                        WHEN driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
-                        THEN driverTwo 
-                      END)`
-                    ),
-            'count'
-          ]
-        ],
-        where: {
-          date: {
-            [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
-          },
-        },
-        include: [{
-          model: CustomerModel,
-          attributes: ['customer_name']
-        }],
-        // จัดกลุ่มโดย customer
-        group: ['customerId']
+    // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 
+    // 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed'
+    const tripdetailDriverGroupByCustomerDriverOne = await db.sequelize.query(`
+      SELECT customers.customer_name, COUNT(DISTINCT tripdetails.driverOne) as count
+      FROM tripdetails
+      LEFT JOIN customers ON tripdetails.customerId = customers.id
+      WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}' 
+      AND driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed') 
+      GROUP BY tripdetails.customerId
+      ORDER BY tripdetails.customerId ASC;
+    `);
+    const tripdetailDriverGroupByCustomerDriverTwo = await db.sequelize.query(`
+      SELECT customers.customer_name, COUNT(DISTINCT tripdetails.driverTwo) as count
+      FROM tripdetails
+      LEFT JOIN customers ON tripdetails.customerId = customers.id
+      WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}' AND tripdetails.driverTwo NOT IN (
+          SELECT DISTINCT tripdetails.driverOne
+          FROM tripdetails
+          WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}'
+      )
+      AND driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed') 
+      GROUP BY tripdetails.customerId  
+      ORDER BY tripdetails.customerId ASC;
+    `)
+
+    //console.log(tripdetailDriverGroupByCustomerDriverOne[0]);
+    //console.log(tripdetailDriverGroupByCustomerDriverTwo[0]);
+    const array1 = tripdetailDriverGroupByCustomerDriverOne[0];
+    const array2 = tripdetailDriverGroupByCustomerDriverTwo[0];
+
+    // รวมข้อมูล driverOne กับ driverTwo
+    const combined = [...array1, ...array2];
+
+    // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
+    const result = combined.reduce((acc, current) => {
+      const found = acc.find(item => item.customer_name === current.customer_name);
+      if (found) {
+        // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+        found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+      } else {
+        // ใช้ toFixed กับค่า count ใหม่
+        acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
       }
-    )
+      return acc;
+    }, []);
+      
+    // แปลงค่า count จาก string เป็น number
+    const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+    //console.log(finalResult);
 
     // ส่วนของการดึงข้อมูลค่า monthlyDriverUsage
     // หาจำนวน drivers ทั้งหมด
     let allTotalDrivers = 0
-    for (const item of tripdetailDriverGroupByCustomer) {
-      const num = parseInt(item.get('count'), 10);
-      allTotalDrivers = allTotalDrivers + num
+    for (const item of finalResult) {
+      allTotalDrivers = allTotalDrivers + item.count
     }
 
     res.send({
@@ -2660,7 +2678,7 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
       message: 'Get Tripdetail Driver Groupby Customer Success',
       monthlyDriverUsage: allTotalDrivers,
       totalDriverInfo: countDriver,
-      data: tripdetailDriverGroupByCustomer
+      data: finalResult
     });
 
   } catch (error) {
@@ -2683,48 +2701,66 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
     let allYearTotalDrivers = 0;
     // วนลุปตั้งเเต่เดือน 1-12
     for (let index = 0; index < 12; index++) {
-      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
-      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
-      let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+      // นำเดือนและปีมาหาวันเเรกของเดือนนี้และวันเเรกของเดือนหน้า
+      let startDate = moment(`${selectYear}-${index + 1}-01`, 'YYYY-MM-DD');
+      let endDate = moment(startDate).add(1, 'month').startOf('month');
 
-      const tripdetailDriverGroupByCustomer = await TripDetailModel.findAll(
-        {
-          attributes: [
-            // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A'
-            [
-              literal(`
-                      COUNT(DISTINCT CASE 
-                          WHEN driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
-                          THEN driverOne 
-                        END) + 
-                      COUNT(DISTINCT CASE 
-                          WHEN driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A') 
-                          THEN driverTwo 
-                        END)`
-                      ),
-              'count'
-            ]
-          ],
-          where: {
-            date: {
-              [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
-            },
-          },
-          include: [{
-            model: CustomerModel,
-            attributes: ['customer_name']
-          }],
-          // จัดกลุ่มโดย customer
-          group: ['customerId']
+      // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 
+      // 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed'
+      const tripdetailDriverGroupByCustomerDriverOne = await db.sequelize.query(`
+        SELECT customers.customer_name, COUNT(DISTINCT tripdetails.driverOne) as count
+        FROM tripdetails
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
+        WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}' 
+        AND driverOne NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed') 
+        GROUP BY tripdetails.customerId
+        ORDER BY tripdetails.customerId ASC;
+      `);
+      const tripdetailDriverGroupByCustomerDriverTwo = await db.sequelize.query(`
+        SELECT customers.customer_name, COUNT(DISTINCT tripdetails.driverTwo) as count
+        FROM tripdetails
+        LEFT JOIN customers ON tripdetails.customerId = customers.id
+        WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}' AND tripdetails.driverTwo NOT IN (
+            SELECT DISTINCT tripdetails.driverOne
+            FROM tripdetails
+            WHERE tripdetails.date >= '${startDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${endDate.format('YYYY-MM-DD')}'
+        )
+        AND driverTwo NOT IN ('Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed') 
+        GROUP BY tripdetails.customerId  
+        ORDER BY tripdetails.customerId ASC;
+      `)
+
+      //console.log(tripdetailDriverGroupByCustomerDriverOne[0]);
+      //console.log(tripdetailDriverGroupByCustomerDriverTwo[0]);
+      const array1 = tripdetailDriverGroupByCustomerDriverOne[0];
+      const array2 = tripdetailDriverGroupByCustomerDriverTwo[0];
+
+      // รวมข้อมูล driverOne กับ driverTwo
+      const combined = [...array1, ...array2];
+
+      // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
+      const result = combined.reduce((acc, current) => {
+        const found = acc.find(item => item.customer_name === current.customer_name);
+        if (found) {
+          // แปลงเป็นตัวเลขก่อนรวมค่าแล้วใช้ toFixed
+          found.count = (parseFloat(found.count) + parseFloat(current.count)).toFixed(2);
+        } else {
+          // ใช้ toFixed กับค่า count ใหม่
+          acc.push({ customer_name: current.customer_name, count: parseFloat(current.count).toFixed(2) });
         }
-      )
+        return acc;
+      }, []);
+        
+      // แปลงค่า count จาก string เป็น number
+      const finalResult = result.map(item => ({ ...item, count: parseFloat(item.count) }));
+
+      //console.log(finalResult);
 
       // ส่วนของการดึงข้อมูลค่า monthlyDriverUsage
       // หาจำนวน drivers ทั้งหมด
       let allTotalDrivers = 0
-      for (const item of tripdetailDriverGroupByCustomer) {
-        const num = parseInt(item.get('count'), 10);
-        allTotalDrivers = allTotalDrivers + num
+      for (const item of finalResult) {
+        allTotalDrivers = allTotalDrivers + item.count
       }
 
       //console.log(allTotalDrivers);
@@ -2733,7 +2769,7 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
       allYearTotalDrivers = allYearTotalDrivers + allTotalDrivers;
       const dataindex = {
         monthlyDriverUsage: allTotalDrivers,
-        data: tripdetailDriverGroupByCustomer
+        data: finalResult
       }
 
       // เก็บข้อมูลของ trip เเต่ละเดือน
