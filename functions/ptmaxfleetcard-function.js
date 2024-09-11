@@ -15,7 +15,7 @@ exports.ptmax_updatefleetcarddata_10min = async (req, res) => {
     console.log('Start Add PTMAX Fleetcard From API')
     // หาวันที่ปัจจุบัน
     //const currentDate = moment().format('YYYY-MM-DD');
-    const currentDate = '2024-08-05';
+    const currentDate = '2024-09-10';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(currentDate).subtract(1, 'days').format('YYYY-MM-DD');
     // หาวันถัดไป
@@ -156,7 +156,7 @@ exports.ptmax_fleetcardmonitoring_daily_0110 = async (req, res) => {
     console.log('Start Add PTmax Data From Monitor')
     // หาวันที่ปัจจุบัน
     //const currentDate = moment().format('YYYY-MM-DD');
-    const currentDate = '2024-08-01';
+    const currentDate = '2024-08-11';
     // ตั้งค่าการยืนยันตัวตน
     const auth = new google.auth.GoogleAuth({
       // ดึงข้อมูลจากไฟล์ credentials.json
