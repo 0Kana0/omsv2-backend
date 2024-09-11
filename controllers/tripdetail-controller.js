@@ -5634,11 +5634,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
 
         // ข้อมูล ShellFleetcard ของวันนั้นๆ
         const ShellFleetCardData = await ShellFleetCardModel.findAll(
-          { where: {date: '2024-08-01'} }
+          { where: {date: findDate} }
         )
         // ข้อมูล PTmaxFleetCard ของวันนั้นๆ
         const PTmaxFleetCardData = await PTmaxFleetCardModel.findAll(
-          { where: {date: '2024-08-01'} }
+          { where: {date: findDate} }
         )
 
         const filteredDataNoCus = allTripData.filter(find => find.date === uniqueDates[index]);
