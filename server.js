@@ -34,14 +34,15 @@ const {
   fleetcardtracking_daily_0001
 } = require("./functions/fleetcardtracking-function")
 const { 
+  tripdetail_addfleetcardnumber_10min,
+} = require("./functions/tripdetail-function")
+const { 
   shell_updatefleetcarddata_transaction_10min,
-  shell_fleetcardmonitoring_daily_0110
+  shell_fleetcardmonitoring_1hour
 } = require("./functions/shellfleetcard-function")
 const { 
   ptmax_updatefleetcarddata_10min,
-  ptmax_fleetcardmonitoring_daily_0110,
-  platenumber_format,
-  add_fleetcardnumber
+  ptmax_fleetcardmonitoring_1hour,
 } = require("./functions/ptmaxfleetcard-function")
 
 const app = express()
@@ -75,10 +76,8 @@ readdirSync('./routes')
 // ptmax_updatefleetcarddata_10min()
 
 // fleetcardtracking_daily_0001()
-//platenumber_format()
-//add_fleetcardnumber()
-// shell_fleetcardmonitoring_daily_0110()
-// ptmax_fleetcardmonitoring_daily_0110()
+// shell_fleetcardmonitoring_1hour()
+// ptmax_fleetcardmonitoring_1hour()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//
@@ -117,18 +116,18 @@ cron.schedule('*/30 0-23 * * *', () => {
   vehiclerealtime_delete_doubleplatenumber(); 
 });
 
-//------- FUNCTION ที่ทำงานเกียวกับ Fleetcard SHELL -------//
+// //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard SHELL -------//
 
-// FUNCTION สำหรับเก็บข้อมูล Fleetcard SHELL จากไฟล์ Monitoring Fuel cost & Fleet cards FY2023 (ทำงานเวลา 01:10)
-cron.schedule('10 01 * * *', () => {
-  fleetcard_monitoring_daily();
-});
+// // FUNCTION สำหรับเก็บข้อมูล Fleetcard SHELL จากไฟล์ Monitoring Fuel cost & Fleet cards FY2023 (ทำงานเวลา 01:10)
+// cron.schedule('10 01 * * *', () => {
+//   fleetcard_monitoring_daily();
+// });
 
-// FUNCTION 
-cron.schedule('*/30 0-23 * * *', () => {
-  fleetcard_apiupdate_hour();
-  fleetcard_apiupdate_hour_pricedtransaction();
-});
+// // FUNCTION 
+// cron.schedule('*/30 0-23 * * *', () => {
+//   fleetcard_apiupdate_hour();
+//   fleetcard_apiupdate_hour_pricedtransaction();
+// });
 
 //------- FUNCTION ที่ทำงานเกียวกับ Tripcomparebooking -------//
 
@@ -146,6 +145,29 @@ cron.schedule('*/10 0-23 * * *', () => {
 // cron.schedule('*/10 0-23 * * *', () => {
 //   fleetcardtracking_reset_database();
 // });
+
+//------- FUNCTION ที่ทำงานเกียวกับ Tripdetail -------//
+
+// FUNCTION สำหรับนำข้อมูล Fleetcard Number มาใส่ให้กับรายการ Tripdetail ของวันปัจจุบัน
+cron.schedule('*/10 0-23 * * *', () => {
+  tripdetail_addfleetcardnumber_10min();
+});
+
+//------- FUNCTION ที่ทำงานเกียวกับ Fleetcard -------//
+ 
+// FUNCTION สำหรับเก็บข้อมูล SHELL Fleetcard ของวันปัจจุบันจาก Transaction API และเก็บข้อมูลจาก Transaction API ของวันปัจจุบันลงใน Database (ทุก 10 นาทีตั้งแต่เวลา 00:00 ถึง 23:00) 
+// FUNCTION สำหรับเก็บข้อมูล PTMAX Fleetcard ของวันปัจจุบันจาก Transaction ใน Database (ทุก 10 นาทีตั้งแต่เวลา 00:00 ถึง 23:00) 
+cron.schedule('*/10 0-23 * * *', () => {
+  shell_updatefleetcarddata_transaction_10min();
+  ptmax_updatefleetcarddata_10min()
+});
+
+// FUNCTION สำหรับเก็บข้อมูล SHELL Fleetcard ของวันปัจจุบันจากไฟล์ Monitoring Fuel cost & Fleet cards FY2023 (ทุก 1 ชั่วโมงตั้งแต่เวลา 00:00 ถึง 23:00)
+// FUNCTION สำหรับเก็บข้อมูล PTMAX Fleetcard ของวันปัจจุบันจากไฟล์ Monitoring Fuel cost & Fleet cards FY2023 (ทุก 1 ชั่วโมงตั้งแต่เวลา 00:00 ถึง 23:00)
+cron.schedule('0 0-23 * * *', () => {
+  shell_fleetcardmonitoring_1hour()
+  ptmax_fleetcardmonitoring_1hour()
+});
 
 const port = process.env.PORT
 app.listen(port, function () {

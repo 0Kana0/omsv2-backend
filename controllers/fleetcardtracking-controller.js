@@ -227,7 +227,7 @@ exports.fleetcardtracking_get_all_bydate = async (req, res, next) => {
 
 exports.fleetcard_tripdetail_tracking_bydate = async (req, res, next) => {
   try {
-    const currentDate = '2024-08-02'
+    const currentDate = req.params.date;
     // หาวันก่อนหน้า 1 วัน เป็นวันที่จะนำข้อมูลมาเเสดง
     let previousOneDate = moment(currentDate).subtract(1, 'days').format('YYYY-MM-DD');
     
@@ -469,8 +469,6 @@ exports.fleetcard_tripdetail_tracking_bydate = async (req, res, next) => {
           } else {
             item.usage_shell = false;
             item.status = 'correct';
-
-            console.log(item.usage_shell);
           }
         } else {
           const arrayFleetCardNumber = item.fleetCardNumber.split(",").map(Number);
@@ -481,30 +479,36 @@ exports.fleetcard_tripdetail_tracking_bydate = async (req, res, next) => {
             // กรอกหา PTmaxTransaction ที่ PTmaxFleetcard ตรงกับใน tripdetail
             const findPTmaxTransactionPreviousOneDate = dataPTmaxTransactionPreviousOneDate.filter(index => index.maxcardno === String(data1))
 
-            if (data1 == arrayFleetCardNumber[0]) {
-              item.usage_shell = true;
-              item.status = 'correct';
-              item.quantity = findPTmaxTransactionPreviousOneDate[0].prodqty;
-              item.netAmount = findPTmaxTransactionPreviousOneDate[0].amount;
-            } else {
-              const dataindex = {
-                "JobOrderNumber": item.JobOrderNumber,
-                "fleetCardNumber": item.fleetCardNumber,
-                "gasstationId": item.gasstationId,
-                "gasstationName": item.gasstationName,
-                "plateNumber": item.plateNumber,
-                "usage_trip": true,
-                "usage_shell": true,
-                "status": 'correct',
-                "quantity": findPTmaxTransactionPreviousOneDate[0].prodqty,
-                "netAmount": findPTmaxTransactionPreviousOneDate[0].amount,
-                "employeeName_sheet": item.employeeName_sheet,
-                "subcontractorsName_sheet": item.subcontractorsName_sheet,
-                "project_sheet": item.project_sheet,
-                "team_sheet": item.team_sheet
+            //console.log(findPTmaxTransactionPreviousOneDate.length);
+            if (findPTmaxTransactionPreviousOneDate.length >= 1) {
+              if (data1 == arrayFleetCardNumber[0]) {
+                item.usage_shell = true;
+                item.status = 'correct';
+                item.quantity = findPTmaxTransactionPreviousOneDate[0].prodqty;
+                item.netAmount = findPTmaxTransactionPreviousOneDate[0].amount;
+              } else {
+                const dataindex = {
+                  "JobOrderNumber": item.JobOrderNumber,
+                  "fleetCardNumber": item.fleetCardNumber,
+                  "gasstationId": item.gasstationId,
+                  "gasstationName": item.gasstationName,
+                  "plateNumber": item.plateNumber,
+                  "usage_trip": true,
+                  "usage_shell": true,
+                  "status": 'correct',
+                  "quantity": findPTmaxTransactionPreviousOneDate[0].prodqty,
+                  "netAmount": findPTmaxTransactionPreviousOneDate[0].amount,
+                  "employeeName_sheet": item.employeeName_sheet,
+                  "subcontractorsName_sheet": item.subcontractorsName_sheet,
+                  "project_sheet": item.project_sheet,
+                  "team_sheet": item.team_sheet
+                }
+          
+                newItems.push(dataindex);
               }
-        
-              newItems.push(dataindex);
+            } else {
+              item.usage_shell = false;
+              item.status = 'correct';
             }
           }
         }
