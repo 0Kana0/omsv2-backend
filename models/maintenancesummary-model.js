@@ -3,6 +3,9 @@ module.exports = (sequelize, Sequelize) => {
     check_code: {
       type: Sequelize.STRING,
     },
+    ma_case: {
+      type: Sequelize.STRING,
+    },
     inform_code: {
       type: Sequelize.STRING,
     },
@@ -25,6 +28,9 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.TEXT,
     },
     maintenance_type: {
+      type: Sequelize.STRING,
+    },
+    maintenance_subject: {
       type: Sequelize.STRING,
     },
     maintenance_weight: {

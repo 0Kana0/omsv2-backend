@@ -83,6 +83,7 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
       const dataindex = {
         "id": item.id,
         "check_code": item.check_code,
+        "ma_case": item.ma_case,
         "inform_code": item.inform_code,
         "inform_date": item.inform_date,
         "month": selectMonth,
@@ -99,6 +100,7 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
         "problem_detail": item.problem_detail,
         "maintenance_detail": item.maintenance_detail,
         "maintenance_type": item.maintenance_type,
+        "maintenance_subject": item.maintenance_subject,
         "maintenance_weight": item.maintenance_weight,
         "maintenance_status": item.maintenance_status,
         "quotation_number": item.quotation_number,
@@ -197,6 +199,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
     const transformedData = {
       "id": dMS.id,
       "check_code": dMS.check_code,
+      "ma_case": dMS.ma_case,
       "inform_code": dMS.inform_code,
       "inform_date": dMS.inform_date,
       "month": moment(dMS.inform_date).month() + 1,
@@ -213,6 +216,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
       "problem_detail": dMS.problem_detail,
       "maintenance_detail": dMS.maintenance_detail,
       "maintenance_type": dMS.maintenance_type,
+      "maintenance_subject": dMS.maintenance_subject,
       "maintenance_weight": dMS.maintenance_weight,
       "maintenance_status": dMS.maintenance_status,
       "quotation_number": dMS.quotation_number,
@@ -272,6 +276,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
     const sheet = workbook.addWorksheet("MA")
     sheet.columns = [
       { header: "check_code", key: "check_code", width: 15 },
+      { header: "MA ที่รับเคส", key: "ma_case", width: 15 },
       { header: "รหัสแจ้งซ่อม", key: "inform_code", width: 15 },
       { header: "วันที่แจ้งซ่อม", key: "inform_date", width: 15 },
       { header: "เดือน", key: "month", width: 15 },
@@ -285,6 +290,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
       { header: "คำอธิบายปัญหา", key: "problem_detail", width: 15 },
       { header: "คำอธิบายการซ่อม", key: "maintenance_detail", width: 15 },
       { header: "ประเภทการซ่อม(PM , CM)", key: "maintenance_type", width: 15 },
+      { header: "ซ่อมเรื่อง", key: "maintenance_subject", width: 15 },
       { header: "ความหนัก-เบา", key: "maintenance_weight", width: 15 },
       { header: "สถานะการซ่อมแซม", key: "maintenance_status", width: 15 },
       { header: "เลขที่ใบเสนอราคา", key: "quotation_number", width: 15 },
@@ -371,6 +377,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
       
       sheet.addRow({
         check_code: item.check_code,
+        ma_case: item.ma_case,
         inform_code: item.inform_code,
         inform_date: item.inform_date,
         month: selectMonth,
@@ -387,6 +394,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
         problem_detail: item.problem_detail,
         maintenance_detail: item.maintenance_detail,
         maintenance_type: item.maintenance_type,
+        maintenance_subject: item.maintenance_subject,
         maintenance_weight: item.maintenance_weight,
         maintenance_status: item.maintenance_status,
         quotation_number: item.quotation_number,
@@ -439,6 +447,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
 exports.maintenancesummary_post = async (req, res, next) => {
   try {
     const {
+        ma_case,
         inform_code,
         inform_date,
         plateNumber,
@@ -450,6 +459,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
         problem_detail,
         maintenance_detail,
         maintenance_type,
+        maintenance_subject,
         maintenance_weight,
         maintenance_status,
         quotation_number,
@@ -513,6 +523,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
 
     const createMaintenanceSummary = await MaintenanceSummaryModel.create({
       check_code: check_code,
+      ma_case: ma_case,
       inform_code: inform_code,
       inform_date: inform_date,
       plateNumber: plateNumber,
@@ -524,6 +535,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
       problem_detail: problem_detail,
       maintenance_detail: maintenance_detail,
       maintenance_type: maintenance_type,
+      maintenance_subject: maintenance_subject,
       maintenance_weight: maintenance_weight,
       maintenance_status: maintenance_status,
       quotation_number: quotation_number,
@@ -615,6 +627,7 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
 
     const createMaintenanceSummary = await MaintenanceSummaryModel.create({
       check_code: check_code,
+      ma_case: formData.ma_case,
       inform_code: formData.inform_code,
       inform_date: formData.inform_date,
       plateNumber: formData.plateNumber,
@@ -626,6 +639,7 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
       problem_detail: formData.problem_detail,
       maintenance_detail: formData.maintenance_detail,
       maintenance_type: formData.maintenance_type,
+      maintenance_subject: formData.maintenance_subject,
       maintenance_weight: formData.maintenance_weight,
       maintenance_status: formData.maintenance_status,
       quotation_number: formData.quotation_number,
@@ -683,6 +697,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
   });
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+    ma_case: formData.ma_case,
     inform_code: formData.inform_code,
     plateNumber: formData.plateNumber,
     customerId: formData.customer_id,
@@ -693,6 +708,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
     problem_detail: formData.problem_detail,
     maintenance_detail: formData.maintenance_detail,
     maintenance_type: formData.maintenance_type,
+    maintenance_subject: formData.maintenance_subject,
     maintenance_weight: formData.maintenance_weight,
     maintenance_status: formData.maintenance_status,
     quotation_number: formData.quotation_number,
@@ -796,6 +812,7 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
 
       const createMaintenanceSummary = await MaintenanceSummaryModel.create({
         check_code: check_code,
+        ma_case: item.ma_case,
         inform_code: item.inform_code,
         inform_date: item.inform_date,
         plateNumber: item.plateNumber,
@@ -807,6 +824,7 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
         problem_detail: item.problem_detail,
         maintenance_detail: item.maintenance_detail,
         maintenance_type: item.maintenance_type,
+        maintenance_subject: item.maintenance_subject,
         maintenance_weight: item.maintenance_weight,
         maintenance_status: item.maintenance_status,
         quotation_number: item.quotation_number,
@@ -846,6 +864,7 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
 exports.maintenancesummary_put = async (req, res, next) => {
   try {
     const {
+      ma_case,
       inform_code,
       plateNumber,
       customer_id,
@@ -856,6 +875,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
       problem_detail,
       maintenance_detail,
       maintenance_type,
+      maintenance_subject,
       maintenance_weight,
       maintenance_status,
       quotation_number,
@@ -879,6 +899,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
   const edit_id = req.params.id
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+    ma_case: ma_case,
     inform_code: inform_code,
     plateNumber: plateNumber,
     customerId: customer_id,
@@ -889,6 +910,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
     problem_detail: problem_detail,
     maintenance_detail: maintenance_detail,
     maintenance_type: maintenance_type,
+    maintenance_subject: maintenance_subject,
     maintenance_weight: maintenance_weight,
     maintenance_status: maintenance_status,
     quotation_number: quotation_number,
