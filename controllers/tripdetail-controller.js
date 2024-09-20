@@ -2522,12 +2522,17 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
       allTotalTrips = allTotalTrips + num
     }
 
+    // Sort array โดย totalTrips จากมากสุดไปน้อยสุด
+    const sortedTripdetailGroupByCustomer = tripdetailGroupByCustomer.sort((a, b) => {
+      return parseInt(b.dataValues.totalTrips) - parseInt(a.dataValues.totalTrips);
+    });
+
     res.send({
       status: 'success',
       message: 'Get Tripdetail Groupby Customer Success',
       yesterdayTotalTrip: countTripdetailYesterday,
       monthTotalTrip: allTotalTrips,
-      data: tripdetailGroupByCustomer
+      data: sortedTripdetailGroupByCustomer
     });
   } catch (error) {
     console.log(error);
@@ -2575,13 +2580,18 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
         allTotalTrips = allTotalTrips + num;
       }
 
+      // Sort array โดย totalTrips จากมากสุดไปน้อยสุด
+      const sortedTripdetailGroupByCustomer = tripdetailGroupByCustomer.sort((a, b) => {
+        return parseInt(b.dataValues.totalTrips) - parseInt(a.dataValues.totalTrips);
+      });
+
       //console.log(allTotalTrips);
       // ส่วนของการดึงข้อมูลค่า yearlyTotalTrip
       // หาจำนวน trips ทั้งหมดของปี
       allYearTotalTrips = allYearTotalTrips + allTotalTrips;
       const dataindex = {
         monthTotalTrip: allTotalTrips,
-        data: tripdetailGroupByCustomer
+        data: sortedTripdetailGroupByCustomer
       }
 
       // เก็บข้อมูลของ trip เเต่ละเดือน
@@ -2673,12 +2683,17 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
       allTotalDrivers = allTotalDrivers + item.count
     }
 
+    // Sort array โดย count จากมากสุดไปน้อยสุด
+    const sortedFinalResult = finalResult.sort((a, b) => {
+      return parseInt(b.count) - parseInt(a.count);
+    });
+
     res.send({
       status: 'success',
       message: 'Get Tripdetail Driver Groupby Customer Success',
       monthlyDriverUsage: allTotalDrivers,
       totalDriverInfo: countDriver,
-      data: finalResult
+      data: sortedFinalResult
     });
 
   } catch (error) {
@@ -2763,13 +2778,18 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
         allTotalDrivers = allTotalDrivers + item.count
       }
 
+      // Sort array โดย count จากมากสุดไปน้อยสุด
+      const sortedFinalResult = finalResult.sort((a, b) => {
+        return parseInt(b.count) - parseInt(a.count);
+      });
+
       //console.log(allTotalDrivers);
       // ส่วนของการดึงข้อมูลค่า yearlyDriverUsage
       // หาจำนวน trips ทั้งหมดของปี
       allYearTotalDrivers = allYearTotalDrivers + allTotalDrivers;
       const dataindex = {
         monthlyDriverUsage: allTotalDrivers,
-        data: finalResult
+        data: sortedFinalResult
       }
 
       // เก็บข้อมูลของ trip เเต่ละเดือน
@@ -2951,6 +2971,11 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
     // นำค่าทั้งสองมาบวกกัน
     const yesterdayTotalUsage = (countShellUsageYesterday[0][0].count + countPTmaxUsageYesterday[0][0].count)
 
+    // Sort array โดย count จากมากสุดไปน้อยสุด
+    const sortedUsageAllMonth = usageAllMonth.sort((a, b) => {
+      return parseInt(b.count) - parseInt(a.count);
+    });
+
     // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
     res.send({
       status: 'success',
@@ -2958,7 +2983,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
       yesterdayTotalUsage: Number(Number(yesterdayTotalUsage).toFixed(2)),
       monthlyTotalUsage: Number(Number(monthlyTotalUsage).toFixed(2)),
       monthlyUnusualUsage: Number(Number(monthlyUnusualUsage).toFixed(2)),
-      allData: usageAllMonth,
+      allData: sortedUsageAllMonth,
     });
 
   } catch (error) {
@@ -3099,12 +3124,17 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
       // นำปริมาณน้ำมันทั้งหมดของทั้งเดือนมาลบกับปริมาณน้ำมันที่ใช้จริง
       const monthlyUnusualUsage = (countShellAllUsage[0][0].count + countPTmaxAllUsage[0][0].count) - Number(monthlyTotalUsage)
 
+      // Sort array โดย count จากมากสุดไปน้อยสุด
+      const sortedUsageAllMonth = usageAllMonth.sort((a, b) => {
+        return parseInt(b.count) - parseInt(a.count);
+      });
+
       yearlyTotalUsage = yearlyTotalUsage + monthlyTotalUsage
       yearlyUnusualUsage = yearlyUnusualUsage + monthlyUnusualUsage
       const dataindex = {
         monthlyTotalUsage: Number(Number(monthlyTotalUsage).toFixed(2)),
         monthlyUnusualUsage: Number(Number(monthlyUnusualUsage).toFixed(2)),
-        data: usageAllMonth
+        data: sortedUsageAllMonth
       }
 
       // เก็บข้อมูลของ trip เเต่ละเดือน
@@ -3275,13 +3305,18 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
     // นำค่าทั้งสองมาบวกกัน
     const yesterdayTotalCost = (countShellCostYesterday[0][0].count + countPTmaxCostYesterday[0][0].count)
 
+    // Sort array โดย count จากมากสุดไปน้อยสุด
+    const sortedCostAllMonth = costAllMonth.sort((a, b) => {
+      return parseInt(b.count) - parseInt(a.count);
+    });
+
     // ใช้ Number เพื่อเเปลงค่าจาก String เป็น Int
     res.send({
       status: 'success',
       message: 'Get Tripdetail Cost Groupby Customer Success',
       yesterdayTotalCost: Number(Number(yesterdayTotalCost).toFixed(2)),
       monthlyTotalCost: Number(Number(monthlyTotalCost).toFixed(2)),
-      allData: costAllMonth,
+      allData: sortedCostAllMonth,
     });
 
   } catch (error) {
@@ -3409,10 +3444,15 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
       // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
       const monthlyTotalCost = costAllMonth.reduce((sum, current) => sum + current.count, 0);
 
+      // Sort array โดย count จากมากสุดไปน้อยสุด
+      const sortedCostAllMonth = costAllMonth.sort((a, b) => {
+        return parseInt(b.count) - parseInt(a.count);
+      });
+
       yearlyTotalCost = yearlyTotalCost + monthlyTotalCost
       const dataindex = {
         monthlyTotalCost: Number(Number(monthlyTotalCost).toFixed(2)),
-        data: costAllMonth
+        data: sortedCostAllMonth
       }
 
       // เก็บข้อมูลของ trip เเต่ละเดือน
