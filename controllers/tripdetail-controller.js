@@ -2826,6 +2826,8 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
     let currentDate = startDate.clone();
 
     let usageAllMonth = [];
+    // เตรียมนับจำนวนของการใช้ Transaction ที่อิงจาก Tripdetail ทั้งหมด
+    let totalNumber = 0;
     // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
     while (currentDate.isBefore(endDate)) {
       // หาวันถัดไป 1 วัน
@@ -2842,7 +2844,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
         )
-        SELECT customers.customer_name, SUM(shelltransactions.quantity) as count
+        SELECT customers.customer_name, SUM(shelltransactions.quantity) as count, COUNT(shelltransactions.quantity) as number
         FROM tripdetails
         LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
         LEFT JOIN customers ON tripdetails.customerId = customers.id
@@ -2852,6 +2854,9 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
       `);
   
       //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+      // นับจำนวนของการใช้ Shell Transaction ที่อิงจาก Tripdetail ทั้งหมด
+      const numberShell = dataTripDetailShellUsageGroupByCustomer[0].reduce((sum, item) => sum + item.number, 0);
+      //console.log('numberShell:', numberShell);
   
       // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
       const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
@@ -2861,7 +2866,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
             FROM tripdetails
             WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
         )
-        SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count
+        SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count, COUNT(ptmaxtransactions.prodqty) as number
         FROM tripdetails
         LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
         LEFT JOIN customers ON tripdetails.customerId = customers.id
@@ -2871,6 +2876,12 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
       `);
   
       //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+      // นับจำนวนของการใช้ PTMax Transaction ที่อิงจาก Tripdetail ทั้งหมด
+      const numberPTMax = dataTripDetailPTmaxUsageGroupByCustomer[0].reduce((sum, item) => sum + item.number, 0);
+      //console.log('numberPTMax:', numberPTMax);
+
+      // นำจำนวนของการใช้ของทั้งสอง Transaction ที่อิงจาก Tripdetail มารวมกัน
+      totalNumber += (numberShell + numberPTMax);
 
       const array1 = dataTripDetailShellUsageGroupByCustomer[0];
       const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
@@ -2896,7 +2907,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
 
       //console.log(finalResult);
 
-      // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+      // รวมข้อมูล shelltransactions กับ ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
       const combinedAll = [...usageAllMonth, ...finalResult];
 
       // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
@@ -2920,22 +2931,24 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
 
       currentDate.add(1, 'days');
     }
+    console.log(totalNumber);
 
     // ส่วนของการดึงข้อมูลค่า monthlyTotalUsage
     // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
     const monthlyTotalUsage = usageAllMonth.reduce((sum, current) => sum + current.count, 0);
 
     // ส่วนของการดึงข้อมูลค่า monthlyUnusualUsage
-    // หาผลรวมของปริมาณน้ำมันของ Shell ของทั้งเดือน
+    // หาจำนวนของการใช้ Shell Transaction ของทั้งเดือน
     const countShellAllUsage = await db.sequelize.query(`
-      SELECT SUM(shelltransactions.quantity) as count FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
+      SELECT COUNT(shelltransactions.quantity) as number FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
     `)
-    // หาผลรวมของปริมาณน้ำมันของ PTmax ของทั้งเดือน
+    // หาจำนวนของการใช้ PTmax Transaction ของทั้งเดือน
     const countPTmaxAllUsage = await db.sequelize.query(`
-      SELECT SUM(ptmaxtransactions.prodqty) as count FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
+      SELECT COUNT(ptmaxtransactions.prodqty) as number FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
     `)
-    // นำปริมาณน้ำมันทั้งหมดของทั้งเดือนมาลบกับปริมาณน้ำมันที่ใช้จริง
-    const monthlyUnusualUsage = (countShellAllUsage[0][0].count + countPTmaxAllUsage[0][0].count) - Number(monthlyTotalUsage)
+    // นำจำนวนของการใช้ Transaction ของทั้งเดือนมาลบกับจำนวนการใช้ Transaction ที่อิงจาก Tripdetail ของทั้งเดือนเพื่อหาจำนวนของ Transaction ที่ผิดปกติของทั้งเดือน
+    const monthlyUnusualUsage = (countShellAllUsage[0][0].number + countPTmaxAllUsage[0][0].number) - totalNumber
+    //console.log(countShellAllUsage[0][0].number + countPTmaxAllUsage[0][0].number);
 
     // ส่วนของการดึงข้อมูลค่า yesterdayTotalUsage
     // หาวันปัจจุบันและวันก่อนหน้า 1 วันเพื่อดึงข้้อมูลของวันก่อนหน้า
@@ -2970,7 +2983,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
 
     // นำค่าทั้งสองมาบวกกัน
     const yesterdayTotalUsage = (countShellUsageYesterday[0][0].count + countPTmaxUsageYesterday[0][0].count)
-
+    
     // Sort array โดย count จากมากสุดไปน้อยสุด
     const sortedUsageAllMonth = usageAllMonth.sort((a, b) => {
       return parseInt(b.count) - parseInt(a.count);
@@ -3013,6 +3026,8 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
       let currentDate = startDate.clone();
 
       let usageAllMonth = [];
+      // เตรียมนับจำนวนของการใช้ Transaction ที่อิงจาก Tripdetail ทั้งหมด
+      let totalNumber = 0;
       // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
       while (currentDate.isBefore(endDate)) {
         // หาวันถัดไป 1 วัน
@@ -3029,7 +3044,7 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 7
           )
-          SELECT customers.customer_name, SUM(shelltransactions.quantity) as count
+          SELECT customers.customer_name, SUM(shelltransactions.quantity) as count, COUNT(shelltransactions.quantity) as number
           FROM tripdetails
           LEFT JOIN shelltransactions ON tripdetails.fleetCardNumber = shelltransactions.cardPAN
           LEFT JOIN customers ON tripdetails.customerId = customers.id
@@ -3039,6 +3054,9 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
         `);
     
         //console.log(dataTripDetailShellUsageGroupByCustomer[0]);
+        // นับจำนวนของการใช้ Shell Transaction ที่อิงจาก Tripdetail ทั้งหมด
+        const numberShell = dataTripDetailShellUsageGroupByCustomer[0].reduce((sum, item) => sum + item.number, 0);
+        //console.log('numberShell:', numberShell);
     
         // ดึง plateNumber จาก tripdetail ของเเต่ละวันมาเพียงทะเบียนละ 1 อัน แล้วนำไป JOIN กับ ptmaxtransactions ผ่าน plateNumber แล้วเเสดงข้อมูลผลรวมของน้ำมันโดย GROUP BY customer
         const dataTripDetailPTmaxUsageGroupByCustomer = await db.sequelize.query(`
@@ -3048,7 +3066,7 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
               FROM tripdetails
               WHERE tripdetails.date >= '${currentDate.format('YYYY-MM-DD')}' AND tripdetails.date < '${nextDay.format('YYYY-MM-DD')}' AND tripdetails.gasstationId = 8
           )
-          SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count
+          SELECT customers.customer_name, SUM(ptmaxtransactions.prodqty) as count, COUNT(ptmaxtransactions.prodqty) as number
           FROM tripdetails
           LEFT JOIN ptmaxtransactions ON tripdetails.plateNumber = ptmaxtransactions.driverlicence
           LEFT JOIN customers ON tripdetails.customerId = customers.id
@@ -3058,6 +3076,12 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
         `);
     
         //console.log(dataTripDetailPTmaxUsageGroupByCustomer[0]);
+        // นับจำนวนของการใช้ PTMax Transaction ที่อิงจาก Tripdetail ทั้งหมด
+        const numberPTMax = dataTripDetailPTmaxUsageGroupByCustomer[0].reduce((sum, item) => sum + item.number, 0);
+        //console.log('numberPTMax:', numberPTMax);
+
+        // นำจำนวนของการใช้ของทั้งสอง Transaction ที่อิงจาก Tripdetail มารวมกัน
+        totalNumber += (numberShell + numberPTMax);
 
         const array1 = dataTripDetailShellUsageGroupByCustomer[0];
         const array2 = dataTripDetailPTmaxUsageGroupByCustomer[0];
@@ -3083,7 +3107,7 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
 
         //console.log(finalResult);
 
-        // รวมข้อมูล ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
+        // รวมข้อมูล shelltransactions กับ ptmaxtransactions ของวันนี้กับวันที่ผ่านมา
         const combinedAll = [...usageAllMonth, ...finalResult];
 
         // ใช้ reduce เพื่อนำ customer_name ที่ซ้ำกันมารวมค่า count
@@ -3107,22 +3131,25 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
 
         currentDate.add(1, 'days');
       }
+      //console.log(totalNumber);
 
       // ส่วนของการดึงข้อมูลค่า monthlyTotalUsage
       // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง
       const monthlyTotalUsage = usageAllMonth.reduce((sum, current) => sum + current.count, 0);
 
       // ส่วนของการดึงข้อมูลค่า monthlyUnusualUsage
-      // หาผลรวมของปริมาณน้ำมันของ Shell ของทั้งเดือน
+      // หาจำนวนของการใช้ Shell Transaction ของทั้งเดือน
       const countShellAllUsage = await db.sequelize.query(`
-        SELECT SUM(shelltransactions.quantity) as count FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
+        SELECT COUNT(shelltransactions.quantity) as number FROM shelltransactions WHERE shelltransactions.date >= '${startDate.format('YYYY-MM-DD')}' AND shelltransactions.date < '${endDate.format('YYYY-MM-DD')}';
       `)
-      // หาผลรวมของปริมาณน้ำมันของ PTmax ของทั้งเดือน
+      // หาจำนวนของการใช้ PTmax Transaction ของทั้งเดือน
       const countPTmaxAllUsage = await db.sequelize.query(`
-        SELECT SUM(ptmaxtransactions.prodqty) as count FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
+        SELECT COUNT(ptmaxtransactions.prodqty) as number FROM ptmaxtransactions WHERE ptmaxtransactions.th_creatdt >= '${startDate.format('YYYY-MM-DD')}' AND ptmaxtransactions.th_creatdt < '${endDate.format('YYYY-MM-DD')}';
       `)
-      // นำปริมาณน้ำมันทั้งหมดของทั้งเดือนมาลบกับปริมาณน้ำมันที่ใช้จริง
-      const monthlyUnusualUsage = (countShellAllUsage[0][0].count + countPTmaxAllUsage[0][0].count) - Number(monthlyTotalUsage)
+      // นำจำนวนของการใช้ Transaction ของทั้งเดือนมาลบกับจำนวนการใช้ Transaction ที่อิงจาก Tripdetail ของทั้งเดือนเพื่อหาจำนวนของ Transaction ที่ผิดปกติของทั้งเดือน
+      const monthlyUnusualUsage = (countShellAllUsage[0][0].number + countPTmaxAllUsage[0][0].number) - totalNumber
+      //console.log(countShellAllUsage[0][0].number + countPTmaxAllUsage[0][0].number);
+      console.log(monthlyUnusualUsage);
 
       // Sort array โดย count จากมากสุดไปน้อยสุด
       const sortedUsageAllMonth = usageAllMonth.sort((a, b) => {
