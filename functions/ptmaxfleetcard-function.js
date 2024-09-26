@@ -296,7 +296,7 @@ exports.add_fleetcardnumber = async (req, res) => {
   try {
     //const selectDate = '2024-08-17'
     let startDate = moment('2024-09-01')
-    let endDate = moment('2024-09-02')
+    let endDate = moment('2024-10-01')
 
     // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
     while (startDate.isBefore(endDate)) {

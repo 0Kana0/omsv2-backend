@@ -689,6 +689,8 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
     ma_file_array = formData.ma_file.split(',');
   }
 
+  console.log(formData.ma_file);
+
   // แปลงค่า 'null' เป็น null
   Object.keys(formData).forEach(key => {
     if (formData[key] === 'null') {
