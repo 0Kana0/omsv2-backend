@@ -671,79 +671,125 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
 }
 exports.maintenancesummarywithfile_put = async (req, res, next) => {
   try {
-  const edit_id = req.params.id
+    const edit_id = req.params.id
 
-  // ข้อมูลที่ไม่ใช่ไฟล์
-  const formData = req.body;
-  // ข้อมูลไฟล์ที่ถูกอัพโหลด
-  const file = req.files;
-  // นำชื่อไฟล์ที่อัพโหลดเก็บเข้าไปใน array
-  let ma_file_array = []
-  // ถ้ามีการเปลี่ยนเเปลงไฟล์ ให้เปลี่ยนเป็นชื่อไฟล์ใหม่
-  if (file.length !== 0) {
-    file.map((item) => {
-      ma_file_array.push(item.originalname);
-    })
-  // ถ้าไม่มีการเปลี่ยนเเปลงไฟล์ ให้ใช้ชื่อไฟล์เดิมจาก ma_file
-  } else {
-    ma_file_array = formData.ma_file.split(',');
-  }
-
-  console.log(formData.ma_file);
-
-  // แปลงค่า 'null' เป็น null
-  Object.keys(formData).forEach(key => {
-    if (formData[key] === 'null') {
-      formData[key] = null;
+    // ข้อมูลที่ไม่ใช่ไฟล์
+    const formData = req.body;
+    // ข้อมูลไฟล์ที่ถูกอัพโหลด
+    const file = req.files;
+    // นำชื่อไฟล์ที่อัพโหลดเก็บเข้าไปใน array
+    let ma_file_array = []
+    // ถ้ามีการเปลี่ยนเเปลงไฟล์ ให้เปลี่ยนเป็นชื่อไฟล์ใหม่
+    if (file.length !== 0) {
+      file.map((item) => {
+        ma_file_array.push(item.originalname);
+      })
     }
-  });
 
-  const editMaintenanceSummary = await MaintenanceSummaryModel.update({
-    ma_case: formData.ma_case,
-    inform_code: formData.inform_code,
-    plateNumber: formData.plateNumber,
-    customerId: formData.customer_id,
-    networkId: formData.network_id,
-    servicetypeId: formData.servicetype_id,
-    driver_name: formData.driver_name,
-    distance_mile: formData.distance_mile,
-    problem_detail: formData.problem_detail,
-    maintenance_detail: formData.maintenance_detail,
-    maintenance_type: formData.maintenance_type,
-    maintenance_subject: formData.maintenance_subject,
-    maintenance_weight: formData.maintenance_weight,
-    maintenance_status: formData.maintenance_status,
-    quotation_number: formData.quotation_number,
-    repair_shop: formData.repair_shop,
-    payment: formData.payment,
-    accounting_number: formData.accounting_number,
-    price: formData.price,
-    driver_price: formData.driver_price,
-    driver_price_status: formData.driver_price_status,
-    note: formData.note,
-    sma_date: formData.sma_date,
-    pfma_date: formData.pfma_date,
-    fma_date: formData.fma_date,
-    receive_date: formData.receive_date,
-    ma_file: ma_file_array,
-    note_front: formData.note_front,
-    original_doc: formData.original_doc,
-    cd_date: formData.cd_date,
-  }, { where: { id: edit_id } })
+    // แปลงค่า 'null' เป็น null
+    Object.keys(formData).forEach(key => {
+      if (formData[key] === 'null') {
+        formData[key] = null;
+      }
+    });
 
-  if (editMaintenanceSummary == 0) {
-    return res.send({
-      status: 'fail',
-      message: 'No Data Found',
-      data: editMaintenanceSummary
-    })
-  }
-
-  res.send({
-    status: 'success',
-    message: 'Edit Maintenance Summary Success',
-    data: editMaintenanceSummary,
-  })
+    // ถ้ามีการเปลี่ยนเเปลงไฟล์ ให้เปลี่ยนเป็นชื่อไฟล์ใหม่
+    if (file.length !== 0) {
+      const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+        ma_case: formData.ma_case,
+        inform_code: formData.inform_code,
+        plateNumber: formData.plateNumber,
+        customerId: formData.customer_id,
+        networkId: formData.network_id,
+        servicetypeId: formData.servicetype_id,
+        driver_name: formData.driver_name,
+        distance_mile: formData.distance_mile,
+        problem_detail: formData.problem_detail,
+        maintenance_detail: formData.maintenance_detail,
+        maintenance_type: formData.maintenance_type,
+        maintenance_subject: formData.maintenance_subject,
+        maintenance_weight: formData.maintenance_weight,
+        maintenance_status: formData.maintenance_status,
+        quotation_number: formData.quotation_number,
+        repair_shop: formData.repair_shop,
+        payment: formData.payment,
+        accounting_number: formData.accounting_number,
+        price: formData.price,
+        driver_price: formData.driver_price,
+        driver_price_status: formData.driver_price_status,
+        note: formData.note,
+        sma_date: formData.sma_date,
+        pfma_date: formData.pfma_date,
+        fma_date: formData.fma_date,
+        receive_date: formData.receive_date,
+        ma_file: ma_file_array,
+        note_front: formData.note_front,
+        original_doc: formData.original_doc,
+        cd_date: formData.cd_date,
+      }, { where: { id: edit_id } })
+    
+      if (editMaintenanceSummary == 0) {
+        return res.send({
+          status: 'fail',
+          message: 'No Data Found',
+          data: editMaintenanceSummary
+        })
+      }
+    
+      res.send({
+        status: 'success',
+        message: 'Edit Maintenance Summary Success',
+        data: editMaintenanceSummary,
+      })
+    // ถ้าไม่มีการเปลี่ยนเเปลงไฟล์ ให้ใช้ชื่อไฟล์เดิม
+    } else {
+      const editMaintenanceSummary = await MaintenanceSummaryModel.update({
+        ma_case: formData.ma_case,
+        inform_code: formData.inform_code,
+        plateNumber: formData.plateNumber,
+        customerId: formData.customer_id,
+        networkId: formData.network_id,
+        servicetypeId: formData.servicetype_id,
+        driver_name: formData.driver_name,
+        distance_mile: formData.distance_mile,
+        problem_detail: formData.problem_detail,
+        maintenance_detail: formData.maintenance_detail,
+        maintenance_type: formData.maintenance_type,
+        maintenance_subject: formData.maintenance_subject,
+        maintenance_weight: formData.maintenance_weight,
+        maintenance_status: formData.maintenance_status,
+        quotation_number: formData.quotation_number,
+        repair_shop: formData.repair_shop,
+        payment: formData.payment,
+        accounting_number: formData.accounting_number,
+        price: formData.price,
+        driver_price: formData.driver_price,
+        driver_price_status: formData.driver_price_status,
+        note: formData.note,
+        sma_date: formData.sma_date,
+        pfma_date: formData.pfma_date,
+        fma_date: formData.fma_date,
+        receive_date: formData.receive_date,
+        note_front: formData.note_front,
+        original_doc: formData.original_doc,
+        cd_date: formData.cd_date,
+      }, { where: { id: edit_id } })
+    
+      if (editMaintenanceSummary == 0) {
+        return res.send({
+          status: 'fail',
+          message: 'No Data Found',
+          data: editMaintenanceSummary
+        })
+      }
+    
+      res.send({
+        status: 'success',
+        message: 'Edit Maintenance Summary Success',
+        data: editMaintenanceSummary,
+      })
+    }
+  
   } catch (error) {
     console.log(error);
   }
