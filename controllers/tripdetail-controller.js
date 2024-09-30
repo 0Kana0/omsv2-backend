@@ -2931,7 +2931,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
 
       currentDate.add(1, 'days');
     }
-    console.log(totalNumber);
+    //console.log(totalNumber);
 
     // ส่วนของการดึงข้อมูลค่า monthlyTotalUsage
     // รวมค่า count ทั้งหมดเพื่อหาปริมาณน้ำมันที่ใช้จริง

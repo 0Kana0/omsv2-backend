@@ -80,7 +80,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
         // เจอ fleetcard มากกว่า 1 ข้อมูล 
         } else if (dataPTmaxFleetCardResult.length > 1) {
           // เลือกเอาอันที่ api_check เป็น true
-          let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === '1')
+          let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
           
           // ถ้าเจอข้อมูลที่เป็น true เลือกข้อมูลล่าสุดของที่เป็น true 
           if (dataPTmaxFleetCardResultTrue.length > 0) {
@@ -97,7 +97,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
       } else if (dataShellFleetCardResult.length >= 1 && dataPTmaxFleetCardResult.length >= 1) {
         // ตรวจสอบว่าวันนี้ใช้ shellfleetcard หรือ ptmaxfleetcard
         let dataShellFleetCardResultTrue = dataShellFleetCardResult.filter(item => item.api_check === '1')
-        let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === '1')
+        let dataPTmaxFleetCardResultTrue = dataPTmaxFleetCardResult.filter(item => item.api_check === true)
 
         console.log(dataShellFleetCardResultTrue.length, dataPTmaxFleetCardResultTrue.length);
         // ถ้าใช้ shellfleetcard
