@@ -45,7 +45,7 @@ module.exports = (sequelize, Sequelize) => {
     rentalBy: {
       type: Sequelize.STRING,
     },
-    replacement : {
+    replacement: {
       type: Sequelize.STRING,
     },
   })

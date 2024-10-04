@@ -694,11 +694,27 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
     if (file.length !== 0) {
       // ถ้าต้องการให้เก็บไฟล์เดิมไว้และเพิ่มไฟล์ใหม่เข้ามา
       if (formData.add_file == "true") {
-        // แปลงสตริงให้เป็นอาร์เรย์ 
-        ma_file_array = formData.ma_file.split(',');
-        file.map((item) => {
-          ma_file_array.push(item.originalname);
-        })
+        const fileNameMaintenanceSummary = await MaintenanceSummaryModel.findOne(
+          {
+            attributes: ['ma_file'],
+            where: {id: edit_id}
+          }
+        )
+
+        // ถ้าไม่มีไฟล์ตั้งเเต่เเรกแล้วต้องการเพิ่มไฟล์
+        if (fileNameMaintenanceSummary.dataValues.ma_file == "[]") {
+          file.map((item) => {
+            ma_file_array.push(item.originalname);
+          })
+        // ถ้ามีไฟล์อยู่แล้วต้องการเพิ่มไฟล์  
+        } else {
+          // แปลงสตริงให้เป็นอาร์เรย์ 
+          ma_file_array = formData.ma_file.split(',');
+          file.map((item) => {
+            ma_file_array.push(item.originalname);
+          })
+        }
+        
       // ถ้าต้องการให้ไฟล์ที่เพิ่มใหม่เข้ามาแทนที่ไฟล์เดิม
       } else {
         file.map((item) => {
