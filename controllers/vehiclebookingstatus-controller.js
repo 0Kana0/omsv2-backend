@@ -65,6 +65,10 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
       { header: "approve", key: "approve", width: 15 },
       { header: "approveStatus", key: "approveStatus", width: 15 },
       { header: "available", key: "available", width: 10 },
+      { header: "ownerRental", key: "ownerRental", width: 10 },
+      { header: "ownedBy", key: "ownedBy", width: 15 },
+      { header: "rentalBy", key: "rentalBy", width: 15 },
+      { header: "replacement", key: "replacement", width: 15 },
       { header: "updatedAt", key: "updatedAt", width: 20 }
     ]
 
@@ -101,6 +105,10 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
         approve: item.approve,
         approveStatus: item.approveStatus,
         available: item.available,
+        ownerRental: item.ownerRental,
+        ownedBy: item.ownedBy,
+        rentalBy: item.rentalBy,
+        replacement: item.replacement,
         updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
       })
     })
@@ -204,6 +212,10 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
       { header: "approve", key: "approve", width: 15 },
       { header: "approveStatus", key: "approveStatus", width: 15 },
       { header: "available", key: "available", width: 10 },
+      { header: "ownerRental", key: "ownerRental", width: 10 },
+      { header: "ownedBy", key: "ownedBy", width: 15 },
+      { header: "rentalBy", key: "rentalBy", width: 15 },
+      { header: "replacement", key: "replacement", width: 15 },
       { header: "updatedAt", key: "updatedAt", width: 20 }
     ]
 
@@ -240,6 +252,10 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
         approve: item.approve,
         approveStatus: item.approveStatus,
         available: item.available,
+        ownerRental: item.ownerRental,
+        ownedBy: item.ownedBy,
+        rentalBy: item.rentalBy,
+        replacement: item.replacement,
         updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
       })
     })
@@ -345,6 +361,10 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         "approve": item.approve,
         "approveStatus": item.approveStatus,
         "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -452,6 +472,10 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         "approve": item.approve,
         "approveStatus": item.approveStatus,
         "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -547,6 +571,10 @@ exports.vehiclebookingstatus_get_all_bydate_perpage = async (req, res, next) => 
         "approve": item.approve,
         "approveStatus": item.approveStatus,
         "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -640,6 +668,10 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
         "approve": item.approve,
         "approveStatus": item.approveStatus,
         "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -726,6 +758,10 @@ exports.vehiclebookingstatus_get_one = async (req, res, next) => {
       "approve": data.approve,
       "approveStatus": data.approveStatus,
       "available": data.available,
+      "ownerRental": data.ownerRental,
+      "ownedBy": data.ownedBy,
+      "rentalBy": data.rentalBy,
+      "replacement": data.replacement,
       "createdAt": data.createdAt,
       "updatedAt": data.updatedAt,
       "vehicleId": data.vehicleId,
@@ -825,6 +861,10 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
         "approve": item.approve,
         "approveStatus": item.approveStatus,
         "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -1088,7 +1128,7 @@ exports.vehiclebookingstatus_post_byexcel = async (req, res, next) => {
 //------- PUT -------//
 exports.vehiclebookingstatus_put = async (req, res, next) => {
   try {
-    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, servicetypeId } = req.body
+    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, ownerRental, ownedBy, rentalBy, replacement, servicetypeId } = req.body
     const edit_id = req.params.id
 
     const data = await VehicleBookingStatusModel.update(
@@ -1104,6 +1144,10 @@ exports.vehiclebookingstatus_put = async (req, res, next) => {
         approve: approve,
         approveStatus: approveStatus,
         available: available,
+        ownerRental: ownerRental,
+        ownedBy: ownedBy,
+        rentalBy: rentalBy,
+        replacement: replacement,
         customerId: customerId,
         teamId: teamId,
         vehicleId: vehicleId, 
@@ -1190,6 +1234,10 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
           approve: allVehicleBookingSelect[index].approve,
           approveStatus: allVehicleBookingSelect[index].approveStatus,
           available: allVehicleBookingSelect[index].available,
+          ownerRental: allVehicleBookingSelect[index].ownerRental,
+          ownedBy: allVehicleBookingSelect[index].ownedBy,
+          rentalBy: allVehicleBookingSelect[index].rentalBy,
+          replacement: allVehicleBookingSelect[index].replacement,
           customerId: allVehicleBookingSelect[index].customerId,
           teamId: allVehicleBookingSelect[index].teamId,
           vehicleId: allVehicleBookingSelect[index].vehicleId, 
@@ -1228,6 +1276,10 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
             approve: null,
             approveStatus: 'Pending',
             available: 'No',
+            ownerRental: allVehicleBookingSelect[index].ownerRental,
+            ownedBy: allVehicleBookingSelect[index].ownedBy,
+            rentalBy: allVehicleBookingSelect[index].rentalBy,
+            replacement: allVehicleBookingSelect[index].replacement,
             customerId: allVehicleBookingSelect[index].customerId,
             teamId: allVehicleBookingSelect[index].teamId,
             vehicleId: allVehicleBookingSelect[index].vehicleId, 
@@ -1247,6 +1299,10 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
             approve: null,
             approveStatus: 'Pending',
             available: 'No',
+            ownerRental: allVehicleBookingSelect[index].ownerRental,
+            ownedBy: allVehicleBookingSelect[index].ownedBy,
+            rentalBy: allVehicleBookingSelect[index].rentalBy,
+            replacement: allVehicleBookingSelect[index].replacement,
             customerId: allVehicleBookingSelect[index].customerId,
             teamId: allVehicleBookingSelect[index].teamId,
             vehicleId: allVehicleBookingSelect[index].vehicleId, 

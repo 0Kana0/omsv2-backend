@@ -36,6 +36,18 @@ module.exports = (sequelize, Sequelize) => {
     available: {
       type: Sequelize.STRING,
     },
+    ownerRental: {
+      type: Sequelize.STRING,
+    },
+    ownedBy: {
+      type: Sequelize.STRING,
+    },
+    rentalBy: {
+      type: Sequelize.STRING,
+    },
+    replacement : {
+      type: Sequelize.STRING,
+    },
   })
 
   return VehicleBookingStatusModel
