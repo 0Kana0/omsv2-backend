@@ -5969,13 +5969,13 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                           { where: {vehiclecompany_name: 'N/A'} }
                         )
             
-                        // const VehicleTypeData = await VehicleTypeModel.findOne(
-                        //   { where: {vehicletype_name: filteredData[index].vehicleType} }
-                        // )
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
             
                         await VehicleModel.create({
                           plateNumber: formatPlaceNumber,
-                          // vehicletypeId: VehicleTypeData.id,
+                          vehicletypeId: VehicleTypeData.id,
                           vehiclecompanyId: VehicleCompanyData.id,
                           servicetypeId: serviceTypeData.id
                         })
@@ -6362,13 +6362,13 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                           { where: {vehiclecompany_name: 'N/A'} }
                         )
             
-                        // const VehicleTypeData = await VehicleTypeModel.findOne(
-                        //   { where: {vehicletype_name: filteredData[index].vehicleType} }
-                        // )
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
             
                         await VehicleModel.create({
                           plateNumber: formatPlaceNumber,
-                          // vehicletypeId: VehicleTypeData.id,
+                          vehicletypeId: VehicleTypeData.id,
                           vehiclecompanyId: VehicleCompanyData.id,
                           servicetypeId: serviceTypeData.id
                         })
@@ -6741,13 +6741,13 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                           { where: {vehiclecompany_name: 'N/A'} }
                         )
             
-                        // const VehicleTypeData = await VehicleTypeModel.findOne(
-                        //   { where: {vehicletype_name: filteredData[index].vehicleType} }
-                        // )
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
             
                         await VehicleModel.create({
                           plateNumber: formatPlaceNumber,
-                          // vehicletypeId: VehicleTypeData.id,
+                          vehicletypeId: VehicleTypeData.id,
                           vehiclecompanyId: VehicleCompanyData.id,
                           servicetypeId: serviceTypeData.id
                         })
@@ -7140,13 +7140,13 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                           { where: {vehiclecompany_name: 'N/A'} }
                         )
             
-                        // const VehicleTypeData = await VehicleTypeModel.findOne(
-                        //   { where: {vehicletype_name: filteredData[index].vehicleType} }
-                        // )
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
             
                         await VehicleModel.create({
                           plateNumber: formatPlaceNumber,
-                          // vehicletypeId: VehicleTypeData.id,
+                          vehicletypeId: VehicleTypeData.id,
                           vehiclecompanyId: VehicleCompanyData.id,
                           servicetypeId: serviceTypeData.id
                         })
@@ -7568,13 +7568,13 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                           { where: {vehiclecompany_name: 'N/A'} }
                         )
             
-                        // const VehicleTypeData = await VehicleTypeModel.findOne(
-                        //   { where: {vehicletype_name: filteredData[index].vehicleType} }
-                        // )
+                        const VehicleTypeData = await VehicleTypeModel.findOne(
+                          { where: {vehicletype_name: filteredData[index].vehicleType} }
+                        )
             
                         await VehicleModel.create({
                           plateNumber: formatPlaceNumber,
-                          // vehicletypeId: VehicleTypeData.id,
+                          vehicletypeId: VehicleTypeData.id,
                           vehiclecompanyId: VehicleCompanyData.id,
                           servicetypeId: serviceTypeData.id
                         })
