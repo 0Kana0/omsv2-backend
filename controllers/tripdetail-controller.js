@@ -1529,7 +1529,7 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
     const transformedData = []
 
     data.map((item, index) => {
-      //console.log(index+1, item.plateNumber);
+      console.log(index+1, item.plateNumber);
       const dataClientGroupResult = dataClientGroup.find(index => index.customerId === item.customer.id);
 
       const dataVehicleResult = dataVehicle.find(index => index.plateNumber === item.plateNumber);
@@ -5554,6 +5554,9 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
     const dataGasStationNA = await GasStationModel.findOne(
       {where: {gasstation_name: 'N/A'}}
     )
+    const dataGasStationShellPT = await GasStationModel.findOne(
+      {where: {gasstation_name: 'SHELL, PT'}}
+    )
 
     let allTripData = req.body;
     // const length = allTripData.length;
@@ -5889,6 +5892,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
                           gasstationId = 7;
                           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+                        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = dataGasStationShellPT.id;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
                         }
 
                       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
@@ -6326,6 +6334,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
                           gasstationId = 7;
                           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+                        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = dataGasStationShellPT.id;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
                         }
 
                       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
@@ -6705,6 +6718,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
                           gasstationId = 7;
                           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+                        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = dataGasStationShellPT.id;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
                         }
 
                       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
@@ -7061,6 +7079,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
                           gasstationId = 7;
                           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+                        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = dataGasStationShellPT.id;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
                         }
 
                       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
@@ -7489,6 +7512,11 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
                         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
                           gasstationId = 7;
                           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+                        
+                        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+                        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+                          gasstationId = dataGasStationShellPT.id;
+                          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
                         }
 
                       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard

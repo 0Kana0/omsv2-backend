@@ -114,6 +114,11 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
         } else if (dataShellFleetCardResultTrue.length == 0 && dataPTmaxFleetCardResultTrue.length == 0) {
           gasstationId = 7;
           fleetCardNumber = dataShellFleetCardResult[dataShellFleetCardResult.length-1].fleetCardNumber;
+        
+        // ถ้าพบการใช้ shellfleetcard และ ptmaxfleetcard พร้อมกัน ให่้บันทึกลงไปทั้งสองอันเลยโดยเป็น abnormal
+        } else if (dataShellFleetCardResultTrue.length >= 1 && dataPTmaxFleetCardResultTrue.length >= 1) {
+          gasstationId = dataGasStationShellPT.id;
+          fleetCardNumber = dataShellFleetCardResultTrue[dataShellFleetCardResultTrue.length-1].fleetCardNumber + ', ' + dataPTmaxFleetCardResultTrue[dataPTmaxFleetCardResultTrue.length-1].fleetCardNumber;
         }
 
       // เจอ platenumber ที่ไม่ตรงกับทั้งใน shellfleetcard และ ptmaxfleetcard
