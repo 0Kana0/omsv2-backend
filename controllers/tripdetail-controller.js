@@ -1529,7 +1529,7 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
     const transformedData = []
 
     data.map((item, index) => {
-      console.log(index+1, item.plateNumber);
+      //console.log(index+1, item.plateNumber);
       const dataClientGroupResult = dataClientGroup.find(index => index.customerId === item.customer.id);
 
       const dataVehicleResult = dataVehicle.find(index => index.plateNumber === item.plateNumber);

@@ -420,8 +420,9 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
       }],
       where: {
         date: selectDate + " 07:00:00",
-        ownerRental: "Owner",
-        ownerRental: "Rental",
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -1414,7 +1415,7 @@ exports.vehiclebookingstatus_put_truckowner_byexcel = async (req, res, next) => 
   try {
     const allVehicleBooking = req.body
     const length = allVehicleBooking.length
-    const currentDate = '2024-10-09';
+    const currentDate = '2024-10-10';
 
     console.log(length, currentDate);
     //console.log(allVehicleBooking);
