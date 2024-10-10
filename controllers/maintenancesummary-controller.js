@@ -788,6 +788,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
 exports.maintenancesummary_post_byexcel = async (req, res, next) => {
   try {
     const allMaintenanceSummary = req.body
+    console.log(allMaintenanceSummary);
 
     for (const item of allMaintenanceSummary) {
       // ดึงเดือนและปี
@@ -892,7 +893,7 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.send(
-      ['เกิดปัญหาบางอย่าง โปรดตรวจสอบว่าชื่อโปรเจค, Network, ประเภทการจ้างงานใน Excel ตรงกับใน Database ใหม']
+      ['เกิดปัญหาบางอย่าง โปรดตรวจสอบว่าชื่อโปรเจค, Network, ประเภทการจ้างงานใน Excel ตรงกับใน Database หรือไม่']
     );
   }
 }

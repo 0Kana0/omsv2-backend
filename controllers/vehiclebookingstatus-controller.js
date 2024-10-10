@@ -418,7 +418,11 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: selectDate + " 07:00:00"},
+      where: {
+        date: selectDate + " 07:00:00",
+        ownerRental: "Owner",
+        ownerRental: "Rental",
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -1403,6 +1407,35 @@ exports.vehiclebookingstatus_put_byexel = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)
+  }
+}
+
+exports.vehiclebookingstatus_put_truckowner_byexcel = async (req, res, next) => {
+  try {
+    const allVehicleBooking = req.body
+    const length = allVehicleBooking.length
+    const currentDate = '2024-10-09';
+
+    console.log(length, currentDate);
+    //console.log(allVehicleBooking);
+
+    for (const item of allVehicleBooking) {
+      console.log(item.plateNumber);
+      
+      const dataVehicle = await VehicleModel.findOne(
+        { where: {plateNumber: item.plateNumber} }
+      )
+
+      await VehicleBookingStatusModel.update(
+        {
+          ownerRental: item.ownerRental,
+          ownedBy: item.ownedBy,
+          rentalBy: item.rentalBy,
+        }, { where: { vehicleId: dataVehicle.id, date: currentDate + " 07:00:00"} }
+      )
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 
