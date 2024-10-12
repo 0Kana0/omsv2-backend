@@ -169,7 +169,7 @@ exports.vehiclebooking_daily_create = async (req, res) => {
   })
 
   for (const item of dataVehicleBookingStatus) {
-    if (ownerRental == 'Sold' || ownerRental == 'TKN') {
+    if (item.ownerRental == 'Sold' || item.ownerRental == 'TKN') {
       console.log({
         date: currentDate,
         status: item.status,
