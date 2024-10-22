@@ -308,7 +308,12 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: currentDate + " 07:00:00"},
+      where: {
+        date: currentDate + " 07:00:00",
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -508,6 +513,127 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
   }
 }
 
+// ข้อมูล VehicleBookingStatus ที่เป็น TKN และ Sold
+exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
+  try {
+    const currentDate = moment().format('YYYY-MM-DD');
+    // console.log(currentDate);
+
+    const data = await VehicleBookingStatusModel.findAll({
+      include: [{
+        model: VehicleModel,
+        attributes: ['plateNumber', 'servicetypeId', 'vehicletypeId']
+      },
+      {
+        model: CustomerModel,
+        attributes: ['customer_name']
+      },
+      {
+        model: NetworkModel,
+        attributes: ['network_name']
+      },
+      {
+        model: ServiceTypeModel,
+        attributes: ['servicetype_name']
+      },
+      {
+        model: TeamModel,
+        attributes: ['team_name']
+      }],
+      where: {
+        date: currentDate + " 07:00:00",
+        ownerRental: {
+          [Op.or]: ['TKN', 'Sold']
+        },
+      },
+      order: [['networkId', 'ASC']] 
+    })
+
+    const dataVehicleRealtime = await VehicleRealtimeModel.findAll({
+      attributes: ['plateNumber', 'status', 'time']
+    })
+
+    const dataVehicleType = await VehicleTypeModel.findAll()
+
+    const transformedData = []
+
+    let line = 1
+    data.map((item) => {
+      const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const dataVehicleRealtimeResult = dataVehicleRealtime.find(index => index.plateNumber === item.vehicle.plateNumber);
+
+      let realTimeStatus;
+      let time;
+      if (dataVehicleRealtimeResult == undefined) {
+        realTimeStatus = 'No Data';
+        time = null;
+      } else {
+        realTimeStatus = dataVehicleRealtimeResult.status;
+        time = dataVehicleRealtimeResult.time;
+      }
+
+      if (item.problemIssue == 'parkingNoJob') {
+        item.problemIssue = 'Parking (No job)'
+      } else if (item.problemIssue == 'parkingNoDriver') {
+        item.problemIssue = 'Parking (No driver)'
+      } else if (item.problemIssue == 'parkingNoJobAndDriver') {
+        item.problemIssue = 'Parking (No job & No driver)'
+      } else if (item.problemIssue == 'parkingDriverAbsence') {
+        item.problemIssue = 'Parking (Driver absence)'
+      } else if (item.problemIssue == 'parkingLegalCase') {
+        item.problemIssue = 'Parking (Legal case)'
+      }
+
+      const dataindex = {
+        "id": item.id,
+        "line": line,
+        "date": item.date,
+        "status": item.status,
+        "remark": item.remark,
+        "issueDate": item.issueDate,
+        "forecastCompleteDate": item.forecastCompleteDate,
+        "completeDate": item.completeDate,
+        "problemIssue": item.problemIssue,
+        "reason": item.reason,
+        "approve": item.approve,
+        "approveStatus": item.approveStatus,
+        "available": item.available,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
+        "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
+        "vehicleId": item.vehicleId,
+        "customerId": item.customerId,
+        "networkId": item.networkId,
+        "teamId": item.teamId,
+        "plateNumber": item.vehicle.plateNumber,
+        "servicetypeId": item.servicetypeId,
+        "servicetype_name": item.servicetype.servicetype_name,
+        "vehicletypeId": item.vehicle.vehicletypeId,
+        "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
+        "customer_name": item.customer.customer_name,
+        "network_name": item.network.network_name,
+        "team_name": item.team.team_name,
+        "realTimeStatus": realTimeStatus,
+        "time": time,
+      }
+      transformedData.push(dataindex)
+      line += 1
+    })
+    
+    res.send({
+      status: 'success',
+      message: 'Get VehicleBookingStatus TKN And Sold Success',
+      length: transformedData.length,
+      allData: transformedData,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.vehiclebookingstatus_get_all_bydate_perpage = async (req, res, next) => {
   try {
     let selectDate = req.params.date
@@ -538,7 +664,12 @@ exports.vehiclebookingstatus_get_all_bydate_perpage = async (req, res, next) => 
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: selectDate + " 07:00:00"},
+      where: {
+        date: selectDate + " 07:00:00",
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
+      },
       order: [['networkId', 'ASC']],
       offset: startIdx,
       limit: itemsPerPage,
@@ -636,6 +767,9 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
       where: {
         date: {
           [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+        },
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
         },
       },
       order: [['networkId', 'ASC']] 
@@ -993,7 +1127,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
       const dataVehicleBookingGroupByStatus = await db.sequelize.query(`
         SELECT vehiclebookingstatuses.status, COUNT(vehiclebookingstatuses.status) as count
         FROM vehiclebookingstatuses
-        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}'
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')} AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental');'
         GROUP BY vehiclebookingstatuses.status  
         ORDER BY vehiclebookingstatuses.status ASC;
       `)
@@ -1019,7 +1153,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
 //------- POST -------//
 exports.vehiclebookingstatus_post = async (req, res, next) => {
   try {
-    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, servicetypeId } = req.body
+    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, servicetypeId, ownerRental, ownedBy, rentalBy, replacement } = req.body
     await VehicleBookingStatusModel.create({
       date: date,
       status: null,
@@ -1032,6 +1166,10 @@ exports.vehiclebookingstatus_post = async (req, res, next) => {
       approve: null,
       approveStatus: 'Pending',
       available: 'No',
+      ownerRental: ownerRental,
+      ownedBy: ownedBy,
+      rentalBy: rentalBy,
+      replacement: replacement,
       customerId: customerId,
       teamId: teamId,
       vehicleId: vehicleId, 
@@ -1415,7 +1553,7 @@ exports.vehiclebookingstatus_put_truckowner_byexcel = async (req, res, next) => 
   try {
     const allVehicleBooking = req.body
     const length = allVehicleBooking.length
-    const currentDate = '2024-10-10';
+    const currentDate = '2024-10-09';
 
     console.log(length, currentDate);
     //console.log(allVehicleBooking);

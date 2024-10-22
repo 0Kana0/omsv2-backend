@@ -43,6 +43,7 @@ const {
 const { 
   ptmax_updatefleetcarddata_10min,
   ptmax_fleetcardmonitoring_1hour,
+  add_fleetcardnumber
 } = require("./functions/ptmaxfleetcard-function")
 
 const app = express()
@@ -74,10 +75,12 @@ readdirSync('./routes')
 
 // shell_updatefleetcarddata_transaction_10min()
 // ptmax_updatefleetcarddata_10min()
+// add_fleetcardnumber()
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()
 // ptmax_fleetcardmonitoring_1hour()
+// tripdetail_addfleetcardnumber_10min()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//

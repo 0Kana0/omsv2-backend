@@ -36,7 +36,13 @@ exports.maintenance_get_all = async (req, res, next) => {
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: currentDate + " 07:00:00", status: 'Inactive'},
+      where: {
+        date: currentDate + " 07:00:00", 
+        status: 'Inactive',
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -124,7 +130,13 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: selectDate + " 07:00:00", status: 'Inactive'},
+      where: {
+        date: selectDate + " 07:00:00", 
+        status: 'Inactive',
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -217,7 +229,10 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
         date: {
           [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
         },
-        status: 'Inactive'
+        status: 'Inactive',
+        ownerRental: {
+          [Op.or]: ['Owner', 'Rental']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -407,7 +422,15 @@ exports.maintenance_get_counttable = async (req, res, next) => {
           model: TeamModel,
           attributes: ['team_name']
         }],
-        where: {date: selectDate + " 07:00:00", status: 'Inactive', teamId: dataTeam.id, approveStatus: 'Completed'},
+        where: {
+          date: selectDate + " 07:00:00", 
+          status: 'Inactive', 
+          teamId: dataTeam.id, 
+          approveStatus: 'Completed',
+          ownerRental: {
+            [Op.or]: ['Owner', 'Rental']
+          },
+        },
       })
 
       const countRemark = dataMaintenance.reduce((acc, curr) => {
@@ -507,7 +530,7 @@ exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
       const dataMaintenanceGroupByRemark = await db.sequelize.query(`
         SELECT vehiclebookingstatuses.remark, COUNT(vehiclebookingstatuses.remark) as count
         FROM vehiclebookingstatuses
-        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive'
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental');'
         GROUP BY vehiclebookingstatuses.remark  
         ORDER BY vehiclebookingstatuses.remark ASC
       `)

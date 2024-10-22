@@ -94,6 +94,9 @@ module.exports = (sequelize, Sequelize) => {
     cd_date: {
       type: Sequelize.DATEONLY,
     },
+    createBy: {
+      type: Sequelize.STRING,
+    },
   })
   return MaintenanceSummaryModel
 }

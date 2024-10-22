@@ -5,6 +5,10 @@ const router = express.Router()
 //------- GET -------//
 router.get('/getvehiclebookingstatuses', controller.vehiclebookingstatus_get_all)
 router.get('/getvehiclebookingstatus/:date', controller.vehiclebookingstatus_get_all_bydate)
+
+// ข้อมูล VehicleBookingStatus ที่เป็น TKN และ Sold
+router.get('/getvehiclebookingstatustknsold', controller.vehiclebookingstatus_get_tkn_sold)
+
 router.get('/getvehiclebookingstatusrangedate/:startDate/:endDate', controller.vehiclebookingstatus_get_all_rangedate)
 router.get('/getvehiclebookingstatusbyid/:id', controller.vehiclebookingstatus_get_one)
 router.get('/getvehiclebookingstatusbydatewithexcel/:date', controller.vehiclebookingstatus_get_all_bydate_withexcel)

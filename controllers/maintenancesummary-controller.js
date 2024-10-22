@@ -122,6 +122,7 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
         "note_front": item.note_front,
         "original_doc": item.original_doc,
         "cd_date": item.cd_date,
+        "createBy": item.createBy,
       }
 
       transformedData.push(dataindex)
@@ -238,6 +239,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
       "note_front": dMS.note_front,
       "original_doc": dMS.original_doc,
       "cd_date": dMS.cd_date,
+      "createBy": dMS.createBy,
     }
 
     res.send({
@@ -416,6 +418,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
         note_front: item.note_front,
         original_doc: item.original_doc,
         cd_date: item.cd_date,
+        createBy: item.createBy,
       })
     }
 
@@ -476,7 +479,8 @@ exports.maintenancesummary_post = async (req, res, next) => {
         receive_date,
         note_front,
         original_doc,
-        cd_date
+        cd_date,
+        createBy,
     } = req.body
 
     // ดึงเดือนและปี
@@ -553,6 +557,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
       note_front: note_front,
       original_doc: original_doc,
       cd_date: cd_date,
+      createBy: createBy,
     })
 
     res.send({
@@ -658,6 +663,7 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
       note_front: formData.note_front,
       original_doc: formData.original_doc,
       cd_date: formData.cd_date,
+      createBy: formData.createBy,
     })
 
     res.send({
@@ -764,6 +770,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
       note_front: formData.note_front,
       original_doc: formData.original_doc,
       cd_date: formData.cd_date,
+      createBy: formData.createBy,
     }, { where: { id: edit_id } })
   
     if (editMaintenanceSummary == 0) {
@@ -833,21 +840,54 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
         check_code = `${newNumberInformCode}/${month}/${yearBE}`
       }
 
-      const findCustomer = await CustomerModel.findOne(
-        {
-          where: {customer_name: item.customer_name},
-        }
-      )
-      const findNetwork = await NetworkModel.findOne(
-        {
-          where: {network_name: item.network_name},
-        }
-      )
-      const findServiceType = await ServiceTypeModel.findOne(
-        {
-          where: {servicetype_name: item.servicetype_name},
-        }
-      )
+      let findCustomer
+      let findNetwork
+      let findServiceType
+
+      // ถ้า customer_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม customer_name
+      if (item.customer_name == null) {
+        findCustomer = await CustomerModel.findOne(
+          {
+            where: {customer_name: 'N/A'},
+          }
+        )
+      } else {
+        findCustomer = await CustomerModel.findOne(
+          {
+            where: {customer_name: item.customer_name},
+          }
+        )
+      }
+
+      // ถ้า network_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม network_name
+      if (item.network_name == null) {
+        findNetwork = await NetworkModel.findOne(
+          {
+            where: {network_name: 'N/A'},
+          }
+        )
+      } else {
+        findNetwork = await NetworkModel.findOne(
+          {
+            where: {network_name: item.network_name},
+          }
+        )
+      }
+
+      // ถ้า servicetype_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม servicetype_name
+      if (item.servicetype_name == null) {
+        findServiceType = await ServiceTypeModel.findOne(
+          {
+            where: {servicetype_name: 'N/A'},
+          }
+        )
+      } else {  
+        findServiceType = await ServiceTypeModel.findOne(
+          {
+            where: {servicetype_name: item.servicetype_name},
+          }
+        )
+      }
 
       const createMaintenanceSummary = await MaintenanceSummaryModel.create({
         check_code: check_code,
@@ -882,6 +922,7 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
         note_front: item.note_front,
         original_doc: item.original_doc,
         cd_date: item.cd_date,
+        createBy: item.createBy,
       })
     }
 
@@ -932,7 +973,8 @@ exports.maintenancesummary_put = async (req, res, next) => {
       file,
       note_front,
       original_doc,
-      cd_date
+      cd_date,
+      createBy,
   } = req.body
 
   const edit_id = req.params.id
@@ -968,6 +1010,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
     note_front: note_front,
     original_doc: original_doc,
     cd_date: cd_date,
+    createBy: createBy,
   }, { where: { id: edit_id } })
 
   if (editMaintenanceSummary == 0) {
