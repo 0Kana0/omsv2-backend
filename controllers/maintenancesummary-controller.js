@@ -123,6 +123,7 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
         "original_doc": item.original_doc,
         "cd_date": item.cd_date,
         "createBy": item.createBy,
+        "createdAt": item.createdAt,
       }
 
       transformedData.push(dataindex)
@@ -240,6 +241,7 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
       "original_doc": dMS.original_doc,
       "cd_date": dMS.cd_date,
       "createBy": dMS.createBy,
+      "createdAt": dMS.createdAt,
     }
 
     res.send({
@@ -314,6 +316,8 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
       { header: "หมายเหตุของหน้างาน", key: "note_front", width: 15 },
       { header: "เอกสารต้นฉบับ", key: "original_doc", width: 15 },
       { header: "วันที่เบิกเงินสดย่อย", key: "cd_date", width: 15 },
+      { header: "รายชื่อคนอัพ", key: "createBy", width: 15 },
+      { header: "เวลาที่สร้าง", key: "createdAt", width: 15 },
     ]
 
     // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
@@ -419,6 +423,7 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
         original_doc: item.original_doc,
         cd_date: item.cd_date,
         createBy: item.createBy,
+        createdAt: item.createdAt,
       })
     }
 

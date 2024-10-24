@@ -1127,7 +1127,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
       const dataVehicleBookingGroupByStatus = await db.sequelize.query(`
         SELECT vehiclebookingstatuses.status, COUNT(vehiclebookingstatuses.status) as count
         FROM vehiclebookingstatuses
-        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')} AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental');'
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental')
         GROUP BY vehiclebookingstatuses.status  
         ORDER BY vehiclebookingstatuses.status ASC;
       `)

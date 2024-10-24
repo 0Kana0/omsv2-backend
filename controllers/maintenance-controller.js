@@ -530,7 +530,7 @@ exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
       const dataMaintenanceGroupByRemark = await db.sequelize.query(`
         SELECT vehiclebookingstatuses.remark, COUNT(vehiclebookingstatuses.remark) as count
         FROM vehiclebookingstatuses
-        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental');'
+        WHERE vehiclebookingstatuses.date >= '${startDate.format('YYYY-MM-DD')}' AND vehiclebookingstatuses.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive' AND vehiclebookingstatuses.ownerRental IN ('Owner', 'Rental')
         GROUP BY vehiclebookingstatuses.remark  
         ORDER BY vehiclebookingstatuses.remark ASC
       `)
