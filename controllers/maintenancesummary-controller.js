@@ -488,6 +488,28 @@ exports.maintenancesummary_post = async (req, res, next) => {
         createBy,
     } = req.body
 
+    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkInformCode = await MaintenanceSummaryModel.findOne(
+      {where: {inform_code: inform_code}}
+    )
+    if (checkInformCode !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
+
+    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
+      {where: {accounting_number: accounting_number}}
+    )
+    if (checkAccountingNumber !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
+
     // ดึงเดือนและปี
     const month = moment(inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
     const yearAD = moment(inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
@@ -593,6 +615,28 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
       }
     });
 
+    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkInformCode = await MaintenanceSummaryModel.findOne(
+      {where: {inform_code: formData.inform_code}}
+    )
+    if (checkInformCode !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
+
+    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
+      {where: {accounting_number: formData.accounting_number}}
+    )
+    if (checkAccountingNumber !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
+
     // ดึงเดือนและปี
     const month = moment(formData.inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
     const yearAD = moment(formData.inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
@@ -695,6 +739,28 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
         formData[key] = null;
       }
     });
+
+    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkInformCode = await MaintenanceSummaryModel.findOne(
+      {where: {inform_code: formData.inform_code}}
+    )
+    if (checkInformCode !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
+
+    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
+      {where: {accounting_number: formData.accounting_number}}
+    )
+    if (checkAccountingNumber !== null) {
+      return res.send({
+        status: 'error',
+        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+      })
+    }
 
     console.log("file", file);
     console.log("formData.ma_file", formData.ma_file);
@@ -799,148 +865,278 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
 
 exports.maintenancesummary_post_byexcel = async (req, res, next) => {
   try {
-    const allMaintenanceSummary = req.body
-    console.log(allMaintenanceSummary);
+    let allMaintenanceSummary = req.body
+    //console.log(allMaintenanceSummary);
 
-    for (const item of allMaintenanceSummary) {
-      // ดึงเดือนและปี
-      const month = moment(item.inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
-      const yearAD = moment(item.inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
-      // แปลงปีเป็นพุทธศักราช (พ.ศ.)
-      const yearBE = parseInt(yearAD) + 543;
+    // array สำหรับใส่ข้อมูลที่เกิด error
+    let errorInformCode = [];
+    let errorAccountingNumber = [];
+    let errorCustomerList = []
+    let errorNetworkList = []
+    let errorServiceTypeList = []
 
-      // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
-      let startDate = moment(`${yearAD}-${month}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
-      let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+    // กรอกเอาเเค่ข้อมูลชนิดต่างๆจากในข้อมูลทั้งหมดเพื่อนำมาหา error
+    const uniqueCustomers = [...new Set(allMaintenanceSummary.map(item => item.customer_name))];
+    const uniqueNetworks = [...new Set(allMaintenanceSummary.map(item => item.network_name))];
+    const uniqueServiceTypes = [...new Set(allMaintenanceSummary.map(item => item.servicetype_name))];
 
-      // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู check_code ล่าสุด
-      const dataMaintenanceSummary = await MaintenanceSummaryModel.findOne(
-        {
-          where: {
-            inform_date: {
-              [Op.between]: [startDate, endDate],
-            },
-          },
-          order: [['createdAt', 'DESC']]
+    //console.log(uniqueCustomers);
+    //console.log(uniqueNetworks);
+    //console.log(uniqueServiceTypes);
+
+    // นำ customer มาตรวจสอบเพื่อหาข้อมูลที่เกิด error
+    for (let index = 0; index < uniqueCustomers.length; index++) {
+      // ไม่เอาข้อมูลที่เป็น null มาตรวจสอบ
+      if (uniqueCustomers[index] !== null) {
+        const dataCustomerCheck = await CustomerModel.findOne(
+          {where: {customer_name: uniqueCustomers[index]}}
+        )
+        // ถ้าพบ customer ที่่ไม่มีใน database ให้เก็บลงใน error และนำออกจากข้อมูลทั้งหมด
+        if (dataCustomerCheck == null) {
+          console.log('found uniqueCustomers');
+          errorCustomerList.push(uniqueCustomers[index])
+          allMaintenanceSummary = allMaintenanceSummary.filter(item => item.customer_name !== uniqueCustomers[index]);
         }
+      }
+    }
+    // นำ network มาตรวจสอบเพื่อหาข้อมูลที่เกิด error
+    for (let index = 0; index < uniqueNetworks.length; index++) {
+      // ไม่เอาข้อมูลที่เป็น null มาตรวจสอบ
+      if (uniqueNetworks[index] !== null) {
+        const dataNetworkCheck = await NetworkModel.findOne(
+        {where: {network_name: uniqueNetworks[index]}}
       )
-
-      let check_code
-      // ถ้าเดือนนี้ยังไม่มีข้อมูล
-      if (dataMaintenanceSummary == null) {
-        check_code = `001/${month}/${yearBE}`
-      // ถ้าเดือนนี้มีข้อมูล
-      } else {
-        // ดึงลำดับออกมาเป็น int
-        const fullInformCode = dataMaintenanceSummary.check_code
-        const numberInformCode = fullInformCode.substring(0, 3);
-        const intNumberInformCode = parseInt(numberInformCode);
-
-        // บวกลำดับเพิ่มอีก 1 แล้วเเปลงเป็น string
-        const newIntNumberInformCode = intNumberInformCode + 1
-        const newNumberInformCode = newIntNumberInformCode.toString().padStart(3, '0'); // เติม '0' ข้างหน้าให้มีความยาวรวม 3 ตัวอักษร
-
-        console.log(newNumberInformCode); // "001"
-
-        check_code = `${newNumberInformCode}/${month}/${yearBE}`
+      // ถ้าพบ network ที่่ไม่มีใน database ให้เก็บลงใน error และนำออกจากข้อมูลทั้งหมด
+      if (dataNetworkCheck == null) {
+        console.log('found uniqueNetworks');
+        errorNetworkList.push(uniqueNetworks[index])
+        allMaintenanceSummary = allMaintenanceSummary.filter(item => item.network_name !== uniqueNetworks[index]);
       }
-
-      let findCustomer
-      let findNetwork
-      let findServiceType
-
-      // ถ้า customer_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม customer_name
-      if (item.customer_name == null) {
-        findCustomer = await CustomerModel.findOne(
-          {
-            where: {customer_name: 'N/A'},
-          }
-        )
-      } else {
-        findCustomer = await CustomerModel.findOne(
-          {
-            where: {customer_name: item.customer_name},
-          }
-        )
       }
-
-      // ถ้า network_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม network_name
-      if (item.network_name == null) {
-        findNetwork = await NetworkModel.findOne(
-          {
-            where: {network_name: 'N/A'},
-          }
+    }
+    // นำ servicetype มาตรวจสอบเพื่อหาข้อมูลที่เกิด error
+    for (let index = 0; index < uniqueServiceTypes.length; index++) {
+      // ไม่เอาข้อมูลที่เป็น null มาตรวจสอบ
+      if (uniqueServiceTypes[index] !== null) {
+        const dataServiceTypeCheck = await ServiceTypeModel.findOne(
+          {where: {servicetype_name: uniqueServiceTypes[index]}}
         )
-      } else {
-        findNetwork = await NetworkModel.findOne(
-          {
-            where: {network_name: item.network_name},
-          }
-        )
+        // ถ้าพบ servicetype ที่่ไม่มีใน database ให้เก็บลงใน error และนำออกจากข้อมูลทั้งหมด
+        if (dataServiceTypeCheck == null) {
+          console.log('found uniqueServiceTypes');
+          errorServiceTypeList.push(uniqueServiceTypes[index])
+          allMaintenanceSummary = allMaintenanceSummary.filter(item => item.servicetype_name !== uniqueServiceTypes[index]);
+        }
       }
-
-      // ถ้า servicetype_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม servicetype_name
-      if (item.servicetype_name == null) {
-        findServiceType = await ServiceTypeModel.findOne(
-          {
-            where: {servicetype_name: 'N/A'},
-          }
-        )
-      } else {  
-        findServiceType = await ServiceTypeModel.findOne(
-          {
-            where: {servicetype_name: item.servicetype_name},
-          }
-        )
-      }
-
-      const createMaintenanceSummary = await MaintenanceSummaryModel.create({
-        check_code: check_code,
-        ma_case: item.ma_case,
-        inform_code: item.inform_code,
-        inform_date: item.inform_date,
-        plateNumber: item.plateNumber,
-        customerId: findCustomer.id,
-        networkId: findNetwork.id,
-        servicetypeId: findServiceType.id,
-        driver_name: item.driver_name,
-        distance_mile: item.distance_mile,
-        problem_detail: item.problem_detail,
-        maintenance_detail: item.maintenance_detail,
-        maintenance_type: item.maintenance_type,
-        maintenance_subject: item.maintenance_subject,
-        maintenance_weight: item.maintenance_weight,
-        maintenance_status: item.maintenance_status,
-        quotation_number: item.quotation_number,
-        repair_shop: item.repair_shop,
-        payment: item.payment,
-        accounting_number: item.accounting_number,
-        price: item.price,
-        driver_price: item.driver_price,
-        driver_price_status: item.driver_price_status,
-        note: item.note,
-        sma_date: item.sma_date,
-        pfma_date: item.pfma_date,
-        fma_date: item.fma_date,
-        receive_date: item.receive_date,
-        ma_file: [],
-        note_front: item.note_front,
-        original_doc: item.original_doc,
-        cd_date: item.cd_date,
-        createBy: item.createBy,
-      })
     }
 
-    res.send({
-      status: 'success',
-      message: 'Add Maintenance Summary From Excel Success',
-    })
+    if (allMaintenanceSummary.length !== 0) {
+      for (const item of allMaintenanceSummary) {
+        // ตรวจสอบว่า inform_code ถูกใช้ไปแล้วหรือไม่
+        const checkInformCode = await MaintenanceSummaryModel.findOne(
+          {where: {inform_code: item.inform_code}}
+        )
+        // ตรวจสอบว่า accounting_number ถูกใช้ไปแล้วหรือไม่
+        const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
+          {where: {accounting_number: item.accounting_number}}
+        )
+  
+        //console.log(checkInformCode);
+        //console.log(checkAccountingNumber);
+  
+        // ถ้า inform_code มีการใช้ไปแล้วให้เก็บลงใน error และไม่น้ำข้อมูลนี้บันทึกใน database
+        if (checkInformCode !== null) {
+          console.log('found errorInformCode');
+          errorInformCode.push(item.inform_code)
+        // ถ้า accounting_number มีการใช้ไปแล้วให้เก็บลงใน error และไม่น้ำข้อมูลนี้บันทึกใน database
+        } else if (checkAccountingNumber !== null) {
+          console.log('found errorAccountingNumber');
+          errorAccountingNumber.push(item.accounting_number)
+        // ถ้า inform_code และ accounting_number ยังไม่มีการใช้งาน
+        } else {
+          // ดึงเดือนและปี
+          const month = moment(item.inform_date).format('MM'); // เดือนในรูปแบบ 2 หลัก
+          const yearAD = moment(item.inform_date).format('YYYY'); // ปีในรูปแบบ 4 หลัก
+          // แปลงปีเป็นพุทธศักราช (พ.ศ.)
+          const yearBE = parseInt(yearAD) + 543;
+  
+          // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
+          let startDate = moment(`${yearAD}-${month}-01`, 'YYYY-MM-DD').format('YYYY-MM-DD');
+          let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
+  
+          // ดึงข้อมูลล่าสุดของเดือนที่ต้องการบันทึกข้อมูลเพื่อดู check_code ล่าสุด
+          const dataMaintenanceSummary = await MaintenanceSummaryModel.findOne(
+            {
+              where: {
+                inform_date: {
+                  [Op.between]: [startDate, endDate],
+                },
+              },
+              order: [['check_code', 'DESC']]
+            }
+          )
+  
+          let check_code
+          // ถ้าเดือนนี้ยังไม่มีข้อมูล
+          if (dataMaintenanceSummary == null) {
+            check_code = `001/${month}/${yearBE}`
+          // ถ้าเดือนนี้มีข้อมูล
+          } else {
+            // ดึงลำดับออกมาเป็น int
+            const fullInformCode = dataMaintenanceSummary.check_code
+            const numberInformCode = fullInformCode.substring(0, 3);
+            const intNumberInformCode = parseInt(numberInformCode);
+  
+            // บวกลำดับเพิ่มอีก 1 แล้วเเปลงเป็น string
+            const newIntNumberInformCode = intNumberInformCode + 1
+            const newNumberInformCode = newIntNumberInformCode.toString().padStart(3, '0'); // เติม '0' ข้างหน้าให้มีความยาวรวม 3 ตัวอักษร
+  
+            //console.log(newNumberInformCode);
+  
+            check_code = `${newNumberInformCode}/${month}/${yearBE}`
+          }
+  
+          let findCustomer
+          let findNetwork
+          let findServiceType
+  
+          // ถ้า customer_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม customer_name
+          if (item.customer_name == null) {
+            findCustomer = await CustomerModel.findOne(
+              {
+                where: {customer_name: 'N/A'},
+              }
+            )
+          } else {
+            findCustomer = await CustomerModel.findOne(
+              {
+                where: {customer_name: item.customer_name},
+              }
+            )
+          }
+  
+          // ถ้า network_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม network_name
+          if (item.network_name == null) {
+            findNetwork = await NetworkModel.findOne(
+              {
+                where: {network_name: 'N/A'},
+              }
+            )
+          } else {
+            findNetwork = await NetworkModel.findOne(
+              {
+                where: {network_name: item.network_name},
+              }
+            )
+          }
+  
+          // ถ้า servicetype_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม servicetype_name
+          if (item.servicetype_name == null) {
+            findServiceType = await ServiceTypeModel.findOne(
+              {
+                where: {servicetype_name: 'N/A'},
+              }
+            )
+          } else {  
+            findServiceType = await ServiceTypeModel.findOne(
+              {
+                where: {servicetype_name: item.servicetype_name},
+              }
+            )
+          }
+  
+          const createMaintenanceSummary = await MaintenanceSummaryModel.create({
+            check_code: check_code,
+            ma_case: item.ma_case,
+            inform_code: item.inform_code,
+            inform_date: item.inform_date,
+            plateNumber: item.plateNumber,
+            customerId: findCustomer.id,
+            networkId: findNetwork.id,
+            servicetypeId: findServiceType.id,
+            driver_name: item.driver_name,
+            distance_mile: item.distance_mile,
+            problem_detail: item.problem_detail,
+            maintenance_detail: item.maintenance_detail,
+            maintenance_type: item.maintenance_type,
+            maintenance_subject: item.maintenance_subject,
+            maintenance_weight: item.maintenance_weight,
+            maintenance_status: item.maintenance_status,
+            quotation_number: item.quotation_number,
+            repair_shop: item.repair_shop,
+            payment: item.payment,
+            accounting_number: item.accounting_number,
+            price: item.price,
+            driver_price: item.driver_price,
+            driver_price_status: item.driver_price_status,
+            note: item.note,
+            sma_date: item.sma_date,
+            pfma_date: item.pfma_date,
+            fma_date: item.fma_date,
+            receive_date: item.receive_date,
+            ma_file: [],
+            note_front: item.note_front,
+            original_doc: item.original_doc,
+            cd_date: item.cd_date,
+            createBy: item.createBy,
+          })
+        }
+      }
+    }
 
+    //console.log(errorInformCode);
+    //console.log(errorAccountingNumber);
+    //console.log(errorCustomerList);
+    //console.log(errorNetworkList);
+    //console.log(errorServiceTypeList);
+
+    // ถ้าไม่ได้รับข้อมูลอะไรเลยจากหน้าบ้าน
+    if (allMaintenanceSummary.length == 0) {
+      res.send({
+        status: 'error',
+        message: 'ข้อมูล Maintenance Summary มี Column ที่ข้อมูลผิดทั้งหมด โปรดตรวจสอบ ชื่อโปรเจ็ค, Network, ประเภทการจ้างงาน ใหม่อีกครั้งหรือ Column ของไฟล์ที่ Upload เข้ามานั้นไม่ตรงกับ Column ของไฟล์ Template',
+      })
+    // ถ้าไม่มี error อะไรเกิดขึ้น
+    } else if (errorInformCode.length == 0 && errorAccountingNumber.length == 0 && errorCustomerList.length == 0 && errorNetworkList.length == 0 && errorServiceTypeList.length == 0) {
+      res.send({
+        status: 'success',
+        message: 'เพิ่ม Maintenance Summary จากไฟล์ excel สำเร็จ',
+      })
+    // ถ้าพบ error
+    } else {
+      if (errorInformCode.length > 0) {
+        errorInformCode.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+      }
+      if (errorAccountingNumber.length > 0) {
+        errorAccountingNumber.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+      }
+      if (errorCustomerList.length > 0) {
+        errorCustomerList.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล ชื่อโปรเจ็ค ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนหรือถ้าเป็น ชื่อโปรเจ็ค อันใหม่ ให้ทำการเพิ่มข้อมูล ชื่อโปรเจ็ค ที่หน้า Customer Details ก่อนแล้วทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+      }
+      if (errorNetworkList.length > 0) {
+        errorNetworkList.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล Network ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+      }
+      if (errorServiceTypeList.length > 0) {
+        errorServiceTypeList.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล ประเภทการจ้างงาน ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+      }
+
+      // นำข้อความ error ทั้งหมดมารวมกันเพื่อส่งไปยังหน้าบ้าน
+      let errorList = errorInformCode.concat(errorAccountingNumber);
+      errorList = errorList.concat(errorCustomerList);
+      errorList = errorList.concat(errorNetworkList);
+      errorList = errorList.concat(errorServiceTypeList);
+
+      res.send({
+        status: 'error',
+        message: errorList,
+      })
+    }
   } catch (error) {
     console.log(error);
-    res.send(
-      ['เกิดปัญหาบางอย่าง โปรดตรวจสอบว่าชื่อโปรเจค, Network, ประเภทการจ้างงานใน Excel ตรงกับใน Database หรือไม่']
-    );
+    res.send({
+      status: 'error',
+      message: 'เกิดปัญหาบางอย่าง โปรดเเจ้งทางไอที'
+    });
   }
 }
 
@@ -983,6 +1179,28 @@ exports.maintenancesummary_put = async (req, res, next) => {
   } = req.body
 
   const edit_id = req.params.id
+
+  // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+  const checkInformCode = await MaintenanceSummaryModel.findOne(
+    {where: {inform_code: inform_code}}
+  )
+  if (checkInformCode !== null) {
+    return res.send({
+      status: 'error',
+      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
+    })
+  }
+
+  // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+  const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
+    {where: {accounting_number: accounting_number}}
+  )
+  if (checkAccountingNumber !== null) {
+    return res.send({
+      status: 'error',
+      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
+    })
+  }
 
   const editMaintenanceSummary = await MaintenanceSummaryModel.update({
     ma_case: ma_case,

@@ -3789,8 +3789,8 @@ exports.tripdetail_post_byexcel = async (req, res, next) => {
     const uniqueNetworks = [...new Set(allTripData.map(item => item.network))];
     const uniqueVehicleTypes = [...new Set(allTripData.map(item => item.vehicleType))];
 
-    console.log(uniqueDates);
-    console.log(uniqueTypes);
+    // console.log(uniqueDates);
+    // console.log(uniqueTypes);
     // console.log(uniqueServiceTypes);
     // console.log(uniqueTeams);
     // console.log(uniqueNetworks);
@@ -5616,8 +5616,8 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
     const uniqueNetworks = [...new Set(allTripData.map(item => item.network))];
     const uniqueVehicleTypes = [...new Set(allTripData.map(item => item.vehicleType))];
 
-    console.log(uniqueDates);
-    console.log(uniqueTypes);
+    // console.log(uniqueDates);
+    // console.log(uniqueTypes);
     // console.log(uniqueServiceTypes);
     // console.log(uniqueTeams);
     // console.log(uniqueNetworks);
@@ -5641,8 +5641,6 @@ exports.tripdetail_post_byexcel_v2 = async (req, res, next) => {
         errorTypeList.push(uniqueTypes[index])
         allTripData = allTripData.filter(item => item.type !== uniqueTypes[index]);
       }
-
-      
     }
     for (let index = 0; index < uniqueServiceTypes.length; index++) {
       const dataServiceTypeCheck = await ServiceTypeModel.findOne(
