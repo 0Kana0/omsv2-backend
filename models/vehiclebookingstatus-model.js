@@ -36,6 +36,12 @@ module.exports = (sequelize, Sequelize) => {
     available: {
       type: Sequelize.STRING,
     },
+    available_start: {
+      type: Sequelize.DATE,
+    },
+    available_end: {
+      type: Sequelize.DATE,
+    },
     ownerRental: {
       type: Sequelize.STRING,
     },

@@ -28,6 +28,15 @@ module.exports = (sequelize, Sequelize) => {
     fleetCardNumber: {
       type: Sequelize.STRING,
     },
+    mile_start: {
+      type: Sequelize.DOUBLE,
+    },
+    mile_end: {
+      type: Sequelize.DOUBLE,
+    },
+    quantity: {
+      type: Sequelize.DOUBLE,
+    },
     createBy: {
       type: Sequelize.STRING,
     },
