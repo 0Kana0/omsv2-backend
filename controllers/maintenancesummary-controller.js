@@ -495,7 +495,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
     if (checkInformCode !== null) {
       return res.send({
         status: 'error',
-        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
@@ -506,7 +506,7 @@ exports.maintenancesummary_post = async (req, res, next) => {
     if (checkAccountingNumber !== null) {
       return res.send({
         status: 'error',
-        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
@@ -622,7 +622,7 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
     if (checkInformCode !== null) {
       return res.send({
         status: 'error',
-        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
@@ -633,7 +633,7 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
     if (checkAccountingNumber !== null) {
       return res.send({
         status: 'error',
-        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
@@ -742,23 +742,33 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
 
     // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkInformCode = await MaintenanceSummaryModel.findOne(
-      {where: {inform_code: formData.inform_code}}
+      {where: {
+        inform_code: formData.inform_code,
+        id: {
+          [Op.ne]: edit_id 
+        }
+      }}
     )
     if (checkInformCode !== null) {
       return res.send({
         status: 'error',
-        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
     // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
-      {where: {accounting_number: formData.accounting_number}}
+      {where: {
+        accounting_number: formData.accounting_number,
+        id: {
+          [Op.ne]: edit_id 
+        }
+      }}
     )
     if (checkAccountingNumber !== null) {
       return res.send({
         status: 'error',
-        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
+        message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
@@ -1105,10 +1115,10 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
     // ถ้าพบ error
     } else {
       if (errorInformCode.length > 0) {
-        errorInformCode.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+        errorInformCode.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
       }
       if (errorAccountingNumber.length > 0) {
-        errorAccountingNumber.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
+        errorAccountingNumber.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
       }
       if (errorCustomerList.length > 0) {
         errorCustomerList.unshift('เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจากในฐานข้อมูลยังไม่มีข้อมูล ชื่อโปรเจ็ค ดังต่อไปนี้ โปรดตรวจสอบความถูกต้องก่อนหรือถ้าเป็น ชื่อโปรเจ็ค อันใหม่ ให้ทำการเพิ่มข้อมูล ชื่อโปรเจ็ค ที่หน้า Customer Details ก่อนแล้วทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง')
@@ -1187,7 +1197,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
   if (checkInformCode !== null) {
     return res.send({
       status: 'error',
-      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก InformCode นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
+      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
     })
   }
 
@@ -1198,7 +1208,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
   if (checkAccountingNumber !== null) {
     return res.send({
       status: 'error',
-      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก AccountingNumber นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
+      message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
     })
   }
 

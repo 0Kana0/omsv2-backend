@@ -1,4 +1,6 @@
 const { google } = require("googleapis");
+const transporter = require("../configs/email-config")
+const xlsx = require("xlsx");
 const axios = require('axios')
 const db = require("../models");
 const moment = require('moment');
@@ -430,6 +432,121 @@ exports.vehiclebooking_addmaintenancedate = async (req, res) => {
       }
     }
 
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// FUNCTION สำหรับดาวน์โหลดไฟล์ Vehiclebooking และส่งไปที่ Email ของ Daily
+exports.vehiclebooking_downloadfile_toemail_daily = async (req, res) => {
+  try {
+    // หาวันที่เมื่อวานเพื่อดึงข้อมูลของเมื่อวาน
+    const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+
+    // ดึงข้อมูล vbs ของเมื่อวาน
+    const dataVBS = await VehicleBookingStatusModel.findAll({
+      where: {
+        date: yesterday + " 07:00:00",
+      },
+      order: [['networkId', 'ASC']] 
+    })
+
+    // แปลงข้อมูล vbs จากใน db ให้สามารถใส่ใน excel ได้
+    const transformedData = []
+    for (const item of dataVBS) {
+      const dataindex = {
+        "id": item.id,
+        "date": item.date,
+        "status": item.status,
+        "remark": item.remark,
+        "issueDate": item.issueDate,
+        "forecastCompleteDate": item.forecastCompleteDate,
+        "completeDate": item.completeDate,
+        "problemIssue": item.problemIssue,
+        "reason": item.reason,
+        "prepared": item.prepared,
+        "approve": item.approve,
+        "approveStatus": item.approveStatus,
+        "available": item.available,
+        "available_start": item.available_start,
+        "available_end": item.available_end,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
+        "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
+        "vehicleId": item.vehicleId,
+        "customerId": item.customerId,
+        "networkId": item.networkId,
+        "teamId": item.teamId,
+        "servicetypeId": item.servicetypeId
+      }
+      transformedData.push(dataindex)
+    }
+
+    // นำข้อมูลแปลงให้เป็น excel
+    const workbook = xlsx.utils.book_new();
+    const sheet = xlsx.utils.json_to_sheet(transformedData);
+    sheet["!cols"] = [
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 50 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+    ];
+    xlsx.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    const buffer = xlsx.write(workbook, { bookType: "xlsx", type: "buffer" });
+    // console.log(buffer);
+  
+    // กำหนดข้อมูลที่จะส่งไปที่ email
+    const mailOption = {
+      from: process.env.IT_EMAIL,
+      to: 'itdev@kdr.co.th',
+      subject: `ข้อมูล backup ของ Vehicle Booking Status ของวันที่ ${yesterday}`,
+      attachments: [
+        {
+          filename: `backupBookingStatus ${yesterday}.xlsx`,
+          content: buffer,
+          contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      ],
+    }
+  
+    // ส่งข้อมูลไปที่ excel
+    transporter.sendMail(
+      mailOption,
+      async function(err, info){
+        if (err) {
+          console.error(err);
+          res.status(500).send("Failed to send email");
+        } else {
+          console.log("Email sent successfully:", info.response);
+        }
+      }
+    ); 
+    
   } catch (error) {
     console.log(error);
   }

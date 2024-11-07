@@ -1,4 +1,6 @@
 const db = require("../models");
+const transporter = require("../configs/email-config")
+const xlsx = require("xlsx");
 const PTmaxFleetCardModel = db.PTmaxFleetCardModel
 const ShellFleetCardModel = db.ShellFleetCardModel
 
@@ -145,6 +147,118 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
     }
 
     console.log('Add Fleetcardnumber To Tripdetail Success');
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+// FUNCTION สำหรับดาวน์โหลดไฟล์ Tripdetail และส่งไปที่ Email ของ Daily
+exports.tripdetail_downloadfile_toemail_daily = async (req, res) => {
+  try {
+    // หาวันที่เมื่อวานเพื่อดึงข้อมูลของเมื่อวาน
+    const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+
+    // ดึงข้อมูล Tripdetail ของเมื่อวาน
+    const dataTripdetail = await TripDetailModel.findAll({
+      where: {
+        date: yesterday + " 07:00:00",
+      },
+      order: [['JobOrderNumber', 'ASC']] 
+    })
+
+    console.log(dataTripdetail);
+    
+    // แปลงข้อมูล Tripdetail จากใน db ให้สามารถใส่ใน excel ได้
+    const transformedData = []
+    for (const item of dataTripdetail) {
+      const dataindex = {
+        "id": item.id,
+        "JobOrderNumber": item.JobOrderNumber,
+        "date": item.date,
+        "numberoftrip": item.numberoftrip,
+        "totalDistance": item.totalDistance,
+        "remark": item.remark,
+        "plateNumber": item.plateNumber,
+        "driverOne": item.driverOne,
+        "driverTwo": item.driverTwo,
+        "fleetCardNumber": item.fleetCardNumber,
+        "mile_start": item.mile_start,
+        "mile_end": item.mile_end,
+        "quantity": item.quantity,
+        "createBy": item.createBy,
+        "updateBy": item.updateBy,
+        "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
+        "monthId": item.monthId,
+        "customerId": item.customerId,
+        "typeId": item.typeId,
+        "teamId": item.teamId,
+        "networkId": item.networkId,
+        "servicetypeId": item.servicetypeId,
+        "gasstationId": item.gasstationId
+      }
+      transformedData.push(dataindex)
+    }
+
+    // นำข้อมูลแปลงให้เป็น excel
+    const workbook = xlsx.utils.book_new();
+    const sheet = xlsx.utils.json_to_sheet(transformedData);
+    sheet["!cols"] = [
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+      { wch: 10 },
+    ];
+    xlsx.utils.book_append_sheet(workbook, sheet, "Sheet1");
+    const buffer = xlsx.write(workbook, { bookType: "xlsx", type: "buffer" });
+    // console.log(buffer);
+  
+    // กำหนดข้อมูลที่จะส่งไปที่ email
+    const mailOption = {
+      from: process.env.IT_EMAIL,
+      to: 'itdev@kdr.co.th',
+      subject: `ข้อมูล backup ของ Tripdetail ของวันที่ ${yesterday}`,
+      attachments: [
+        {
+          filename: `backupTripdetail ${yesterday}.xlsx`,
+          content: buffer,
+          contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        },
+      ],
+    }
+  
+    // ส่งข้อมูลไปที่ excel
+    transporter.sendMail(
+      mailOption,
+      async function(err, info){
+        if (err) {
+          console.error(err);
+          res.status(500).send("Failed to send email");
+        } else {
+          console.log("Email sent successfully:", info.response);
+        }
+      }
+    ); 
   } catch (error) {
     console.log(error);
   }

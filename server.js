@@ -12,7 +12,8 @@ const {
   vehiclebooking_notifyLine,
   vehiclebooking_daily_create,
   vehiclebooking_daily_createstatus,
-  vehiclebooking_addmaintenancedate
+  vehiclebooking_addmaintenancedate,
+  vehiclebooking_downloadfile_toemail_daily
 } = require('./functions/vehiclebooking-function')
 const { 
   get_alert, 
@@ -35,6 +36,7 @@ const {
 } = require("./functions/fleetcardtracking-function")
 const { 
   tripdetail_addfleetcardnumber_10min,
+  tripdetail_downloadfile_toemail_daily,
 } = require("./functions/tripdetail-function")
 const { 
   shell_updatefleetcarddata_transaction_10min,
@@ -81,6 +83,8 @@ readdirSync('./routes')
 // shell_fleetcardmonitoring_1hour()
 // ptmax_fleetcardmonitoring_1hour()
 // tripdetail_addfleetcardnumber_10min()
+vehiclebooking_downloadfile_toemail_daily()
+tripdetail_downloadfile_toemail_daily()
 
 //---------------------------- ส่วนของ FUNCTION ----------------------------//
 //------- FUNCTION ที่ทำงานเกียวกับ Vehiclebooking -------//
@@ -99,6 +103,11 @@ cron.schedule('01 00 * * *', () => {
 // FUNCTION สำหรับการดึงข้อมูล maintenancedate จากไฟล์ New MA Summary Template 2024 (ทุก 10 นาทีตั้งแต่เวลา 00:00 ถึง 23:00)
 cron.schedule('*/10 0-23 * * *', () => {
   vehiclebooking_addmaintenancedate();
+});
+
+// FUNCTION สำหรับดาวน์โหลดไฟล์ Vehiclebooking และส่งไปที่ Email ของ Daily
+cron.schedule('01 00 * * *', () => {
+  vehiclebooking_downloadfile_toemail_daily();
 });
 
 //------- FUNCTION ที่ทำงานเกียวกับ Vehicle Realtime -------//
@@ -154,6 +163,11 @@ cron.schedule('*/10 0-23 * * *', () => {
 // FUNCTION สำหรับนำข้อมูล Fleetcard Number มาใส่ให้กับรายการ Tripdetail ของวันปัจจุบัน
 cron.schedule('*/10 0-23 * * *', () => {
   tripdetail_addfleetcardnumber_10min();
+});
+
+// FUNCTION สำหรับดาวน์โหลดไฟล์ Tripdetail และส่งไปที่ Email ของ Daily
+cron.schedule('01 00 * * *', () => {
+  tripdetail_downloadfile_toemail_daily();
 });
 
 //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard -------//
