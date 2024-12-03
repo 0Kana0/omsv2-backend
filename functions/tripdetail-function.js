@@ -8,6 +8,7 @@ const TripDetailModel = db.TripDetailModel
 const GasStationModel = db.GasStationModel
  
 const moment = require('moment');
+const { Op, literal, query, fn, col } = require('sequelize');
 
 exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
   try {
@@ -165,8 +166,6 @@ exports.tripdetail_downloadfile_toemail_daily = async (req, res) => {
       },
       order: [['JobOrderNumber', 'ASC']] 
     })
-
-    console.log(dataTripdetail);
     
     // แปลงข้อมูล Tripdetail จากใน db ให้สามารถใส่ใน excel ได้
     const transformedData = []
@@ -259,6 +258,127 @@ exports.tripdetail_downloadfile_toemail_daily = async (req, res) => {
         }
       }
     ); 
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+exports.tripdetail_downloadfile_toemail_monthly = async (req, res) => {
+  try {
+    // ตรวจสอบว่าวันนี้เป็นวันแรกของเดือนหรือไม่
+    const isFirstDayOfMonth = moment().date() === 1;
+
+    if (isFirstDayOfMonth) {
+      // หาวันที่ของเดือนก่อนหน้า
+      const lastMonth = moment().subtract(1, 'months');
+      // หาปีปัจจุบัน
+      const currentYear = moment().year();
+
+      const startDate = moment(`${currentYear}-${lastMonth.format('MM')}-01`, 'YYYY-MM-DD');
+      const endDate = moment(startDate).endOf('month');
+      
+      // ดึงข้อมูล Tripdetail ของเดือนก่อนหน้า
+      const dataTripdetail = await TripDetailModel.findAll({
+        where: {
+          date: {
+            [Op.between]: [startDate.format('YYYY-MM-DD') + " 07:00:00", endDate.format('YYYY-MM-DD') + " 07:00:00"],
+          },
+        },
+        order: [['JobOrderNumber', 'ASC']] 
+      })
+
+      // แปลงข้อมูล Tripdetail จากใน db ให้สามารถใส่ใน excel ได้
+      const transformedData = []
+      for (const item of dataTripdetail) {
+        const dataindex = {
+          "id": item.id,
+          "JobOrderNumber": item.JobOrderNumber,
+          "date": item.date,
+          "numberoftrip": item.numberoftrip,
+          "totalDistance": item.totalDistance,
+          "remark": item.remark,
+          "plateNumber": item.plateNumber,
+          "driverOne": item.driverOne,
+          "driverTwo": item.driverTwo,
+          "fleetCardNumber": item.fleetCardNumber,
+          "mile_start": item.mile_start,
+          "mile_end": item.mile_end,
+          "quantity": item.quantity,
+          "createBy": item.createBy,
+          "updateBy": item.updateBy,
+          "createdAt": item.createdAt,
+          "updatedAt": item.updatedAt,
+          "monthId": item.monthId,
+          "customerId": item.customerId,
+          "typeId": item.typeId,
+          "teamId": item.teamId,
+          "networkId": item.networkId,
+          "servicetypeId": item.servicetypeId,
+          "gasstationId": item.gasstationId
+        }
+        transformedData.push(dataindex)
+      }
+
+      // นำข้อมูลแปลงให้เป็น excel
+      const workbook = xlsx.utils.book_new();
+      const sheet = xlsx.utils.json_to_sheet(transformedData);
+      sheet["!cols"] = [
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 20 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+        { wch: 10 },
+      ];
+      xlsx.utils.book_append_sheet(workbook, sheet, "Sheet1");
+      const buffer = xlsx.write(workbook, { bookType: "xlsx", type: "buffer" });
+      // console.log(buffer);
+    
+      // กำหนดข้อมูลที่จะส่งไปที่ email
+      const mailOption = {
+        from: process.env.IT_EMAIL,
+        to: 'itdev@kdr.co.th',
+        subject: `ข้อมูล backup ของ Tripdetail ของเดือนที่ ${lastMonth.format('MM')} ปี ${currentYear}`,
+        attachments: [
+          {
+            filename: `backupTripdetailMonth ${lastMonth.format('MM')} ${currentYear}.xlsx`,
+            content: buffer,
+            contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          },
+        ],
+      }
+    
+      // ส่งข้อมูลไปที่ excel
+      transporter.sendMail(
+        mailOption,
+        async function(err, info){
+          if (err) {
+            console.error(err);
+            res.status(500).send("Failed to send email");
+          } else {
+            console.log("Email sent successfully:", info.response);
+          }
+        }
+      ); 
+    } 
   } catch (error) {
     console.log(error);
   }

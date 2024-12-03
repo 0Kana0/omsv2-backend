@@ -954,12 +954,12 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
         //console.log(checkInformCode);
         //console.log(checkAccountingNumber);
   
-        // ถ้า inform_code มีการใช้ไปแล้วให้เก็บลงใน error และไม่น้ำข้อมูลนี้บันทึกใน database
-        if (checkInformCode !== null) {
+        // ถ้า inform_code มีการใช้ไปแล้วยกเว้น null ให้เก็บลงใน error และไม่นำข้อมูลนี้บันทึกใน database
+        if (checkInformCode !== null && item.inform_code !== null) {
           console.log('found errorInformCode');
           errorInformCode.push(item.inform_code)
-        // ถ้า accounting_number มีการใช้ไปแล้วให้เก็บลงใน error และไม่น้ำข้อมูลนี้บันทึกใน database
-        } else if (checkAccountingNumber !== null) {
+        // ถ้า accounting_number มีการใช้ไปแล้วยกเว้น null ให้เก็บลงใน error และไม่นำข้อมูลนี้บันทึกใน database
+        } else if (checkAccountingNumber !== null && item.accounting_number !== null) {
           console.log('found errorAccountingNumber');
           errorAccountingNumber.push(item.accounting_number)
         // ถ้า inform_code และ accounting_number ยังไม่มีการใช้งาน
