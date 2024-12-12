@@ -123,7 +123,9 @@ exports.maintenancesummary_get_all_bymonth_byyear = async (req, res, next) => {
         "original_doc": item.original_doc,
         "cd_date": item.cd_date,
         "createBy": item.createBy,
+        "updateBy": item.updateBy,
         "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
       }
 
       transformedData.push(dataindex)
@@ -241,7 +243,9 @@ exports.maintenancesummary_get_one = async (req, res, next) => {
       "original_doc": dMS.original_doc,
       "cd_date": dMS.cd_date,
       "createBy": dMS.createBy,
+      "updateBy": dMS.updateBy,
       "createdAt": dMS.createdAt,
+      "updatedAt": dMS.updatedAt,
     }
 
     res.send({
@@ -317,7 +321,9 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
       { header: "เอกสารต้นฉบับ", key: "original_doc", width: 15 },
       { header: "วันที่เบิกเงินสดย่อย", key: "cd_date", width: 15 },
       { header: "รายชื่อคนอัพ", key: "createBy", width: 15 },
+      { header: "รายชื่อคนเเก้ไข", key: "updateBy", width: 15 },
       { header: "เวลาที่สร้าง", key: "createdAt", width: 15 },
+      { header: "เวลาที่เเก้ไข", key: "updatedAt", width: 15 },
     ]
 
     // นำเดือนและปีมาหาวันเเรกและวันสุดท้ายของเดือน
@@ -423,7 +429,9 @@ exports.maintenancesummary_get_all_bymonth_byyear_withexcel = async (req, res, n
         original_doc: item.original_doc,
         cd_date: item.cd_date,
         createBy: item.createBy,
+        updateBy: item.updateBy,
         createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
       })
     }
 
@@ -488,22 +496,22 @@ exports.maintenancesummary_post = async (req, res, next) => {
         createBy,
     } = req.body
 
-    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า inform_code ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkInformCode = await MaintenanceSummaryModel.findOne(
       {where: {inform_code: inform_code}}
     )
-    if (checkInformCode !== null) {
+    if (checkInformCode !== null && inform_code !== null) {
       return res.send({
         status: 'error',
         message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
-    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า accounting_number ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
       {where: {accounting_number: accounting_number}}
     )
-    if (checkAccountingNumber !== null) {
+    if (checkAccountingNumber !== null && accounting_number !== null) {
       return res.send({
         status: 'error',
         message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
@@ -615,22 +623,22 @@ exports.maintenancesummarywithfile_post = async (req, res, next) => {
       }
     });
 
-    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า inform_code ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkInformCode = await MaintenanceSummaryModel.findOne(
       {where: {inform_code: formData.inform_code}}
     )
-    if (checkInformCode !== null) {
+    if (checkInformCode !== null && formData.inform_code !== null) {
       return res.send({
         status: 'error',
         message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
-    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า accounting_number ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
       {where: {accounting_number: formData.accounting_number}}
     )
-    if (checkAccountingNumber !== null) {
+    if (checkAccountingNumber !== null && formData.accounting_number !== null) {
       return res.send({
         status: 'error',
         message: 'เพิ่มข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
@@ -740,32 +748,34 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
       }
     });
 
-    // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า inform_code ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkInformCode = await MaintenanceSummaryModel.findOne(
       {where: {
         inform_code: formData.inform_code,
+        // ค่าของ id ต้องไม่เท่ากับ edit_id
         id: {
           [Op.ne]: edit_id 
         }
       }}
     )
-    if (checkInformCode !== null) {
+    if (checkInformCode !== null && formData.inform_code !== null) {
       return res.send({
         status: 'error',
         message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
       })
     }
 
-    // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+    // ถ้า accounting_number ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
     const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
       {where: {
         accounting_number: formData.accounting_number,
+        // ค่าของ id ต้องไม่เท่ากับ edit_id
         id: {
           [Op.ne]: edit_id 
         }
       }}
     )
-    if (checkAccountingNumber !== null) {
+    if (checkAccountingNumber !== null && formData.accounting_number !== null) {
       return res.send({
         status: 'error',
         message: 'เเก้ไขข้อมูล Maintenance Summary ไม่ครบถ้วน เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดเฉพาะข้อมูลที่มีปัญหาใหม่อีกครั้ง',
@@ -852,6 +862,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
       original_doc: formData.original_doc,
       cd_date: formData.cd_date,
       createBy: formData.createBy,
+      updateBy: formData.updateBy,
     }, { where: { id: edit_id } })
   
     if (editMaintenanceSummary == 0) {
@@ -876,7 +887,7 @@ exports.maintenancesummarywithfile_put = async (req, res, next) => {
 exports.maintenancesummary_post_byexcel = async (req, res, next) => {
   try {
     let allMaintenanceSummary = req.body
-    //console.log(allMaintenanceSummary);
+    console.log(allMaintenanceSummary);
 
     // array สำหรับใส่ข้อมูลที่เกิด error
     let errorInformCode = [];
@@ -1094,11 +1105,11 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
       }
     }
 
-    //console.log(errorInformCode);
-    //console.log(errorAccountingNumber);
-    //console.log(errorCustomerList);
-    //console.log(errorNetworkList);
-    //console.log(errorServiceTypeList);
+    console.log(errorInformCode);
+    console.log(errorAccountingNumber);
+    console.log(errorCustomerList);
+    console.log(errorNetworkList);
+    console.log(errorServiceTypeList);
 
     // ถ้าไม่ได้รับข้อมูลอะไรเลยจากหน้าบ้าน
     if (allMaintenanceSummary.length == 0) {
@@ -1186,26 +1197,39 @@ exports.maintenancesummary_put = async (req, res, next) => {
       original_doc,
       cd_date,
       createBy,
+      updateBy,
   } = req.body
 
   const edit_id = req.params.id
 
-  // ถ้า inform_code ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+  // ถ้า inform_code ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
   const checkInformCode = await MaintenanceSummaryModel.findOne(
-    {where: {inform_code: inform_code}}
+    {where: {
+      inform_code: inform_code,
+      // ค่าของ id ต้องไม่เท่ากับ edit_id
+      id: {
+        [Op.ne]: edit_id 
+      }
+    }}
   )
-  if (checkInformCode !== null) {
+  if (checkInformCode !== null && inform_code !== null) {
     return res.send({
       status: 'error',
       message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก รหัสที่แจ้งซ่อม นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
     })
   }
 
-  // ถ้า accounting_number ถูกใช้ไปแล้ว ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
+  // ถ้า accounting_number ถูกใช้ไปแล้วยกเว้น null ไม่เก็บข้อมูลลง Database และส่ง Response ไปให้หน้าบ้าน
   const checkAccountingNumber = await MaintenanceSummaryModel.findOne(
-    {where: {accounting_number: accounting_number}}
+    {where: {
+      accounting_number: accounting_number,
+      // ค่าของ id ต้องไม่เท่ากับ edit_id
+      id: {
+        [Op.ne]: edit_id 
+      }
+    }}
   )
-  if (checkAccountingNumber !== null) {
+  if (checkAccountingNumber !== null && accounting_number !== null) {
     return res.send({
       status: 'error',
       message: 'เเก้ไขข้อมูล Maintenance Summary ไม่สมบูรณ์ เนื่องจาก เลขที่เอกสารบัญชี นี้มีการใช้งานไปแล้ว โปรดตรวจสอบความถูกต้องก่อนแล้วจึงทำการอัพโหลดข้อมูลอีกครั้ง',
@@ -1244,6 +1268,7 @@ exports.maintenancesummary_put = async (req, res, next) => {
     original_doc: original_doc,
     cd_date: cd_date,
     createBy: createBy,
+    updateBy: updateBy,
   }, { where: { id: edit_id } })
 
   if (editMaintenanceSummary == 0) {

@@ -161,10 +161,10 @@ exports.vehiclebooking_notifyLine = async() => {
 // FUNCTION สำหรับสร้าง Vehiclebooking
 exports.vehiclebooking_daily_create = async (req, res) => {
   const currentDate = moment().format('YYYY-MM-DD');
-  // const currentDate = '2023-08-03'
+  //const currentDate = '2024-12-12'
 
   const previousDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
-  // const previousDate = '2023-08-02'
+  //const previousDate = '2024-12-11'
 
   const dataVehicleBookingStatus = await VehicleBookingStatusModel.findAll({
     where: {date: previousDate + " 07:00:00", approveStatus: 'Completed'},
@@ -172,6 +172,7 @@ exports.vehiclebooking_daily_create = async (req, res) => {
   })
 
   for (const item of dataVehicleBookingStatus) {
+    // ถ้า ownerRental ของ vbs เป็น Sold หรือ TKN สร้างให้เป็น Complete เลย
     if (item.ownerRental == 'Sold' || item.ownerRental == 'TKN') {
       console.log({
         date: currentDate,
@@ -215,47 +216,139 @@ exports.vehiclebooking_daily_create = async (req, res) => {
         servicetypeId: item.servicetypeId
       })
     } else {
-      console.log({
-        date: currentDate,
-        status: item.status,
-        remark: item.remark,
-        issueDate: item.issueDate,
-        problemIssue: item.problemIssue,
-        reason: item.reason,
-        approve: null,
-        approveStatus: 'Pending',
-        available: 'No',
-        ownerRental: item.ownerRental,
-        ownedBy: item.ownedBy,
-        rentalBy: item.rentalBy,
-        replacement: item.replacement,
-        customerId: item.customerId,
-        teamId: item.teamId,
-        vehicleId: item.vehicleId, 
-        networkId: item.networkId,
-        servicetypeId: item.servicetypeId
-      })
-  
-      await VehicleBookingStatusModel.create({
-        date: currentDate,
-        status: item.status,
-        remark: item.remark,
-        issueDate: item.issueDate,
-        problemIssue: item.problemIssue,
-        reason: item.reason,
-        approve: null,
-        approveStatus: 'Pending',
-        available: 'No',
-        ownerRental: item.ownerRental,
-        ownedBy: item.ownedBy,
-        rentalBy: item.rentalBy,
-        replacement: item.replacement,
-        customerId: item.customerId,
-        teamId: item.teamId,
-        vehicleId: item.vehicleId, 
-        networkId: item.networkId,
-        servicetypeId: item.servicetypeId
-      })
+      // ถ้า remark ของ vbs เป็น Spare parts truck สร้างให้เป็น Complete เลย
+      if (item.remark == 'Spare parts truck') {
+        console.log({
+          date: currentDate,
+          status: item.status,
+          remark: item.remark,
+          issueDate: item.issueDate,
+          problemIssue: item.problemIssue,
+          reason: item.reason,
+          approve: 'KDR IT',
+          approveStatus: 'Completed',
+          available: 'No',
+          ownerRental: item.ownerRental,
+          ownedBy: item.ownedBy,
+          rentalBy: item.rentalBy,
+          replacement: item.replacement,
+          customerId: item.customerId,
+          teamId: item.teamId,
+          vehicleId: item.vehicleId, 
+          networkId: item.networkId,
+          servicetypeId: item.servicetypeId
+        })
+    
+        await VehicleBookingStatusModel.create({
+          date: currentDate,
+          status: item.status,
+          remark: item.remark,
+          issueDate: item.issueDate,
+          problemIssue: item.problemIssue,
+          reason: item.reason,
+          approve: 'KDR IT',
+          approveStatus: 'Completed',
+          available: 'No',
+          ownerRental: item.ownerRental,
+          ownedBy: item.ownedBy,
+          rentalBy: item.rentalBy,
+          replacement: item.replacement,
+          customerId: item.customerId,
+          teamId: item.teamId,
+          vehicleId: item.vehicleId, 
+          networkId: item.networkId,
+          servicetypeId: item.servicetypeId
+        })
+      } else {
+        // ถ้า rentalBy ของ vbs เป็น null หรือ - สร้างให้เป็น Complete เลย
+        if (item.rentalBy == null || item.rentalBy == '-') {
+          console.log({
+            date: currentDate,
+            status: item.status,
+            remark: item.remark,
+            issueDate: item.issueDate,
+            problemIssue: item.problemIssue,
+            reason: item.reason,
+            approve: null,
+            approveStatus: 'Pending',
+            available: 'No',
+            ownerRental: item.ownerRental,
+            ownedBy: item.ownedBy,
+            rentalBy: item.rentalBy,
+            replacement: item.replacement,
+            customerId: item.customerId,
+            teamId: item.teamId,
+            vehicleId: item.vehicleId, 
+            networkId: item.networkId,
+            servicetypeId: item.servicetypeId
+          })
+      
+          await VehicleBookingStatusModel.create({
+            date: currentDate,
+            status: item.status,
+            remark: item.remark,
+            issueDate: item.issueDate,
+            problemIssue: item.problemIssue,
+            reason: item.reason,
+            approve: null,
+            approveStatus: 'Pending',
+            available: 'No',
+            ownerRental: item.ownerRental,
+            ownedBy: item.ownedBy,
+            rentalBy: item.rentalBy,
+            replacement: item.replacement,
+            customerId: item.customerId,
+            teamId: item.teamId,
+            vehicleId: item.vehicleId, 
+            networkId: item.networkId,
+            servicetypeId: item.servicetypeId
+          })
+          
+        // กรณีข้อมูลปกติ สร้างให้เป็น Pending
+        } else {
+          console.log({
+            date: currentDate,
+            status: item.status,
+            remark: item.remark,
+            issueDate: item.issueDate,
+            problemIssue: item.problemIssue,
+            reason: item.reason,
+            approve: 'KDR IT',
+            approveStatus: 'Completed',
+            available: 'No',
+            ownerRental: item.ownerRental,
+            ownedBy: item.ownedBy,
+            rentalBy: item.rentalBy,
+            replacement: item.replacement,
+            customerId: item.customerId,
+            teamId: item.teamId,
+            vehicleId: item.vehicleId, 
+            networkId: item.networkId,
+            servicetypeId: item.servicetypeId
+          })
+      
+          await VehicleBookingStatusModel.create({
+            date: currentDate,
+            status: item.status,
+            remark: item.remark,
+            issueDate: item.issueDate,
+            problemIssue: item.problemIssue,
+            reason: item.reason,
+            approve: 'KDR IT',
+            approveStatus: 'Completed',
+            available: 'No',
+            ownerRental: item.ownerRental,
+            ownedBy: item.ownedBy,
+            rentalBy: item.rentalBy,
+            replacement: item.replacement,
+            customerId: item.customerId,
+            teamId: item.teamId,
+            vehicleId: item.vehicleId, 
+            networkId: item.networkId,
+            servicetypeId: item.servicetypeId
+          })
+        }
+      }
     }
   }
   console.log("Add VehicleBookingStatus Daily Data Success");

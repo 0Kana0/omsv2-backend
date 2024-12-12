@@ -97,6 +97,9 @@ module.exports = (sequelize, Sequelize) => {
     createBy: {
       type: Sequelize.STRING,
     },
+    updateBy: {
+      type: Sequelize.STRING,
+    },
   })
   return MaintenanceSummaryModel
 }
