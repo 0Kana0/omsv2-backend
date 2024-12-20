@@ -37,6 +37,7 @@ const {
 } = require("./functions/fleetcardtracking-function")
 const { 
   tripdetail_addfleetcardnumber_10min,
+  tripdetail_to_tripdetail2024,
   tripdetail_downloadfile_toemail_daily,
   tripdetail_downloadfile_toemail_monthly,
 } = require("./functions/tripdetail-function")
@@ -47,7 +48,8 @@ const {
 const { 
   ptmax_updatefleetcarddata_10min,
   ptmax_fleetcardmonitoring_1hour,
-  add_fleetcardnumber
+  add_fleetcardnumber,
+  platenumber_format
 } = require("./functions/ptmaxfleetcard-function")
 
 const app = express()
@@ -80,6 +82,10 @@ readdirSync('./routes')
 // shell_updatefleetcarddata_transaction_10min()
 // ptmax_updatefleetcarddata_10min()
 // add_fleetcardnumber()
+// platenumber_format()
+
+// tripdetail_to_tripdetail2024()
+// vehiclebooking_daily_create();
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()

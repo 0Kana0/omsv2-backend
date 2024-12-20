@@ -99,6 +99,15 @@ db.TripDetailModel.belongsTo(db.NetworkModel)
 db.TripDetailModel.belongsTo(db.ServiceTypeModel)
 db.TripDetailModel.belongsTo(db.GasStationModel)
 
+db.TripDetail2023Model = require("./tripdetail2023-model.js")(sequelize, Sequelize);
+db.TripDetail2023Model.belongsTo(db.MonthModel)
+db.TripDetail2023Model.belongsTo(db.CustomerModel)
+db.TripDetail2023Model.belongsTo(db.TypeModel)
+db.TripDetail2023Model.belongsTo(db.TeamModel)
+db.TripDetail2023Model.belongsTo(db.NetworkModel)
+db.TripDetail2023Model.belongsTo(db.ServiceTypeModel)
+db.TripDetail2023Model.belongsTo(db.GasStationModel)
+
 db.TripDetail2024Model = require("./tripdetail2024-model.js")(sequelize, Sequelize);
 db.TripDetail2024Model.belongsTo(db.MonthModel)
 db.TripDetail2024Model.belongsTo(db.CustomerModel)

@@ -244,8 +244,8 @@ exports.ptmax_fleetcardmonitoring_1hour = async (req, res) => {
 exports.platenumber_format = async (req, res) => {
   try {
     //const selectDate = '2024-08-17'
-    let startDate = moment('2024-09-15')
-    let endDate = moment('2024-09-19')
+    let startDate = moment('2023-01-01')
+    let endDate = moment('2024-01-01')
 
     // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
     while (startDate.isBefore(endDate)) {

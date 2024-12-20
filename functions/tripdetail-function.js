@@ -8,6 +8,7 @@ const TripDetailModel = db.TripDetailModel
 const GasStationModel = db.GasStationModel
  
 const moment = require('moment');
+const Sequelize = require("sequelize");
 const { Op, literal, query, fn, col } = require('sequelize');
 
 exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
@@ -30,6 +31,9 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
       )
       const dataGasStationNA = await GasStationModel.findOne(
         {where: {gasstation_name: 'N/A'}}
+      )
+      const dataGasStationShellPT = await GasStationModel.findOne(
+        {where: {gasstation_name: 'SHELL, PT'}}
       )
 
       const dataTripDetail = await TripDetailModel.findAll({
@@ -148,6 +152,29 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
     }
 
     console.log('Add Fleetcardnumber To Tripdetail Success');
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+exports.tripdetail_to_tripdetail2024 = async (req, res) => {
+  try {
+    let startDate = moment('2024-07-01')
+    let endDate = moment('2024-12-01')
+
+    // วนลูปดึงข้อมูลที่ต้องการจากทั้งเดือน
+    while (startDate.isBefore(endDate)) {
+      console.log(startDate.format('YYYY-MM-DD'));
+
+      await db.sequelize.query(`
+        INSERT INTO tripdetail2024s (id, JobOrderNumber, date, numberoftrip, totalDistance, remark, plateNumber, driverOne, driverTwo, fleetCardNumber, mile_start, mile_end, quantity, createBy, updateBy, createdAt, updatedAt, monthId, customerId, typeId, teamId, networkId, servicetypeId, gasstationId) SELECT id, JobOrderNumber, date, numberoftrip, totalDistance, remark, plateNumber, driverOne, driverTwo, fleetCardNumber, mile_start, mile_end, quantity, createBy, updateBy, createdAt, updatedAt, monthId, customerId, typeId, teamId, networkId, servicetypeId, gasstationId FROM tripdetails WHERE date = '${startDate.format('YYYY-MM-DD')} 07:00:00';
+      `);
+
+      startDate.add(1, 'days');
+    }
+
+    console.log('tripdetail2024 success');
+    
   } catch (error) {
     console.log(error);
   }
