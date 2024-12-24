@@ -166,6 +166,14 @@ exports.vehiclebooking_daily_create = async (req, res) => {
   const previousDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
   //const previousDate = '2024-12-11'
 
+  // หา id ของ team และ network ทีมีค่าเป็น N/A
+  const dataTeamNA = await TeamModel.findOne({
+    where: {team_name: 'N/A'}
+  })
+  const dataNetworkNA = await NetworkModel.findOne({
+    where: {network_name: 'N/A'}
+  })
+
   const dataVehicleBookingStatus = await VehicleBookingStatusModel.findAll({
     where: {date: previousDate + " 07:00:00", approveStatus: 'Completed'},
     order: [['teamId', 'ASC']] 
@@ -260,8 +268,8 @@ exports.vehiclebooking_daily_create = async (req, res) => {
           servicetypeId: item.servicetypeId
         })
       } else {
-        // ถ้าทั้ง networkId และ teamId เป็น null ให้สร้างเป็น Complete เลย
-        if (item.networkId == null && item.teamId == null) {
+        // ถ้าทั้ง networkId และ teamId มีค่าตรงกับ id ของ N/A ให้สร้างเป็น Complete เลย
+        if (item.networkId == dataNetworkNA.id && item.teamId == dataTeamNA.id) {
           console.log({
             date: currentDate,
             status: item.status,
