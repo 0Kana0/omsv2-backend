@@ -7,9 +7,9 @@ const router = express.Router()
 // router.get('/gettripdetails/:month', controller.tripdetail_get_all)
 // router.get('/gettripdetailsbydate/:date', controller.tripdetail_get_all_bydate)
 router.get('/gettripdetailsrangedate/:startDate/:endDate', controller.tripdetail_get_all_rangedate)
-router.get('/gettripdetail2024srangedate/:startDate/:endDate', controller.tripdetail2024_get_all_rangedate)
+// router.get('/gettripdetail2024srangedate/:startDate/:endDate', controller.tripdetail2024_get_all_rangedate)
 
-router.get('/gettripdetail/:id', controller.tripdetail_get_one)
+router.get('/gettripdetail/:id/:date', controller.tripdetail_get_one)
 // router.get('/gettripdetailtempletewithexcel', controller.tripdetail_templete_withexcel)
 router.get('/gettripdetailbymonthwithexcel/:month/:year', controller.tripdetail_get_all_bymonth_withexcel)
 router.get('/gettripdetailrangedatewithexcel/:startDate/:endDate', controller.tripdetail_get_all_rangedate_withexcel)
@@ -41,14 +41,14 @@ router.get('/gettripdetailcostgroupbycustomerbyyear/:year', controller.tripdetai
 //------- POST -------//s
 router.post('/posttripdetail', controller.tripdetail_post)
 //router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel)
-router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel_v2)
-router.post('/posttripdetail2024fromexcel', controller.tripdetail_post_byexcel_v3)
+router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel_v3)
+// router.post('/posttripdetail2024fromexcel', controller.tripdetail_post_byexcel_v3)
 
 //------- PUT -------//
-router.put('/puttripdetail/:id', controller.tripdetail_put)
+router.put('/puttripdetail/:id/:date', controller.tripdetail_put)
 router.put('/puttripdetailbyselect/', controller.tripdetailbyselect_put)
 
 //------- DELETE -------//
-router.delete('/deletetripdetail/:id', controller.tripdetail_delete)
+// router.delete('/deletetripdetail/:id', controller.tripdetail_delete)
 
 module.exports = router

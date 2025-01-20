@@ -2,13 +2,47 @@ const db = require("../models");
 const PTmaxFleetCardModel = db.PTmaxFleetCardModel
 const PTmaxTransactionModel = db.PTmaxTransactionModel
 
-const TripDetailModel = db.TripDetailModel
 const ShellFleetCardModel = db.ShellFleetCardModel
 const GasStationModel = db.GasStationModel
+
+const TripDetail2023Model = db.TripDetail2023Model;
+const TripDetail2024Model = db.TripDetail2024Model;
+const TripDetail2025Model = db.TripDetail2025Model;
  
 const moment = require('moment');
 const Sequelize = require("sequelize");
 const { google } = require("googleapis");
+
+const choose_database_fromyear = async(selectYear) => {
+  try {
+    let tripDB
+    if (selectYear == '2023') {
+      tripDB = TripDetail2023Model
+    } else if (selectYear == '2024') {
+      tripDB = TripDetail2024Model
+    } else if (selectYear == '2025') {
+      tripDB = TripDetail2025Model
+    }
+    return tripDB
+  } catch (error) {
+    console.log(error);
+  }
+}
+const choose_database_fromyear_sql = async(selectYear) => {
+  try {
+    let tripDB
+    if (selectYear == '2023') {
+      tripDB = `tripdetail2023s`
+    } else if (selectYear == '2024') {
+      tripDB = `tripdetail2024s`
+    } else if (selectYear == '2025') {
+      tripDB = `tripdetail2025s`
+    }
+    return tripDB
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 exports.ptmax_updatefleetcarddata_10min = async (req, res) => {
   try {
@@ -251,8 +285,11 @@ exports.platenumber_format = async (req, res) => {
     while (startDate.isBefore(endDate)) {
       console.log(startDate.format('YYYY-MM-DD'));
       console.log('*******************************************************************************************');
+      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+      const startDateYear = moment(startDate.format('YYYY-MM-DD')).year();
+      const chooseTripDB = await choose_database_fromyear(startDateYear)
 
-      const dataTripDetail = await TripDetailModel.findAll({
+      const dataTripDetail = await chooseTripDB.findAll({
         where: {
           date: startDate.format('YYYY-MM-DD') + " 07:00:00"
         },
@@ -295,7 +332,7 @@ exports.platenumber_format = async (req, res) => {
   
         console.log(formatPlaceNumber);
   
-        await TripDetailModel.update({
+        await chooseTripDB.update({
           plateNumber: formatPlaceNumber
         }, {where: {id: item.id}})
       }
@@ -319,7 +356,10 @@ exports.add_fleetcardnumber = async (req, res) => {
     while (startDate.isBefore(endDate)) {
       console.log(startDate.format('YYYY-MM-DD'));
       console.log('*******************************************************************************************');
-
+      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+      const startDateYear = moment(startDate.format('YYYY-MM-DD')).year();
+      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      
       // ข้อมูล ShellFleetcard ของวันนั้นๆ
       const ShellFleetCardData = await ShellFleetCardModel.findAll(
         { where: {date: startDate} }
@@ -332,7 +372,7 @@ exports.add_fleetcardnumber = async (req, res) => {
         {where: {gasstation_name: 'N/A'}}
       )
 
-      const dataTripDetail = await TripDetailModel.findAll({
+      const dataTripDetail = await chooseTripDB.findAll({
         where: {
           date: startDate.format('YYYY-MM-DD') + " 07:00:00"
         },
@@ -432,7 +472,7 @@ exports.add_fleetcardnumber = async (req, res) => {
         }
 
         console.log(formatPlaceNumber, fleetCardNumber);
-        await TripDetailModel.update(
+        await chooseTripDB.update(
           {
             fleetCardNumber: fleetCardNumber,
             gasstationId: gasstationId

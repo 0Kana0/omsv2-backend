@@ -12,6 +12,7 @@ router.get('/getvehiclebookingstatustknsold', controller.vehiclebookingstatus_ge
 router.get('/getvehiclebookingstatusrangedate/:startDate/:endDate', controller.vehiclebookingstatus_get_all_rangedate)
 router.get('/getvehiclebookingstatusbyid/:id', controller.vehiclebookingstatus_get_one)
 router.get('/getvehiclebookingstatusbydatewithexcel/:date', controller.vehiclebookingstatus_get_all_bydate_withexcel)
+router.get('/getvehiclebookingstatusbyweekwithexcel/:date', controller.vehiclebookingstatus_get_all_byweek_withexcel)
 router.get('/getvehiclebookingstatusbymonthwithexcel/:month/:year', controller.vehiclebookingstatus_get_all_bymonth_withexcel)
 router.get('/getvehiclebookingstatusavailable', controller.vehiclebookingstatus_get_all_available)
 router.get('/getvehiclebookingstatuscheckpendinginmonth/:date', controller.vehiclebookingstatus_checkpendinginmonth)

@@ -1021,11 +1021,11 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
           let findNetwork
           let findServiceType
   
-          // ถ้า customer_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม customer_name
+          // ถ้า customer_name เป็น null ให้ใส่เป็นไอดีของ Available ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม customer_name
           if (item.customer_name == null) {
             findCustomer = await CustomerModel.findOne(
               {
-                where: {customer_name: 'N/A'},
+                where: {customer_name: 'Available'},
               }
             )
           } else {
@@ -1036,11 +1036,11 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
             )
           }
   
-          // ถ้า network_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม network_name
+          // ถ้า network_name เป็น null ให้ใส่เป็นไอดีของ Available ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม network_name
           if (item.network_name == null) {
             findNetwork = await NetworkModel.findOne(
               {
-                where: {network_name: 'N/A'},
+                where: {network_name: 'Available'},
               }
             )
           } else {
@@ -1051,11 +1051,11 @@ exports.maintenancesummary_post_byexcel = async (req, res, next) => {
             )
           }
   
-          // ถ้า servicetype_name เป็น null ให้ใส่เป็นไอดีของ N/A ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม servicetype_name
+          // ถ้า servicetype_name เป็น null ให้ใส่เป็นไอดีของ Available ถ้าไม่เป็น null ให้ใส่เป็นไอดีตาม servicetype_name
           if (item.servicetype_name == null) {
             findServiceType = await ServiceTypeModel.findOne(
               {
-                where: {servicetype_name: 'N/A'},
+                where: {servicetype_name: 'Available'},
               }
             )
           } else {  

@@ -5,10 +5,7 @@ const TeamModel = db.TeamModel
 exports.team_get_all = async (req, res, next) => {
   try {
     const data = await TeamModel.findAll()
-
-    const filterData = data.filter(item => item.team_name !== 'N/A');
-
-    res.send(filterData);
+    res.send(data);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)
@@ -20,10 +17,7 @@ exports.team_get_all_active = async (req, res, next) => {
     const data = await TeamModel.findAll(
       {where: {status: 'ACTIVE'}}
     )
-
-    const filterData = data.filter(item => item.team_name !==' N/A');
-
-    res.send(filterData);
+    res.send(data);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)

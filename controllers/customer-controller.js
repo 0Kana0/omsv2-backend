@@ -8,7 +8,7 @@ exports.customer_get_all = async (req, res, next) => {
       {order: [['createdAt', 'DESC']]}
     )
 
-    const index = data.findIndex(item => item.customer_name === 'N/A')
+    const index = data.findIndex(item => item.customer_name === 'Available')
     const dateNA = data[index];
 
     data.splice(index, 1);

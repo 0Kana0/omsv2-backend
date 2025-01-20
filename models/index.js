@@ -90,14 +90,6 @@ db.FleetCardModel = require("./fleetcard-model.js")(sequelize, Sequelize);
 db.FleetCardModel.belongsTo(db.GasStationModel)
 
 // MODEL ส่วนของการจัดการ Tripdetail
-db.TripDetailModel = require("./tripdetail-model.js")(sequelize, Sequelize);
-db.TripDetailModel.belongsTo(db.MonthModel)
-db.TripDetailModel.belongsTo(db.CustomerModel)
-db.TripDetailModel.belongsTo(db.TypeModel)
-db.TripDetailModel.belongsTo(db.TeamModel)
-db.TripDetailModel.belongsTo(db.NetworkModel)
-db.TripDetailModel.belongsTo(db.ServiceTypeModel)
-db.TripDetailModel.belongsTo(db.GasStationModel)
 
 db.TripDetail2023Model = require("./tripdetail2023-model.js")(sequelize, Sequelize);
 db.TripDetail2023Model.belongsTo(db.MonthModel)
@@ -116,6 +108,15 @@ db.TripDetail2024Model.belongsTo(db.TeamModel)
 db.TripDetail2024Model.belongsTo(db.NetworkModel)
 db.TripDetail2024Model.belongsTo(db.ServiceTypeModel)
 db.TripDetail2024Model.belongsTo(db.GasStationModel)
+
+db.TripDetail2025Model = require("./tripdetail2025-model.js")(sequelize, Sequelize);
+db.TripDetail2025Model.belongsTo(db.MonthModel)
+db.TripDetail2025Model.belongsTo(db.CustomerModel)
+db.TripDetail2025Model.belongsTo(db.TypeModel)
+db.TripDetail2025Model.belongsTo(db.TeamModel)
+db.TripDetail2025Model.belongsTo(db.NetworkModel)
+db.TripDetail2025Model.belongsTo(db.ServiceTypeModel)
+db.TripDetail2025Model.belongsTo(db.GasStationModel)
 
 // MODEL ส่วนของการจัดการข้อมูล Client
 db.ClientGroupModel = require("./clientgroup-model.js")(sequelize, Sequelize);

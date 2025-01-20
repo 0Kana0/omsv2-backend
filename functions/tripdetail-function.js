@@ -3,13 +3,46 @@ const transporter = require("../configs/email-config")
 const xlsx = require("xlsx");
 const PTmaxFleetCardModel = db.PTmaxFleetCardModel
 const ShellFleetCardModel = db.ShellFleetCardModel
-
-const TripDetailModel = db.TripDetailModel
 const GasStationModel = db.GasStationModel
+
+const TripDetail2023Model = db.TripDetail2023Model;
+const TripDetail2024Model = db.TripDetail2024Model;
+const TripDetail2025Model = db.TripDetail2025Model;
  
 const moment = require('moment');
 const Sequelize = require("sequelize");
 const { Op, literal, query, fn, col } = require('sequelize');
+
+const choose_database_fromyear = async(selectYear) => {
+  try {
+    let tripDB
+    if (selectYear == '2023') {
+      tripDB = TripDetail2023Model
+    } else if (selectYear == '2024') {
+      tripDB = TripDetail2024Model
+    } else if (selectYear == '2025') {
+      tripDB = TripDetail2025Model
+    }
+    return tripDB
+  } catch (error) {
+    console.log(error);
+  }
+}
+const choose_database_fromyear_sql = async(selectYear) => {
+  try {
+    let tripDB
+    if (selectYear == '2023') {
+      tripDB = `tripdetail2023s`
+    } else if (selectYear == '2024') {
+      tripDB = `tripdetail2024s`
+    } else if (selectYear == '2025') {
+      tripDB = `tripdetail2025s`
+    }
+    return tripDB
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
   try {
@@ -20,6 +53,9 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
     const allDate = [todayDate, previousDay]
     for (const currentDate of allDate) {
       console.log(currentDate);
+      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+      const startDateYear = moment(currentDate).year();
+      const chooseTripDB = await choose_database_fromyear(startDateYear)
       
       // ข้อมูล ShellFleetcard ของวันนั้นๆ
       const ShellFleetCardData = await ShellFleetCardModel.findAll(
@@ -36,7 +72,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
         {where: {gasstation_name: 'SHELL, PT'}}
       )
 
-      const dataTripDetail = await TripDetailModel.findAll({
+      const dataTripDetail = await chooseTripDB.findAll({
         where: {
           date: currentDate + " 07:00:00"
         },
@@ -141,7 +177,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
         }
 
         console.log(formatPlaceNumber, fleetCardNumber);
-        await TripDetailModel.update(
+        await chooseTripDB.update(
           {
             fleetCardNumber: fleetCardNumber,
             gasstationId: gasstationId
@@ -185,9 +221,12 @@ exports.tripdetail_downloadfile_toemail_daily = async (req, res) => {
   try {
     // หาวันที่เมื่อวานเพื่อดึงข้อมูลของเมื่อวาน
     const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
+    // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+    const startDateYear = moment(yesterday).year();
+    const chooseTripDB = await choose_database_fromyear(startDateYear)
 
     // ดึงข้อมูล Tripdetail ของเมื่อวาน
-    const dataTripdetail = await TripDetailModel.findAll({
+    const dataTripdetail = await chooseTripDB.findAll({
       where: {
         date: yesterday + " 07:00:00",
       },
@@ -299,13 +338,16 @@ exports.tripdetail_downloadfile_toemail_monthly = async (req, res) => {
       // หาวันที่ของเดือนก่อนหน้า
       const lastMonth = moment().subtract(1, 'months');
       // หาปีปัจจุบัน
-      const currentYear = moment().year();
+      const currentYear = lastMonth.format('YYYY');
 
       const startDate = moment(`${currentYear}-${lastMonth.format('MM')}-01`, 'YYYY-MM-DD');
       const endDate = moment(startDate).endOf('month');
+      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+      const startDateYear = moment(startDate).year();
+      const chooseTripDB = await choose_database_fromyear(startDateYear)
       
       // ดึงข้อมูล Tripdetail ของเดือนก่อนหน้า
-      const dataTripdetail = await TripDetailModel.findAll({
+      const dataTripdetail = await chooseTripDB.findAll({
         where: {
           date: {
             [Op.between]: [startDate.format('YYYY-MM-DD') + " 07:00:00", endDate.format('YYYY-MM-DD') + " 07:00:00"],

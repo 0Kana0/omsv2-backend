@@ -151,9 +151,9 @@ cron.schedule('*/30 0-23 * * *', () => {
 //------- FUNCTION ที่ทำงานเกียวกับ Tripcomparebooking -------//
 
 // FUNCTION 
-cron.schedule('*/10 0-23 * * *', () => {
-  tripcomparebooking_balance_adapt();
-});
+// cron.schedule('*/10 0-23 * * *', () => {
+//   tripcomparebooking_balance_adapt();
+// });
 
 // //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
 

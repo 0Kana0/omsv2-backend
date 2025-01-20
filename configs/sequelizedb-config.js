@@ -7,9 +7,9 @@ module.exports = {
     DB: process.env.DATABASE,
     dialect: "mysql",
     pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
+      max: 10, // เพิ่มจำนวนการเชื่อมต่อสูงสุด
+      min: 0, // จำนวนการเชื่อมต่อต่ำสุด
+      acquire: 60000, // เวลารอการดึง connection (หน่วย: มิลลิวินาที)
+      idle: 10000 // เวลาว่างของ connection ก่อนจะถูกปิด (หน่วย: มิลลิวินาที)
     }
   };

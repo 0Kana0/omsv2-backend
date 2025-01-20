@@ -166,12 +166,12 @@ exports.vehiclebooking_daily_create = async (req, res) => {
   const previousDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
   //const previousDate = '2024-12-11'
 
-  // หา id ของ team และ network ทีมีค่าเป็น N/A
+  // หา id ของ team และ network ทีมีค่าเป็น Available
   const dataTeamNA = await TeamModel.findOne({
-    where: {team_name: 'N/A'}
+    where: {team_name: 'Available'}
   })
   const dataNetworkNA = await NetworkModel.findOne({
-    where: {network_name: 'N/A'}
+    where: {network_name: 'Available'}
   })
 
   const dataVehicleBookingStatus = await VehicleBookingStatusModel.findAll({
@@ -268,7 +268,7 @@ exports.vehiclebooking_daily_create = async (req, res) => {
           servicetypeId: item.servicetypeId
         })
       } else {
-        // ถ้าทั้ง networkId และ teamId มีค่าตรงกับ id ของ N/A ให้สร้างเป็น Complete เลย
+        // ถ้าทั้ง networkId และ teamId มีค่าตรงกับ id ของ Available ให้สร้างเป็น Complete เลย
         if (item.networkId == dataNetworkNA.id && item.teamId == dataTeamNA.id) {
           console.log({
             date: currentDate,
@@ -706,7 +706,7 @@ exports.vehiclebooking_downloadfile_toemail_monthly = async (req, res) => {
       // หาวันที่ของเดือนก่อนหน้า
       const lastMonth = moment().subtract(1, 'months');
       // หาปีปัจจุบัน
-      const currentYear = moment().year();
+      const currentYear = lastMonth.format('YYYY');
 
       const startDate = moment(`${currentYear}-${lastMonth.format('MM')}-01`, 'YYYY-MM-DD');
       const endDate = moment(startDate).endOf('month');

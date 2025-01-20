@@ -139,6 +139,136 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
   }
 }
 
+exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) => {
+  try {
+    let selectDate = req.params.date
+    
+    // หา 7 วันก่อนหน้า
+    const sixDaysAgo = moment(selectDate).subtract(6, 'days');
+
+    const data = await VehicleBookingStatusModel.findAll({
+      include: [{
+        model: VehicleModel,
+        attributes: ['plateNumber', 'vehicletypeId']
+      },
+      {
+        model: CustomerModel,
+        attributes: ['customer_name']
+      },
+      {
+        model: ServiceTypeModel,
+        attributes: ['servicetype_name']
+      },
+      {
+        model: NetworkModel,
+        attributes: ['network_name']
+      },
+      {
+        model: TeamModel,
+        attributes: ['team_name']
+      }],
+      where: {
+        date: {
+          [Op.between]: [sixDaysAgo.format('YYYY-MM-DD') + " 07:00:00", selectDate + " 07:00:00"],
+        },
+      },
+      order: [['date', 'ASC'], ['networkId', 'ASC']] 
+    })
+
+    let workbook = new exceljs.Workbook()
+    const sheet = workbook.addWorksheet("vehiclebookingstatus")
+    sheet.columns = [
+      { header: "plateNumber", key: "plateNumber", width: 15 },
+      { header: "date", key: "date", width: 15},
+      { header: "customer_name", key: "customer_name", width: 15},
+      { header: "vehicletype_name", key: "vehicletype_name", width: 20 },
+      { header: "servicetype_name", key: "servicetype_name", width: 20 },
+      { header: "team_name", key: "team_name", width: 15 },
+      { header: "network_name", key: "network_name", width: 15 },
+      { header: "status", key: "status", width: 10 },
+      { header: "remark", key: "remark", width: 20 },
+      { header: "issueDate", key: "issueDate", width: 10 },
+      { header: "problemIssue", key: "problemIssue", width: 50 },
+      { header: "reason", key: "reason", width: 20 },
+      { header: "approve", key: "approve", width: 15 },
+      { header: "approveStatus", key: "approveStatus", width: 15 },
+      { header: "available", key: "available", width: 10 },
+      { header: "available_start", key: "available_start", width: 15 },
+      { header: "available_end", key: "available_end", width: 15 },
+      { header: "ownerRental", key: "ownerRental", width: 10 },
+      { header: "ownedBy", key: "ownedBy", width: 15 },
+      { header: "rentalBy", key: "rentalBy", width: 15 },
+      { header: "replacement", key: "replacement", width: 15 },
+      { header: "updatedAt", key: "updatedAt", width: 20 }
+    ]
+
+    const dataVehicleType = await VehicleTypeModel.findAll()
+
+    await data.map((item, idx) => {
+      if (item.problemIssue == 'parkingNoJob') {
+        item.problemIssue = 'Parking (No job)'
+      } else if (item.problemIssue == 'parkingNoDriver') {
+        item.problemIssue = 'Parking (No driver)'
+      } else if (item.problemIssue == 'parkingNoJobAndDriver') {
+        item.problemIssue = 'Parking (No job & No driver)'
+      } else if (item.problemIssue == 'parkingDriverAbsence') {
+        item.problemIssue = 'Parking (Driver absence)'
+      } else if (item.problemIssue == 'parkingLegalCase') {
+        item.problemIssue = 'Parking (Legal case)'
+      }
+
+      const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const adUpdateAt = moment(item.updatedAt);
+      sheet.addRow({
+        plateNumber: item.vehicle.plateNumber,
+        date: item.date,
+        customer_name: item.customer.customer_name,
+        vehicletype_name: dataVehicleTypeResult.vehicletype_name,
+        servicetype_name: item.servicetype.servicetype_name,
+        team_name: item.team.team_name,
+        network_name: item.network.network_name,
+        status: item.status,
+        remark: item.remark,
+        issueDate: item.issueDate,
+        problemIssue: item.problemIssue,
+        reason: item.reason,
+        approve: item.approve,
+        approveStatus: item.approveStatus,
+        available: item.available,
+        available_start: item.available_start,
+        available_end: item.available_end,
+        ownerRental: item.ownerRental,
+        ownedBy: item.ownedBy,
+        rentalBy: item.rentalBy,
+        replacement: item.replacement,
+        updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
+      })
+    })
+
+    const filename = `รายงาน Booking Status รถยนต์ประจำสัปดาห์จากวันที่ ${selectDate}`;
+    res.setHeader(
+      "Content-Type", 
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename*=UTF-8''" + encodeURI(`${filename}.xlsx`)
+    );
+
+    if (data.length !== 0) {
+      workbook.xlsx.write(res).then(function (data) {
+        res.end();
+        console.log("genExel successfully.");
+      });
+    }
+    
+  } catch (error) {
+    console.log(error);
+    
+  }
+}
+
 exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) => {
   try {
     const monthList = [
