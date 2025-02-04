@@ -137,16 +137,49 @@ db.VehicleModel.belongsTo(db.VehicleCompanyModel)
 db.VehicleModel.belongsTo(db.ServiceTypeModel)
 
 // MODEL ส่วนของการจัดการ VehicleBooking
-db.VehicleBookingStatusModel = require("./vehiclebookingstatus-model.js")(sequelize, Sequelize);
-db.VehicleBookingStatusModel.belongsTo(db.VehicleModel)
-db.VehicleBookingStatusModel.belongsTo(db.CustomerModel)
-db.VehicleBookingStatusModel.belongsTo(db.NetworkModel)
-db.VehicleBookingStatusModel.belongsTo(db.TeamModel)
-db.VehicleBookingStatusModel.belongsTo(db.ServiceTypeModel)
+db.VehicleBookingStatus2023Model = require("./vehiclebookingstatus2023-model.js")(sequelize, Sequelize);
+db.VehicleBookingStatus2023Model.belongsTo(db.VehicleModel)
+db.VehicleBookingStatus2023Model.belongsTo(db.CustomerModel)
+db.VehicleBookingStatus2023Model.belongsTo(db.NetworkModel)
+db.VehicleBookingStatus2023Model.belongsTo(db.TeamModel)
+db.VehicleBookingStatus2023Model.belongsTo(db.ServiceTypeModel)
+
+db.VehicleBookingStatus2024Model = require("./vehiclebookingstatus2024-model.js")(sequelize, Sequelize);
+db.VehicleBookingStatus2024Model.belongsTo(db.VehicleModel)
+db.VehicleBookingStatus2024Model.belongsTo(db.CustomerModel)
+db.VehicleBookingStatus2024Model.belongsTo(db.NetworkModel)
+db.VehicleBookingStatus2024Model.belongsTo(db.TeamModel)
+db.VehicleBookingStatus2024Model.belongsTo(db.ServiceTypeModel)
+
+db.VehicleBookingStatus2025Model = require("./vehiclebookingstatus2025-model.js")(sequelize, Sequelize);
+db.VehicleBookingStatus2025Model.belongsTo(db.VehicleModel)
+db.VehicleBookingStatus2025Model.belongsTo(db.CustomerModel)
+db.VehicleBookingStatus2025Model.belongsTo(db.NetworkModel)
+db.VehicleBookingStatus2025Model.belongsTo(db.TeamModel)
+db.VehicleBookingStatus2025Model.belongsTo(db.ServiceTypeModel)
+
+// MODEL ส่วนของการเก็บประวัติ VehicleBooking
+db.VbkHistoryModel = require("./vbkhistory-model.js")(sequelize, Sequelize);
+db.VbkHistoryModel.belongsTo(db.CustomerModel, {
+  foreignKey: "old_customer",
+  as: "OldCustomer",
+})
+db.VbkHistoryModel.belongsTo(db.CustomerModel, {
+  foreignKey: "new_customer",
+  as: "NewCustomer",
+})
+db.VbkHistoryModel.belongsTo(db.NetworkModel, {
+  foreignKey: "old_network",
+  as: "OldNetwork",
+})
+db.VbkHistoryModel.belongsTo(db.NetworkModel,{
+  foreignKey: "new_network",
+  as: "NewNetwork",
+})
+db.VbkHistoryModel.belongsTo(db.VehicleModel)
 
 // MODEL ส่วนของการจัดการ TripCompareBooking
 db.TripCompareBookingModel = require("./tripcomparebooking-model.js")(sequelize, Sequelize);
-db.TripCompareBookingModel.belongsTo(db.VehicleBookingStatusModel)
 db.TripCompareBookingModel.belongsTo(db.VehicleModel)
  
 // MODEL ส่วนของการจัดการ MA Summary

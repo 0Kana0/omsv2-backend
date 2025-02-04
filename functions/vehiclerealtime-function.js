@@ -381,28 +381,28 @@ exports.gps_offline_alert = async() => {
     }
 
     // ถ้าพบ plateNumber ที่พึ่ง offline
-    if (transformedData.length !== 0) {
-      // เเปลงข้อมูลเป็นข้อความสำหรับส่ง email
-      const emailContent = transformedData.map(obj => `\ndate: ${obj.date} || plateNumber: ${obj.plateNumber} || department: ${obj.department} || lat: ${obj.lat} || lon: ${obj.lon}`).join('\n');
+    // if (transformedData.length !== 0) {
+    //   // เเปลงข้อมูลเป็นข้อความสำหรับส่ง email
+    //   const emailContent = transformedData.map(obj => `\ndate: ${obj.date} || plateNumber: ${obj.plateNumber} || department: ${obj.department} || lat: ${obj.lat} || lon: ${obj.lon}`).join('\n');
 
-      const mailOption = {
-        from: process.env.IT_EMAIL,
-        to: 'gps-alert@kdr.co.th',
-        subject: 'GPS Offline Alert',
-        text: `Find GPS Offline Alert : ${emailContent}`,
-      }
+    //   const mailOption = {
+    //     from: process.env.IT_EMAIL,
+    //     to: 'gps-alert@kdr.co.th',
+    //     subject: 'GPS Offline Alert',
+    //     text: `Find GPS Offline Alert : ${emailContent}`,
+    //   }
   
-      transporter.sendMail(
-        mailOption,
-        async function(err, info){
-          if (err) {
-            console.error(err);
-          } else {
-            console.log("Email sent successfully:", info.response);
-          }
-        }
-      ); 
-    }
+    //   transporter.sendMail(
+    //     mailOption,
+    //     async function(err, info){
+    //       if (err) {
+    //         console.error(err);
+    //       } else {
+    //         console.log("Email sent successfully:", info.response);
+    //       }
+    //     }
+    //   ); 
+    // }
 
     //console.log('End Checking GPS Offline');
   } catch (error) {

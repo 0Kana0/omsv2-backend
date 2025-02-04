@@ -15,7 +15,6 @@ const BusinessTypeModel = db.BusinessTypeModel
 const OperationTypeModel = db.OperationTypeModel
 const SectorModel = db.SectorModel
 const ClientModel = db.ClientModel
-const VehicleBookingStatusModel = db.VehicleBookingStatusModel
 const ClientGroupByTeamModel = db.ClientGroupByTeamModel;
 const VehicleCompanyModel = db.VehicleCompanyModel
 const ProjectModel = db.ProjectModel
@@ -32,7 +31,7 @@ const moment = require("moment");
 const Sequelize = require("sequelize");
 const { Op, literal, query, fn, col } = require('sequelize');
 
-const choose_database_fromyear = async(selectYear) => {
+const choose_database_fromyear_trip = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -47,7 +46,7 @@ const choose_database_fromyear = async(selectYear) => {
     console.log(error);
   }
 }
-const choose_database_fromyear_sql = async(selectYear) => {
+const choose_database_fromyear_trip_sql = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -91,7 +90,7 @@ exports.tripdetail_get_all_bymonth_withexcel = async (req, res, next) => {
     console.log(endDate);
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     let workbook = new exceljs.Workbook()
     const sheet = workbook.addWorksheet("tripdetail")
@@ -333,7 +332,7 @@ exports.tripdetail_get_all_rangedate_withexcel = async (req, res, next) => {
         message: 'StartDate And EndDate Must Be Same Year',
       });
     }
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     let workbook = new exceljs.Workbook()
     const sheet = workbook.addWorksheet("tripdetail")
@@ -601,7 +600,7 @@ exports.tripdetail_get_pivot_servicetype_withexcel = async (req, res, next) => {
     const endDate = moment(startDate).endOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const daysInMonth = [];
 
@@ -793,7 +792,7 @@ exports.tripdetail_get_pivot_monthly_withexcel = async (req, res, next) => {
       const endDate = moment(startDate).endOf('month');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
       const daysInMonth = [];
       const transformedData = [];
@@ -1092,7 +1091,7 @@ exports.tripdetail_get_pivot_daily_withexcel = async (req, res, next) => {
     const endDate = moment(startDate).endOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const daysInMonth = [];
     const transformedData = [];
@@ -1273,7 +1272,7 @@ exports.tripdetail_get_pivot_daily_byclient_withexcel = async (req, res, next) =
 
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startMoment).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     // สร้าง Array เก็บจำนวนวันทั้งหมดของเดือน
     const daysInMonth = [];
@@ -1731,7 +1730,7 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
         message: 'StartDate And EndDate Must Be Same Year',
       });
     }
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
     if (chooseTripDB == undefined) {
       return res.send({
         status: 'error',
@@ -1917,7 +1916,7 @@ exports.tripdetail_get_one = async (req, res, next) => {
     console.log(get_date);
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(get_date).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
     
     const data = await chooseTripDB.findOne(
       {
@@ -2091,7 +2090,7 @@ exports.tripdetail_get_pivot_servicetype = async (req, res, next) => {
     const endDate = moment(startDate).endOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const daysInMonth = [];
 
@@ -2211,7 +2210,7 @@ exports.tripdetail_get_pivot_monthly = async (req, res, next) => {
     const endDate = moment(startDate).endOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const daysInMonth = [];
     const transformedData = [];
@@ -2424,7 +2423,7 @@ exports.tripdetail_get_pivot_daily = async (req, res, next) => {
     const endDate = moment(startDate).endOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const daysInMonth = [];
     const transformedData = [];
@@ -2578,7 +2577,7 @@ exports.tripdetail_get_pivot_daily_byclient = async (req, res, next) => {
     const endMoment = moment(endDate).format('YYYY-MM-DD');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startMoment).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     // เรียกข้อมูล Tripdetail สำหรับหา Team, Network, Client ที่ไม่ซ้ำกัน
     const dataTripDetail = await chooseTripDB.findAll(
@@ -2770,7 +2769,7 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
     let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const tripdetailGroupByCustomer = await chooseTripDB.findAll(
       {
@@ -2798,7 +2797,7 @@ exports.tripdetail_groupby_customer_bymonth_byyear = async (req, res, next) => {
     const yesterday = today.clone().subtract(1, 'days');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const yesterdayYear = moment(yesterday).year();
-    const chooseTripDBYesterday = await choose_database_fromyear(yesterdayYear)
+    const chooseTripDBYesterday = await choose_database_fromyear_trip(yesterdayYear)
     // หาจำนวน Tripdetail ของเมื่อวาน
     const countTripdetailYesterday = await chooseTripDBYesterday.count({
       col: 'id',
@@ -2848,7 +2847,7 @@ exports.tripdetail_groupby_customer_byyear = async (req, res, next) => {
       let endDate = moment(startDate).endOf('month').format('YYYY-MM-DD');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
       const tripdetailGroupByCustomer = await chooseTripDB.findAll(
         {
@@ -2924,7 +2923,7 @@ exports.tripdetail_driver_groupby_customer_bymonth_byyear = async (req, res, nex
     let endDate = moment(startDate).add(1, 'month').startOf('month');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
 
     // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 
     // 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed'
@@ -3022,7 +3021,7 @@ exports.tripdetail_driver_groupby_customer_byyear = async (req, res, next) => {
       let endDate = moment(startDate).add(1, 'month').startOf('month');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
 
       // นับชื่อคนขับใน driverOne และ driverTwo แบบไม่ซ้ำกันโดยไม่นับ 
       // 'Cancel', 'Cancel (KDR)', 'Cancel (Lazada, Seller)', 'Cancel (Seller, Lazada)', 'N/A', 'Failed'
@@ -3123,7 +3122,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
     let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
     
     // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
     startDate = moment(startDate);
@@ -3263,7 +3262,7 @@ exports.tripdetail_usage_groupby_customer_bymonth_byyear = async (req, res, next
     const yesterday = today.clone().subtract(1, 'days');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const yesterdayYear = moment(yesterday).year();
-    const chooseTripDBYesterday = await choose_database_fromyear_sql(yesterdayYear)
+    const chooseTripDBYesterday = await choose_database_fromyear_trip_sql(yesterdayYear)
     // หาผลรวมของปริมาณน้ำมันของ Shell ของวันก่อนหน้า
     const countShellUsageYesterday = await db.sequelize.query(`
       WITH ${chooseTripDBYesterday} AS (
@@ -3329,7 +3328,7 @@ exports.tripdetail_usage_groupby_customer_byyear = async (req, res, next) => {
       let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
 
       // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
       startDate = moment(startDate);
@@ -3509,7 +3508,7 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
     endDate = moment(endDate);
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(startDate).year();
-    const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
 
     // วนลูปหาวันที่อยู่ระหว่างสองวันที่กำหนด
     let currentDate = startDate.clone();
@@ -3620,7 +3619,7 @@ exports.tripdetail_cost_groupby_customer_bymonth_byyear = async (req, res, next)
     const yesterday = today.clone().subtract(1, 'days');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const yesterdayYear = moment(yesterday).year();
-    const chooseTripDBYesterday = await choose_database_fromyear_sql(yesterdayYear)
+    const chooseTripDBYesterday = await choose_database_fromyear_trip_sql(yesterdayYear)
     // หาผลรวมของปริมาณน้ำมันของ Shell ของวันก่อนหน้า
     const countShellCostYesterday = await db.sequelize.query(`
       WITH ${chooseTripDBYesterday} AS (
@@ -3684,7 +3683,7 @@ exports.tripdetail_cost_groupby_customer_byyear = async (req, res, next) => {
       let endDate = moment(startDate).add(1, 'month').startOf('month').format('YYYY-MM-DD');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear_sql(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip_sql(startDateYear)
 
       // กำหนดวันที่เริ่มต้นและวันที่สิ้นสุด
       startDate = moment(startDate);
@@ -3826,7 +3825,7 @@ const tridetail_resetjob_post = async(selectDate) => {
   try {
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(selectDate).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const dataTripDetail = await chooseTripDB.findAll(
       { where: { date: selectDate + " 07:00:00"} }
@@ -3938,7 +3937,7 @@ exports.tripdetail_post = async (req, res, next) => {
 
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(date).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
     
     const data = await chooseTripDB.findAll(
       { where: {date: date + " 07:00:00"} }
@@ -4232,7 +4231,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
 
         // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
         const startDateYear = moment(findDate).year();
-        const chooseTripDB = await choose_database_fromyear(startDateYear)
+        const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
         const filteredDataNoCus = allTripData.filter(find => find.date === uniqueDates[index]);
 
@@ -6472,7 +6471,7 @@ const tridetail_resetjob_put = async(selectDate) => {
 
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(selectDateFormat).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const dataTripDetail = await chooseTripDB.findAll(
       { 
@@ -6534,7 +6533,7 @@ exports.tripdetail_put = async (req, res, next) => {
 
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(edit_date).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const dataTripdetailPreviousOne = await chooseTripDB.findOne(
       { where: {id: edit_id} }
@@ -6761,7 +6760,7 @@ exports.tripdetailbyselect_put = async (req, res, next) => {
       const selectDateFormat = moment(allTripdetailBooking[index].date).format("YYYY-MM-DD")
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(selectDateFormat).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
       // ลบข้อมูลใน TripDetail
       let dataTripDetailSelect = await chooseTripDB.findOne(

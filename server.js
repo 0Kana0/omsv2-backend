@@ -9,12 +9,12 @@ const path = require('path');
 
 const db = require("./models");
 const { 
-  vehiclebooking_notifyLine,
   vehiclebooking_daily_create,
-  vehiclebooking_daily_createstatus,
+  vehiclebooking_daily_create_test,
   vehiclebooking_addmaintenancedate,
   vehiclebooking_downloadfile_toemail_daily,
   vehiclebooking_downloadfile_toemail_monthly,
+  vehiclebooking_to_newvehiclebooking,
 } = require('./functions/vehiclebooking-function')
 const { 
   get_alert, 
@@ -37,7 +37,7 @@ const {
 } = require("./functions/fleetcardtracking-function")
 const { 
   tripdetail_addfleetcardnumber_10min,
-  tripdetail_to_tripdetail2024,
+  tripdetail_to_newtripdetail,
   tripdetail_downloadfile_toemail_daily,
   tripdetail_downloadfile_toemail_monthly,
 } = require("./functions/tripdetail-function")
@@ -84,8 +84,10 @@ readdirSync('./routes')
 // add_fleetcardnumber()
 // platenumber_format()
 
-// tripdetail_to_tripdetail2024()
+// tripdetail_to_newtripdetail()
 // vehiclebooking_daily_create();
+// vehiclebooking_daily_create_test()
+// vehiclebooking_to_newvehiclebooking()
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()

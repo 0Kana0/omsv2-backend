@@ -13,7 +13,7 @@ const moment = require('moment');
 const Sequelize = require("sequelize");
 const { Op, literal, query, fn, col } = require('sequelize');
 
-const choose_database_fromyear = async(selectYear) => {
+const choose_database_fromyear_trip = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -28,7 +28,7 @@ const choose_database_fromyear = async(selectYear) => {
     console.log(error);
   }
 }
-const choose_database_fromyear_sql = async(selectYear) => {
+const choose_database_fromyear_trip_sql = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -55,7 +55,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
       console.log(currentDate);
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(currentDate).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
       
       // ข้อมูล ShellFleetcard ของวันนั้นๆ
       const ShellFleetCardData = await ShellFleetCardModel.findAll(
@@ -193,7 +193,7 @@ exports.tripdetail_addfleetcardnumber_10min = async (req, res) => {
   }
 }
 
-exports.tripdetail_to_tripdetail2024 = async (req, res) => {
+exports.tripdetail_to_newtripdetail = async (req, res) => {
   try {
     let startDate = moment('2024-07-01')
     let endDate = moment('2024-12-01')
@@ -223,7 +223,7 @@ exports.tripdetail_downloadfile_toemail_daily = async (req, res) => {
     const yesterday = moment().subtract(1, 'days').format('YYYY-MM-DD');
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(yesterday).year();
-    const chooseTripDB = await choose_database_fromyear(startDateYear)
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     // ดึงข้อมูล Tripdetail ของเมื่อวาน
     const dataTripdetail = await chooseTripDB.findAll({
@@ -344,7 +344,7 @@ exports.tripdetail_downloadfile_toemail_monthly = async (req, res) => {
       const endDate = moment(startDate).endOf('month');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
       
       // ดึงข้อมูล Tripdetail ของเดือนก่อนหน้า
       const dataTripdetail = await chooseTripDB.findAll({

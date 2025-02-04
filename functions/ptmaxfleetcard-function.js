@@ -13,7 +13,7 @@ const moment = require('moment');
 const Sequelize = require("sequelize");
 const { google } = require("googleapis");
 
-const choose_database_fromyear = async(selectYear) => {
+const choose_database_fromyear_trip = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -28,7 +28,7 @@ const choose_database_fromyear = async(selectYear) => {
     console.log(error);
   }
 }
-const choose_database_fromyear_sql = async(selectYear) => {
+const choose_database_fromyear_trip_sql = async(selectYear) => {
   try {
     let tripDB
     if (selectYear == '2023') {
@@ -287,7 +287,7 @@ exports.platenumber_format = async (req, res) => {
       console.log('*******************************************************************************************');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate.format('YYYY-MM-DD')).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
       const dataTripDetail = await chooseTripDB.findAll({
         where: {
@@ -358,7 +358,7 @@ exports.add_fleetcardnumber = async (req, res) => {
       console.log('*******************************************************************************************');
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(startDate.format('YYYY-MM-DD')).year();
-      const chooseTripDB = await choose_database_fromyear(startDateYear)
+      const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
       
       // ข้อมูล ShellFleetcard ของวันนั้นๆ
       const ShellFleetCardData = await ShellFleetCardModel.findAll(
