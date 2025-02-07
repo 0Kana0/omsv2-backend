@@ -181,7 +181,11 @@ db.VbkHistoryModel.belongsTo(db.VehicleModel)
 // MODEL ส่วนของการจัดการ TripCompareBooking
 db.TripCompareBookingModel = require("./tripcomparebooking-model.js")(sequelize, Sequelize);
 db.TripCompareBookingModel.belongsTo(db.VehicleModel)
- 
+
+db.TripCompareBooking2025Model = require("./tripcomparebooking2025-model.js")(sequelize, Sequelize);
+db.TripCompareBooking2025Model.belongsTo(db.VehicleModel)
+db.TripCompareBooking2025Model.belongsTo(db.TeamModel)
+
 // MODEL ส่วนของการจัดการ MA Summary
 db.MaintenanceSummaryModel = require("./maintenancesummary-model.js")(sequelize, Sequelize);
 db.MaintenanceSummaryModel.belongsTo(db.CustomerModel)

@@ -7,7 +7,6 @@ const VehicleTypeModel = db.VehicleTypeModel
 const ServiceTypeModel = db.ServiceTypeModel
 const CustomerModel = db.CustomerModel;
 const VehicleRealtimeModel = db.VehicleRealtimeModel;
-const TripCompareBookingModel = db.TripCompareBookingModel;
 const exceljs = require('exceljs')
 const Sequelize = require("sequelize");
 const Op = Sequelize.Op;

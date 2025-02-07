@@ -28,7 +28,7 @@ const {
   fleetcard_apiupdate_hour_pricedtransaction
 } = require('./functions/fleetcard-function')
 const { 
-  tripcomparebooking_balance_adapt 
+  tripcomparebooking_daily_create,
 } = require('./functions/tripcomparebooking-function')
 const { 
   fleetcardtracking_daily, 
@@ -88,6 +88,7 @@ readdirSync('./routes')
 // vehiclebooking_daily_create();
 // vehiclebooking_daily_create_test()
 // vehiclebooking_to_newvehiclebooking()
+// tripcomparebooking_daily_create()
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()
@@ -152,10 +153,10 @@ cron.schedule('*/30 0-23 * * *', () => {
 
 //------- FUNCTION ที่ทำงานเกียวกับ Tripcomparebooking -------//
 
-// FUNCTION 
-// cron.schedule('*/10 0-23 * * *', () => {
-//   tripcomparebooking_balance_adapt();
-// });
+// FUNCTION สำหรับสร้าง Tripcomparebooking ในเเต่ละวัน (ทำงานเวลา 00:10)
+cron.schedule('10 00 * * *', () => {
+  tripcomparebooking_daily_create();
+});
 
 // //------- FUNCTION ที่ทำงานเกียวกับ Fleetcard Tracking SHELL -------//
 
