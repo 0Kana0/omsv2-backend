@@ -1,5 +1,7 @@
 const db = require("../models");
 const moment = require("moment");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
 const VehicleModel = db.VehicleModel;
 const NetworkModel = db.NetworkModel;
 const CustomerModel = db.CustomerModel;
@@ -37,6 +39,76 @@ exports.vbkhistory_get_all_bydate = async (req, res, next) => {
         attributes: ['network_name']
       }],
       where: {date: selectDate + " 07:00:00"}
+    })
+
+    const transformedData = []
+    dataVbkHistory.map((item, index) => {
+      const dataindex = {
+        "id": item.id,
+        "date": item.date,
+        "approve": item.approve,
+        "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
+        "old_customer": item.old_customer,
+        "old_customer_name": item.OldCustomer.customer_name,
+        "new_customer": item.new_customer,
+        "new_customer_name": item.NewCustomer.customer_name,
+        "old_network": item.old_network,
+        "old_network_name": item.OldNetwork.network_name,
+        "new_network": item.new_network,
+        "new_network_name": item.NewNetwork.network_name,
+        "vehicleId": item.vehicleId,
+        "plateNumber": item.vehicle.plateNumber,
+      }
+      transformedData.push(dataindex)
+    })
+
+    res.send({
+      status: 'success',
+      message: 'Get All VehicleBookingStatus History Success',
+      length: dataVbkHistory.length,
+      data: transformedData
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+exports.vbkhistory_get_all_rangedate = async (req, res, next) => {
+  try {
+    let startDate = req.params.startDate
+    let endDate = req.params.endDate
+    
+    const dataVbkHistory = await VbkHistoryModel.findAll({
+      include: [{
+        model: VehicleModel,
+        attributes: ['plateNumber']
+      },
+      {
+        model: CustomerModel,
+        as: "OldCustomer",
+        attributes: ['customer_name']
+      },
+      {
+        model: CustomerModel,
+        as: "NewCustomer",
+        attributes: ['customer_name']
+      },
+      {
+        model: NetworkModel,
+        as: "OldNetwork",
+        attributes: ['network_name']
+      },
+      {
+        model: NetworkModel,
+        as: "NewNetwork",
+        attributes: ['network_name']
+      }],
+      where: {
+        date: {
+          [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+        },
+      }
     })
 
     const transformedData = []

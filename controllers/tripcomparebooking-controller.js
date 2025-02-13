@@ -125,6 +125,9 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
           teamId: {
             [Op.ne]: [18]
           },
+          approveStatus: {
+            [Op.ne]: ['Hidden']
+          },
         },
         order: [['teamId', 'ASC']]
       })
@@ -143,9 +146,9 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
         attributes: ['plateNumber', 'date', 'customerId', 'teamId'],
       })
   
-      console.log(dataTripCompareBooking.length);
-      console.log(dataVehicleBooking.length);
-      console.log(dataTripdetail.length);
+      //console.log(dataTripCompareBooking.length);
+      //console.log(dataVehicleBooking.length);
+      //console.log(dataTripdetail.length);
 
       // เอาเฉพาะ plateNumber ใน Trip เก็บใน Array
       const tripArrayPlatenumber = [];
@@ -162,7 +165,7 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
   
         // ตรวจสอบว่า plateNumber ของ Trip ตรงกับ plateNumber ของ Booking ใหม ถ้าตรงจะเเสดง Index ของ plateNumber ใน tripArrayPlatenumber
         tripMatchBook = findIndexesOfValueInArray(tripArrayPlatenumber, item.vehicle.plateNumber);
-        console.log(index, item.vehicle.plateNumber, item.team.team_name, item.status, tripMatchBook);
+        //console.log(index, item.vehicle.plateNumber, item.team.team_name, item.status, tripMatchBook);
         
         // ตรวจสอบว่าอยู่ใน case ไหน
         if (item.status == 'Active' && tripMatchBook.length > 1) {
@@ -260,7 +263,7 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
         index += 1
       }
 
-      console.log(transformedtripMatchBook.length);
+      //console.log(transformedtripMatchBook.length);
       res.send(transformedtripMatchBook);
     } else {
       res.send({message: 'No TripCompareBooking Found'});
@@ -271,6 +274,9 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
 }
 
 //------- POST -------//
+
+
+//------- DELETE -------//
 
 
 //------- PUT -------//
@@ -298,9 +304,6 @@ exports.tripcomparebooking_put = async (req, res, next) => {
     console.log(error);
   }
 }
-
-//------- DELETE -------//
-
 
 // exports.trip_compare_booking = async (req, res, next) => {
 //   try {

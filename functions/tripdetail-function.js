@@ -337,7 +337,7 @@ exports.tripdetail_downloadfile_toemail_monthly = async (req, res) => {
     if (isFirstDayOfMonth) {
       // หาวันที่ของเดือนก่อนหน้า
       const lastMonth = moment().subtract(1, 'months');
-      // หาปีปัจจุบัน
+      // หาปีของเดือนก่อนหน้า
       const currentYear = lastMonth.format('YYYY');
 
       const startDate = moment(`${currentYear}-${lastMonth.format('MM')}-01`, 'YYYY-MM-DD');

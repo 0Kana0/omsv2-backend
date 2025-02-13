@@ -82,7 +82,15 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: selectDate + " 07:00:00"},
+      where: {
+        date: selectDate + " 07:00:00",
+        networkId: {
+          [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -217,7 +225,13 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
           }
         ],
         where: {
-          date: sixDaysAgo.format('YYYY-MM-DD') + " 07:00:00"
+          date: sixDaysAgo.format('YYYY-MM-DD') + " 07:00:00",
+          networkId: {
+            [Op.ne]: [25]
+          },
+          approveStatus: {
+            [Op.ne]: ['Hidden']
+          },
         },
         order: [['date', 'ASC'], ['networkId', 'ASC']]
       });
@@ -377,6 +391,12 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
         date: {
           [Op.between]: [firstDayOfMonth.format('YYYY-MM-DD') + " 07:00:00", lastDayOfMonth.format('YYYY-MM-DD') + " 07:00:00"],
         },
+        networkId: {
+          [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
       },
       order: [['date', 'ASC'], ['networkId', 'ASC']] 
     })
@@ -510,6 +530,9 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         networkId: {
           [Op.ne]: [25]
         },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -633,6 +656,9 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         networkId: {
           [Op.ne]: [25]
         },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -754,6 +780,12 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
         date: currentDate + " 07:00:00",
         ownerRental: {
           [Op.or]: ['TKN', 'Sold']
+        },
+        networkId: {
+          [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
         },
       },
       order: [['networkId', 'ASC']] 
@@ -893,6 +925,9 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
         networkId: {
           [Op.ne]: [25]
         },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -989,7 +1024,16 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
         model: TeamModel,
         attributes: ['team_name']
       }],
-      where: {date: currentDate + " 07:00:00", approveStatus: "Completed", available: "Yes"},
+      where: {
+        date: currentDate + " 07:00:00", 
+        networkId: {
+          [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.or]: ['Completed', 'Completed By Trip']
+        },
+        available: "Yes",
+      },
       order: [['networkId', 'ASC']] 
     })
 
@@ -1115,7 +1159,10 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
         date: {
           [Op.between]: [firstDayOfMonthFormat + " 07:00:00", lastDayOfMonthFormat + " 07:00:00"],
         },
-        approveStatus: 'pending'
+        networkId: {
+          [Op.ne]: [25]
+        },
+        approveStatus: 'Pending'
       },
       order: [['date', 'ASC']],
       attributes: ['date', 'approveStatus', 'NetworkId']
@@ -1176,7 +1223,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
       const dataVehicleBookingGroupByStatus = await db.sequelize.query(`
         SELECT ${chooseVbkDB}.status, COUNT(${chooseVbkDB}.status) as count
         FROM ${chooseVbkDB}
-        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.networkId !== 25
+        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.networkId !== 25 AND ${chooseVbkDB}.approveStatus !== 'Hidden'
         GROUP BY ${chooseVbkDB}.status  
         ORDER BY ${chooseVbkDB}.status ASC;
       `)
@@ -1505,12 +1552,12 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
       } 
 
       console.log(allVehicleBookingSelect[index]);
-      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       //console.log(allVehicleBookingSelect[index].networkId, allVehicleBookingSelect[index].customerId);
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(allVehicleBookingSelect[index].date).year();
       const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
 
+      // เรียกดูข้อมูล vbk ก่อนมีการเเก้ไขข้อมูล
       const dataBeforeEdit = await chooseVbkDB.findOne(
         { where: { id: allVehicleBookingSelect[index].id } }
       )    
@@ -1541,6 +1588,7 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
         }, { where: { id: allVehicleBookingSelect[index].id } }
       )
 
+      // ดูข้อมูลก่อนและหลังการเเก้ไขว่าตรงกับเงื่อนไขมั้ย ถ้าตรงทำการเก็บข้อมูลลง vbkhistory
       //console.log(dataBeforeEdit.networkId, dataBeforeEdit.customerId);
       if (allVehicleBookingSelect[index].networkId !== dataBeforeEdit.networkId || allVehicleBookingSelect[index].customerId !== dataBeforeEdit.customerId) {
         await VbkHistoryModel.create({
@@ -1558,23 +1606,27 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
         return res.send({message: 'No Data Found'})
       }
 
+      // หาวันพน
       const nextDate = moment(allVehicleBookingSelect[index].date).add(1, 'days').format('YYYY-MM-DD')
       console.log(nextDate);
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear_nextDate = moment(nextDate).year();
       const chooseVbkDB_nextDate = await choose_database_fromyear_vbk(startDateYear_nextDate)
+      // เรียกดูข้อมูลที่เเก้ไขไปของวันพนที่เป็น Hidden
       const dataVehicleBookingStatusCheck = await chooseVbkDB_nextDate.findOne({
         where: {
           date: nextDate + " 07:00:00", 
-          vehicleId: allVehicleBookingSelect[index].vehicleId
+          vehicleId: allVehicleBookingSelect[index].vehicleId,
+          approveStatus: 'Hidden'
         }
       })
 
       console.log(dataVehicleBookingStatusCheck);
       console.log(currentDate);
       console.log(allVehicleBookingSelect[index].date);
-      if (allVehicleBookingSelect[index].approveStatus == 'Completed') {
-        if (dataVehicleBookingStatusCheck == null && allVehicleBookingSelect[index].date != currentDate) {
+      if (allVehicleBookingSelect[index].approveStatus == 'Completed' || allVehicleBookingSelect[index].approveStatus == 'Completed By Trip') {
+        // ถ้ามีข้อมูลของวันพนที่เป็น Hidden และวันของข้อมูลไม่ใช่วันปัจจุบัน
+        if (dataVehicleBookingStatusCheck !== null && allVehicleBookingSelect[index].date != currentDate) {
           console.log({
             date: nextDate,
             status: allVehicleBookingSelect[index].status,
@@ -1598,7 +1650,7 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
             servicetypeId: allVehicleBookingSelect[index].servicetypeId
           })
   
-          await chooseVbkDB_nextDate.create({
+          await chooseVbkDB_nextDate.update({
             date: nextDate,
             status: allVehicleBookingSelect[index].status,
             remark: allVehicleBookingSelect[index].remark,
@@ -1619,7 +1671,7 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
             vehicleId: allVehicleBookingSelect[index].vehicleId, 
             networkId: allVehicleBookingSelect[index].networkId,
             servicetypeId: allVehicleBookingSelect[index].servicetypeId
-          })
+          }, { where: { id: dataVehicleBookingStatusCheck.id } })
 
           // const checkDataTripCompareBooking = await TripCompareBookingModel.findOne({
           //   where: {date: nextDate + " 07:00:00", vehicleId: allVehicleBookingSelect[index].vehicleId},
@@ -2216,6 +2268,183 @@ exports.vehiclebookingstatus_delete = async (req, res, next) => {
 //       return res.send({message: 'No Data Found'})
 //     }
 //     res.send({message: 'Delete Data Success'})
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send(error.message)
+//   }
+// }
+
+// exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
+//   try {
+//     const allVehicleBookingSelect = req.body
+//     const length = allVehicleBookingSelect.length
+
+//     for (let index = 0; index < length; index++) {
+//       let currentDate = moment().format('YYYY-MM-DD');
+//       // console.log(currentDate);
+
+//       // console.log(allVehicleBookingSelect[index]);
+//       if (allVehicleBookingSelect[index].issueDate == '') {
+//         allVehicleBookingSelect[index].issueDate = null
+//       }
+
+//       if (allVehicleBookingSelect[index].status == 'Active') {
+//         allVehicleBookingSelect[index].remark = null
+//         allVehicleBookingSelect[index].issueDate = null
+//         allVehicleBookingSelect[index].problemIssue = null
+//       }
+
+//       if (allVehicleBookingSelect[index].reason == "-") {
+//         allVehicleBookingSelect[index].reason = null
+//       }
+
+//       if (allVehicleBookingSelect[index].problemIssue == 'Parking (No job)') {
+//         allVehicleBookingSelect[index].problemIssue = 'parkingNoJob'
+//       } else if (allVehicleBookingSelect[index].problemIssue == 'Parking (No driver)') {
+//         allVehicleBookingSelect[index].problemIssue = 'parkingNoDriver'
+//       } else if (allVehicleBookingSelect[index].problemIssue == 'Parking (No job & No driver)') {
+//         allVehicleBookingSelect[index].problemIssue = 'parkingNoJobAndDriver'
+//       } else if (allVehicleBookingSelect[index].problemIssue == 'Parking (Driver absence)') {
+//         allVehicleBookingSelect[index].problemIssue = 'parkingDriverAbsence'
+//       } else if (allVehicleBookingSelect[index].problemIssue == 'Parking (Legal case)') {
+//         allVehicleBookingSelect[index].problemIssue = 'parkingLegalCase'
+//       } 
+
+//       console.log(allVehicleBookingSelect[index]);
+//       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+//       //console.log(allVehicleBookingSelect[index].networkId, allVehicleBookingSelect[index].customerId);
+//       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+//       const startDateYear = moment(allVehicleBookingSelect[index].date).year();
+//       const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
+
+//       const dataBeforeEdit = await chooseVbkDB.findOne(
+//         { where: { id: allVehicleBookingSelect[index].id } }
+//       )    
+//       const data = await chooseVbkDB.update(
+//         {
+//           date: allVehicleBookingSelect[index].date,
+//           status: allVehicleBookingSelect[index].status,
+//           remark: allVehicleBookingSelect[index].remark,
+//           issueDate: allVehicleBookingSelect[index].issueDate,
+//           forecastCompleteDate: allVehicleBookingSelect[index].forecastCompleteDate,
+//           completeDate: allVehicleBookingSelect[index].completeDate,
+//           problemIssue: allVehicleBookingSelect[index].problemIssue,
+//           reason: allVehicleBookingSelect[index].reason,
+//           approve: allVehicleBookingSelect[index].approve,
+//           approveStatus: allVehicleBookingSelect[index].approveStatus,
+//           available: allVehicleBookingSelect[index].available,
+//           available_start: allVehicleBookingSelect[index].available_start,
+//           available_end: allVehicleBookingSelect[index].available_end,
+//           ownerRental: allVehicleBookingSelect[index].ownerRental,
+//           ownedBy: allVehicleBookingSelect[index].ownedBy,
+//           rentalBy: allVehicleBookingSelect[index].rentalBy,
+//           replacement: allVehicleBookingSelect[index].replacement,
+//           customerId: allVehicleBookingSelect[index].customerId,
+//           teamId: allVehicleBookingSelect[index].teamId,
+//           vehicleId: allVehicleBookingSelect[index].vehicleId, 
+//           networkId: allVehicleBookingSelect[index].networkId,
+//           servicetypeId: allVehicleBookingSelect[index].servicetypeId
+//         }, { where: { id: allVehicleBookingSelect[index].id } }
+//       )
+
+//       //console.log(dataBeforeEdit.networkId, dataBeforeEdit.customerId);
+//       if (allVehicleBookingSelect[index].networkId !== dataBeforeEdit.networkId || allVehicleBookingSelect[index].customerId !== dataBeforeEdit.customerId) {
+//         await VbkHistoryModel.create({
+//           date: allVehicleBookingSelect[index].date,
+//           old_customer: dataBeforeEdit.customerId,
+//           new_customer: allVehicleBookingSelect[index].customerId,
+//           old_network: dataBeforeEdit.networkId,
+//           new_network: allVehicleBookingSelect[index].networkId,
+//           approve: allVehicleBookingSelect[index].approve,
+//           vehicleId: allVehicleBookingSelect[index].vehicleId
+//         })
+//       }
+
+//       if (data == 0) {
+//         return res.send({message: 'No Data Found'})
+//       }
+
+//       const nextDate = moment(allVehicleBookingSelect[index].date).add(1, 'days').format('YYYY-MM-DD')
+//       console.log(nextDate);
+//       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+//       const startDateYear_nextDate = moment(nextDate).year();
+//       const chooseVbkDB_nextDate = await choose_database_fromyear_vbk(startDateYear_nextDate)
+//       const dataVehicleBookingStatusCheck = await chooseVbkDB_nextDate.findOne({
+//         where: {
+//           date: nextDate + " 07:00:00", 
+//           vehicleId: allVehicleBookingSelect[index].vehicleId
+//         }
+//       })
+
+//       console.log(dataVehicleBookingStatusCheck);
+//       console.log(currentDate);
+//       console.log(allVehicleBookingSelect[index].date);
+//       if (allVehicleBookingSelect[index].approveStatus == 'Completed') {
+//         if (dataVehicleBookingStatusCheck == null && allVehicleBookingSelect[index].date != currentDate) {
+//           console.log({
+//             date: nextDate,
+//             status: allVehicleBookingSelect[index].status,
+//             remark: allVehicleBookingSelect[index].remark,
+//             issueDate: allVehicleBookingSelect[index].issueDate,
+//             forecastCompleteDate: allVehicleBookingSelect[index].forecastCompleteDate,
+//             completeDate: allVehicleBookingSelect[index].completeDate,
+//             problemIssue: allVehicleBookingSelect[index].problemIssue,
+//             reason: allVehicleBookingSelect[index].reason,
+//             approve: null,
+//             approveStatus: 'Pending',
+//             available: 'No',
+//             ownerRental: allVehicleBookingSelect[index].ownerRental,
+//             ownedBy: allVehicleBookingSelect[index].ownedBy,
+//             rentalBy: allVehicleBookingSelect[index].rentalBy,
+//             replacement: allVehicleBookingSelect[index].replacement,
+//             customerId: allVehicleBookingSelect[index].customerId,
+//             teamId: allVehicleBookingSelect[index].teamId,
+//             vehicleId: allVehicleBookingSelect[index].vehicleId, 
+//             networkId: allVehicleBookingSelect[index].networkId,
+//             servicetypeId: allVehicleBookingSelect[index].servicetypeId
+//           })
+  
+//           await chooseVbkDB_nextDate.create({
+//             date: nextDate,
+//             status: allVehicleBookingSelect[index].status,
+//             remark: allVehicleBookingSelect[index].remark,
+//             issueDate: allVehicleBookingSelect[index].issueDate,
+//             forecastCompleteDate: allVehicleBookingSelect[index].forecastCompleteDate,
+//             completeDate: allVehicleBookingSelect[index].completeDate,
+//             problemIssue: allVehicleBookingSelect[index].problemIssue,
+//             reason: allVehicleBookingSelect[index].reason,
+//             approve: null,
+//             approveStatus: 'Pending',
+//             available: 'No',
+//             ownerRental: allVehicleBookingSelect[index].ownerRental,
+//             ownedBy: allVehicleBookingSelect[index].ownedBy,
+//             rentalBy: allVehicleBookingSelect[index].rentalBy,
+//             replacement: allVehicleBookingSelect[index].replacement,
+//             customerId: allVehicleBookingSelect[index].customerId,
+//             teamId: allVehicleBookingSelect[index].teamId,
+//             vehicleId: allVehicleBookingSelect[index].vehicleId, 
+//             networkId: allVehicleBookingSelect[index].networkId,
+//             servicetypeId: allVehicleBookingSelect[index].servicetypeId
+//           })
+
+//           // const checkDataTripCompareBooking = await TripCompareBookingModel.findOne({
+//           //   where: {date: nextDate + " 07:00:00", vehicleId: allVehicleBookingSelect[index].vehicleId},
+//           // })
+
+//           //console.log(checkDataTripCompareBooking);
+//           // if (checkDataTripCompareBooking == null) {
+//           //   await TripCompareBookingModel.create({
+//           //     date: nextDate,
+//           //     compareStatus: 'abnormal',
+//           //     clarification: null,
+//           //     vehiclebookingstatusId: allVehicleBookingSelect[index].id,
+//           //     vehicleId: allVehicleBookingSelect[index].vehicleId
+//           //   })
+//           // }
+//         }
+//       }
+//     }
+//     res.send({message: 'Edit Data Success'})
 //   } catch (error) {
 //     console.log(error);
 //     res.status(500).send(error.message)

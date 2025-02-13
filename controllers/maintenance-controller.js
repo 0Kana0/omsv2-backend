@@ -76,12 +76,17 @@ exports.maintenance_get_all = async (req, res, next) => {
       }],
       where: {
         date: currentDate + " 07:00:00", 
-        status: 'Inactive',
+        status: {
+          [Op.ne]: ['Active']
+        },
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
         networkId: {
           [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
         },
       },
       order: [['networkId', 'ASC']] 
@@ -179,12 +184,17 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
       }],
       where: {
         date: selectDate + " 07:00:00", 
-        status: 'Inactive',
+        status: {
+          [Op.ne]: ['Active']
+        },
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
         networkId: {
           [Op.ne]: [25]
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
         },
       },
       order: [['networkId', 'ASC']] 
@@ -292,13 +302,18 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
         date: {
           [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
         },
-        status: 'Inactive',
+        status: {
+          [Op.ne]: ['Active']
+        },
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
         networkId: {
           [Op.ne]: [25]
-        },s
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
       },
       order: [['networkId', 'ASC']] 
     })
@@ -364,8 +379,6 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
   }
 }
 
-
-
 // Maintenance (VehicleBookingStatus Inactive) ที่จัดกลุ่มโดยใช้ Remark
 exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
   try {
@@ -385,7 +398,7 @@ exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
       const dataMaintenanceGroupByRemark = await db.sequelize.query(`
         SELECT ${chooseVbkDB}.remark, COUNT(${chooseVbkDB}.remark) as count
         FROM ${chooseVbkDB}
-        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND status = 'Inactive' AND ${chooseVbkDB}.networkId !== 25
+        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND status !== 'Active' AND ${chooseVbkDB}.networkId !== 25 AND ${chooseVbkDB}.approveStatus !== 'Hidden'
         GROUP BY ${chooseVbkDB}.remark  
         ORDER BY ${chooseVbkDB}.remark ASC
       `)

@@ -40,7 +40,7 @@ const choose_database_fromyear_vbk_sql = async(selectYear) => {
 exports.tripcomparebooking_daily_create = async (req, res) => {
   try {
     const selectDate = moment().format('YYYY-MM-DD');
-    // const selectDate = '2025-02-07';
+    //const selectDate = '2025-02-13';
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(selectDate).year();
     const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)

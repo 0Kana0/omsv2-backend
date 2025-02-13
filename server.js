@@ -15,6 +15,7 @@ const {
   vehiclebooking_downloadfile_toemail_daily,
   vehiclebooking_downloadfile_toemail_monthly,
   vehiclebooking_to_newvehiclebooking,
+  vehiclebooking_daily_create_hidden,
 } = require('./functions/vehiclebooking-function')
 const { 
   get_alert, 
@@ -89,6 +90,7 @@ readdirSync('./routes')
 // vehiclebooking_daily_create_test()
 // vehiclebooking_to_newvehiclebooking()
 // tripcomparebooking_daily_create()
+// vehiclebooking_daily_create_hidden()
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()

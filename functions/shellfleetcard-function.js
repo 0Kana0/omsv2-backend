@@ -196,7 +196,7 @@ exports.shell_updatefleetcarddata_transaction_10min = async (req, res) => {
     console.log('Start Add Shell Fleetcard From API')
     // หาวันที่ปัจจุบัน
     const todayDate = moment().format('YYYY-MM-DD');
-    //const todayDate = '2024-09-17';
+    //const todayDate = '2025-02-13';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(todayDate).subtract(1, 'days').format('YYYY-MM-DD');
     // Reset api_check ให้เป็น 0 เพื่อตรวจสอบว่าข้อมูลไหนตรวจพบใน Api บ้าง
@@ -458,7 +458,7 @@ exports.shell_fleetcardmonitoring_1hour = async (req, res) => {
     console.log('Start Add Shell Data From Monitor')
     // หาวันที่ปัจจุบัน
     const todayDate = moment().format('YYYY-MM-DD');
-    //const todayDate = '2024-09-17';
+    //const todayDate = '2025-02-12';
     // หาวันก่อนหน้า 1 วัน
     const previousDay = moment(todayDate).subtract(1, 'days').format('YYYY-MM-DD');
     // ตั้งค่าการยืนยันตัวตน
