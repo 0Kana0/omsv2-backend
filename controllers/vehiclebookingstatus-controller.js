@@ -1515,7 +1515,7 @@ exports.vehiclebookingstatus_put = async (req, res, next) => {
   }
 }
 
-exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
+exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
   try {
     const allVehicleBookingSelect = req.body
     const length = allVehicleBookingSelect.length
@@ -1524,12 +1524,12 @@ exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
       let currentDate = moment().format('YYYY-MM-DD');
       // console.log(currentDate);
 
-      // console.log(allVehicleBookingSelect[index]);
       if (allVehicleBookingSelect[index].issueDate == '') {
         allVehicleBookingSelect[index].issueDate = null
       }
 
       if (allVehicleBookingSelect[index].status == 'Active') {
+        allVehicleBookingSelect[index].reason = null
         allVehicleBookingSelect[index].remark = null
         allVehicleBookingSelect[index].issueDate = null
         allVehicleBookingSelect[index].problemIssue = null
@@ -2274,7 +2274,7 @@ exports.vehiclebookingstatus_delete = async (req, res, next) => {
 //   }
 // }
 
-// exports.vehiclebookingstatusbyselect_put = async (req, res, next) => {
+// exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
 //   try {
 //     const allVehicleBookingSelect = req.body
 //     const length = allVehicleBookingSelect.length

@@ -42,6 +42,7 @@ router.get('/gettripdetailcostgroupbycustomerbyyear/:year', controller.tripdetai
 router.post('/posttripdetail', controller.tripdetail_post)
 //router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel)
 router.post('/posttripdetailfromexcel', controller.tripdetail_post_byexcel_v3)
+router.post('/posttripdetailfromexcelmatchingvbk', controller.tripdetail_post_byexcel_matchingvbk_v3)
 // router.post('/posttripdetail2024fromexcel', controller.tripdetail_post_byexcel_v3)
 
 //------- PUT -------//
