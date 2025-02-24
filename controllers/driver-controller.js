@@ -107,6 +107,58 @@ exports.driver_get_all = async (req, res, next) => {
     res.status(500).send(error.message)
   }
 }
+exports.driver_get_all_active = async (req, res, next) => {
+  try {
+    const dataDriver = await DriverModel.findAll(
+      { where: { status: 'ทำงาน' }}
+    )
+
+    res.send(dataDriver);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message)
+  }
+}
+exports.driver_get_all_withoutnoinfo = async (req, res, next) => {
+  try {
+    const dataDriver = await DriverModel.findAll(
+      { where: { 
+        status: {
+          [Op.ne]: ['ไม่มีข้อมูล']
+        },
+      }}
+    )
+
+    res.send(dataDriver);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message)
+  }
+}
+exports.driver_get_all_only = async (req, res, next) => {
+  try {
+    const dataDriver = await DriverModel.findAll(
+      { where: { role: 'พขร' }}
+    )
+
+    res.send(dataDriver);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message)
+  }
+}
+exports.driver_get_all_assistant = async (req, res, next) => {
+  try {
+    const dataDriver = await DriverModel.findAll(
+      { where: { role: 'ผู้ช่วย' }}
+    )
+
+    res.send(dataDriver);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message)
+  }
+}
 
 exports.driver_get_one = async (req, res, next) => {
   try {
@@ -196,6 +248,105 @@ exports.driver_put = async (req, res, next) => {
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)
+  }
+}
+
+exports.driver_put_byexcel = async (req, res, next) => {
+  try {
+    const allDriver = req.body
+
+    for (const item of allDriver) {
+
+      if (item.status == "-") {
+        item.status = null
+      }
+      if (item.status !== null) {
+        item.status = item.status.toString();
+        item.status = item.status.replace(/\s/g, ''); // ลบทุกช่องว่างออก
+      }
+
+      if (item.driverNumber == "-") {
+        item.driverNumber = null
+      }
+      if (item.driverNumber !== null) {
+        item.driverNumber = item.driverNumber.toString();
+        item.driverNumber = item.driverNumber.replace(/\s/g, ''); // ลบทุกช่องว่างออก
+      }
+
+      if (item.phone == "-") {
+        item.phone = null
+      }
+      if (item.phone !== null) {
+        item.phone = item.phone.replace(/\D/g, ''); // เอาทุกอย่างที่ไม่ใช่ตัวเลขออก
+        item.phone = item.phone.replace(/\s/g, ''); // ลบทุกช่องว่างออก
+      }
+
+      let prefixName
+      let splitName
+      if (item.fullname == "-") {
+        item.fullname = null
+      }
+      if (item.fullname !== null) {
+        if (item.fullname.includes("นาย")) {
+          prefixName = "นาย"
+        } else if (item.fullname.includes("นางสาว")) {
+          prefixName = "นางสาว"
+        } else {
+          prefixName = "นาง"
+        }
+
+        item.fullname = item.fullname.replace(/นาย|นางสาว|นาง/g, ''); // ลบคำที่กำหนด
+        item.fullname = item.fullname.trim(); //ลบช่องว่างด้านหน้าและด้านหลัง
+        item.fullname = item.fullname.replace(/\s+/g, ' '); // แทนที่ช่องว่างหลายตัวด้วยช่องว่างเดียว
+        splitName = item.fullname.split(" ");
+
+        console.log({
+          driverNumber: item.driverNumber,
+          prefixName: prefixName,
+          name: splitName[0],
+          surName: splitName[1],
+          fullName: splitName[0] + ' ' + splitName[1],
+          phone: item.phone,
+          status: item.status,
+          role: 'ผู้ช่วย',
+        });
+  
+        const checkDriver = await DriverModel.findOne(
+          { where: { fullName: splitName[0] + ' ' + splitName[1] } }
+        )
+        //console.log(checkDriver);
+      
+        if (checkDriver !== null) {
+          await DriverModel.update(
+            {
+              driverNumber: item.driverNumber,
+              prefixName: prefixName,
+              name: splitName[0],
+              surName: splitName[1],
+              fullName: splitName[0] + ' ' + splitName[1],
+              phone: item.phone,
+              status: item.status,
+              role: 'ผู้ช่วย',
+            }, { where: { fullName: splitName[0] + ' ' + splitName[1] } }
+          )
+        } else {
+          await DriverModel.create(
+            {
+              driverNumber: item.driverNumber,
+              prefixName: prefixName,
+              name: splitName[0],
+              surName: splitName[1],
+              fullName: splitName[0] + ' ' + splitName[1],
+              phone: item.phone,
+              status: item.status,
+              role: 'ผู้ช่วย',
+            }
+          )
+        }
+      }
+    }
+  } catch (error) {
+    console.log(error);
   }
 }
 

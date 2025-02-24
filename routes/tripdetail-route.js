@@ -46,7 +46,7 @@ router.post('/posttripdetailfromexcelmatchingvbk', controller.tripdetail_post_by
 // router.post('/posttripdetail2024fromexcel', controller.tripdetail_post_byexcel_v3)
 
 //------- PUT -------//
-router.put('/puttripdetail/:id/:date', controller.tripdetail_put)
+router.put('/puttripdetail/:id', controller.tripdetail_put)
 router.put('/puttripdetailbyselect/', controller.tripdetailbyselect_put)
 
 //------- DELETE -------//

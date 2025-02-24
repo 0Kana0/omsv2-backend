@@ -1697,52 +1697,67 @@ exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
   }
 }
 
-exports.vehiclebookingstatus_put_byexel = async (req, res, next) => {
+exports.vehiclebookingstatus_put_byexcel = async (req, res, next) => {
   try {
     const allVehicleBookingExcel = req.body
     const length = allVehicleBookingExcel.length
     const currentDate = moment().format('YYYY-MM-DD');
 
-    console.log(allVehicleBookingExcel);
-
     for (const item of allVehicleBookingExcel) {  
+      if (item.status == 'Active') {
+        item.reason = null
+        item.remark = null
+        item.issueDate = null
+        item.problemIssue = null
+      }
+
+      if (item.reason == "-") {
+        item.reason = null
+      }
+      
       const dataVehicle = await VehicleModel.findOne(
         { where: {plateNumber: item.plateNumber} }
       )
       const dataTeam = await TeamModel.findOne(
-        { where: {team_name: item.team} }
+        { where: {team_name: item.team_name} }
       )
       const dataNetwork = await NetworkModel.findOne(
-        { where: {network_name: item.network} }
+        { where: {network_name: item.network_name} }
       )
       const dataCustomer = await CustomerModel.findOne(
-        { where: {customer_name: item.client} }
+        { where: {customer_name: item.customer_name} }
       )
       const dataServiceType = await ServiceTypeModel.findOne(
-        { where: {servicetype_name: item.serviceType} }
+        { where: {servicetype_name: item.servicetype_name} }
       )
 
-      item.date = moment(item.date).format('YYYY-MM-DD');
+      item.date = moment(item.date, 'M/D/YYYY').format('YYYY-MM-DD');
       if (item.issueDate != null && item.issueDate != '' && item.issueDate != '-') {
-        item.issueDateData = moment(item.issueDate).format('YYYY-MM-DD');
+        item.issueDate = moment(item.issueDate, 'M/D/YYYY').format('YYYY-MM-DD');
       } else {
-        item. issueDateData = null;
+        item. issueDate = null;
       }
       if (item.available_start != null && item.available_start != '' && item.available_start != '-') {
-        item.available_start = moment(item.available_start).format('YYYY-MM-DD');
+        item.available_start = moment(item.available_start, 'M/D/YYYY').format('YYYY-MM-DD');
       } else {
         item. available_start = null;
       }
       if (item.available_end != null && item.available_end != '' && item.available_end != '-') {
-        item.available_end = moment(item.available_end).format('YYYY-MM-DD');
+        item.available_end = moment(item.available_end, 'M/D/YYYY').format('YYYY-MM-DD');
       } else {
         item.available_end = null;
       }
 
+      console.log(item);
+      
       // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
       const startDateYear = moment(item.date).year();
       const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
 
+      // เรียกดูข้อมูล vbk ก่อนมีการเเก้ไขข้อมูล
+      const dataBeforeEdit = await chooseVbkDB.findOne(
+        { where: { vehicleId: dataVehicle.id, date: item.date + " 07:00:00"} }
+      )    
       const data = await chooseVbkDB.update(
         {
           status: item.status,
@@ -1753,7 +1768,7 @@ exports.vehiclebookingstatus_put_byexel = async (req, res, next) => {
           problemIssue: item.problemIssue,
           reason: item.reason,
           approve: item.approve,
-          approveStatus: item.approveStatus,
+          approveStatus: "Completed",
           available: item.available,
           available_start: item.available_start,
           available_end: item.available_end,
@@ -1768,8 +1783,105 @@ exports.vehiclebookingstatus_put_byexel = async (req, res, next) => {
         }, { where: { vehicleId: dataVehicle.id, date: item.date + " 07:00:00"} }
       )
 
+      // ดูข้อมูลก่อนและหลังการเเก้ไขว่าตรงกับเงื่อนไขมั้ย ถ้าตรงทำการเก็บข้อมูลลง vbkhistory
+      //console.log(dataBeforeEdit.networkId, dataBeforeEdit.customerId);
+      if (dataNetwork.id !== dataBeforeEdit.networkId || dataCustomer.id !== dataBeforeEdit.customerId) {
+        await VbkHistoryModel.create({
+          date: item.date,
+          old_customer: dataBeforeEdit.customerId,
+          new_customer: dataCustomer.id,
+          old_network: dataBeforeEdit.networkId,
+          new_network: dataNetwork.id,
+          approve: item.approve,
+          vehicleId: dataVehicle.id
+        })
+      }
+
       if (data == 0) {
         return res.send({message: 'No Data Found'})
+      }
+
+      // หาวันพน
+      const nextDate = moment(item.date).add(1, 'days').format('YYYY-MM-DD')
+      console.log(nextDate);
+      // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+      const startDateYear_nextDate = moment(nextDate).year();
+      const chooseVbkDB_nextDate = await choose_database_fromyear_vbk(startDateYear_nextDate)
+      // เรียกดูข้อมูลที่เเก้ไขไปของวันพนที่เป็น Hidden
+      const dataVehicleBookingStatusCheck = await chooseVbkDB_nextDate.findOne({
+        where: {
+          date: nextDate + " 07:00:00", 
+          vehicleId: dataVehicle.id,
+          approveStatus: 'Hidden'
+        }
+      })
+
+      console.log(dataVehicleBookingStatusCheck);
+      console.log(currentDate);
+      console.log(item.date);
+      
+      // ถ้ามีข้อมูลของวันพนที่เป็น Hidden และวันของข้อมูลไม่ใช่วันปัจจุบัน
+      if (dataVehicleBookingStatusCheck !== null && item.date != currentDate) {
+        console.log({
+          date: nextDate,
+          status: item.status,
+          remark: item.remark,
+          issueDate: item.issueDate,
+          forecastCompleteDate: item.forecastCompleteDate,
+          completeDate: item.completeDate,
+          problemIssue: item.problemIssue,
+          reason: item.reason,
+          approve: null,
+          approveStatus: 'Pending',
+          available: 'No',
+          ownerRental: item.ownerRental,
+          ownedBy: item.ownedBy,
+          rentalBy: item.rentalBy,
+          replacement: item.replacement,
+          customerId: dataCustomer.id,
+          teamId: dataTeam.id,
+          vehicleId: dataVehicle.id, 
+          networkId: dataNetwork.id,
+          servicetypeId: dataServiceType.id
+        })
+  
+        await chooseVbkDB_nextDate.update({
+          date: nextDate,
+          status: item.status,
+          remark: item.remark,
+          issueDate: item.issueDate,
+          forecastCompleteDate: item.forecastCompleteDate,
+          completeDate: item.completeDate,
+          problemIssue: item.problemIssue,
+          reason: item.reason,
+          approve: null,
+          approveStatus: 'Pending',
+          available: 'No',
+          ownerRental: item.ownerRental,
+          ownedBy: item.ownedBy,
+          rentalBy: item.rentalBy,
+          replacement: item.replacement,
+          customerId: dataCustomer.id,
+          teamId: dataTeam.id,
+          vehicleId: dataVehicle.id, 
+          networkId: dataNetwork.id,
+          servicetypeId: dataServiceType.id
+        }, { where: { date: nextDate + " 07:00:00", vehicleId: dataVehicle.id } })
+
+        // const checkDataTripCompareBooking = await TripCompareBookingModel.findOne({
+        //   where: {date: nextDate + " 07:00:00", vehicleId: allVehicleBookingSelect[index].vehicleId},
+        // })
+
+        //console.log(checkDataTripCompareBooking);
+        // if (checkDataTripCompareBooking == null) {
+        //   await TripCompareBookingModel.create({
+        //     date: nextDate,
+        //     compareStatus: 'abnormal',
+        //     clarification: null,
+        //     vehiclebookingstatusId: allVehicleBookingSelect[index].id,
+        //     vehicleId: allVehicleBookingSelect[index].vehicleId
+        //   })
+        // }
       }
     }
 
@@ -1789,31 +1901,7 @@ exports.vehiclebookingstatus_delete = async (req, res, next) => {
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(date).year();
     const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
-    // ดึงข้อมูล vbk ที่ต้องการลบออกมาก่อนเพื่อนำไปใช้ในการลบ vbk ที่เชื่อมอยู่กับ db อื่นๆ
-    const dataBeforeDelete = await chooseVbkDB.findOne(
-      { where: { id: delete_id } }
-    )    
 
-    if (dataBeforeDelete == null) {
-      return res.send({message: 'No Data Found'});
-    }
-    // const findTripCompareBooking = await TripCompareBookingModel.findOne(
-    //   { where: { vehiclebookingstatusId: delete_id } }
-    // )
-
-    // if (findTripCompareBooking) {
-    //   await TripCompareBookingModel.destroy(
-    //     { where: { vehiclebookingstatusId: delete_id } }
-    //   )
-    // }
-
-    // ลบข้อมูลใน vbkhistory ที่เกี่ยวข้องกับ vbk ที่ต้องการลบ
-    await VbkHistoryModel.destroy(
-      { where: { 
-        date: dataBeforeDelete.date,
-        vehicleId: dataBeforeDelete.vehicleId, 
-      } }
-    )
     // ลบข้อมูล vbk ที่ต้องการลบ
     await chooseVbkDB.destroy(
       { where: { id: delete_id } }

@@ -52,6 +52,9 @@ const {
   add_fleetcardnumber,
   platenumber_format
 } = require("./functions/ptmaxfleetcard-function")
+const { 
+  vehiclematchdriver_daily_create,
+} = require("./functions/vehiclematchdriver-function")
 
 const app = express()
 app.use(cors())
@@ -91,6 +94,7 @@ readdirSync('./routes')
 // vehiclebooking_to_newvehiclebooking()
 // tripcomparebooking_daily_create()
 // vehiclebooking_daily_create_hidden()
+// vehiclematchdriver_daily_create()
 
 // fleetcardtracking_daily_0001()
 // shell_fleetcardmonitoring_1hour()
@@ -155,8 +159,8 @@ cron.schedule('*/30 0-23 * * *', () => {
 
 //------- FUNCTION ที่ทำงานเกียวกับ Tripcomparebooking -------//
 
-// FUNCTION สำหรับสร้าง Tripcomparebooking ในเเต่ละวัน (ทำงานเวลา 00:10)
-cron.schedule('10 00 * * *', () => {
+// FUNCTION สำหรับสร้าง Tripcomparebooking ในเเต่ละวัน (ทำงานเวลา 00:01)
+cron.schedule('01 00 * * *', () => {
   tripcomparebooking_daily_create();
 });
 
@@ -197,6 +201,13 @@ cron.schedule('*/10 0-23 * * *', () => {
 cron.schedule('0 0-23 * * *', () => {
   shell_fleetcardmonitoring_1hour()
   ptmax_fleetcardmonitoring_1hour()
+});
+
+//------- FUNCTION ที่ทำงานเกียวกับ Vehicle และ Driver -------//
+
+// FUNCTION สำหรับสร้าง VehicleMatchDriver ในเเต่ละวัน (ทำงานเวลา 00:01)
+cron.schedule('01 00 * * *', () => {
+  vehiclematchdriver_daily_create();
 });
 
 const port = process.env.PORT

@@ -7,6 +7,8 @@ router.get('/getvehicles', controller.vehicle_get_all)
 router.get('/getvehicle/:id', controller.vehicle_get_one)
 router.get('/getvehicleswithexcel', controller.vehicle_get_all_withexcel)
 
+router.get('/getvehiclevbkuse', controller.vehicle_get_all_vbkuse)
+
 //------- POST -------//
 router.post('/postvehicle', controller.vehicle_post)
 

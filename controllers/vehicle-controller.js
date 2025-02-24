@@ -145,6 +145,42 @@ exports.vehicle_get_all = async (req, res, next) => {
     res.status(500).send(error.message)
   }
 }
+exports.vehicle_get_all_vbkuse = async (req, res, next) => {
+  try {
+    const dataVehicle = await VehicleModel.findAll(
+      {
+        include: [{
+          model: VehicleTypeModel,
+          attributes: ['vehicletype_name']
+        }],
+        where: { status: 'vbk' }
+      }
+    )
+
+    const transformedData = []
+
+    dataVehicle.map((item) => {
+      const dataindex = {
+        "id": item.id,
+        "plateNumber": item.plateNumber,
+        "description": item.description,
+        "vehicleIdentificationNumber": item.vehicleIdentificationNumber,
+        "engineNumber": item.engineNumber,
+        "brand": item.brand,
+        "createdAt": item.createdAt,
+        "updatedAt": item.updatedAt,
+        "vehicletypeId_vehicle": item.vehicletypeId,
+        "vehicletype_name_vehicle": item.vehicletype.vehicletype_name,
+      }
+      transformedData.push(dataindex)
+    })
+
+    res.send(transformedData);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message)
+  }
+}
 
 exports.vehicle_get_one = async (req, res, next) => {
   try {

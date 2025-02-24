@@ -102,9 +102,6 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
     const dataTripCompareBooking = await TripCompareBooking2025Model.findAll({
       where: {
         date: selectDate + " 07:00:00",
-        teamId: {
-          [Op.ne]: [18]
-        },
       }
     })
 
@@ -122,8 +119,8 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
         }],
         where: {
           date: selectDate + " 07:00:00",
-          teamId: {
-            [Op.ne]: [18]
+          networkId: {
+            [Op.ne]: [25]
           },
           approveStatus: {
             [Op.ne]: ['Hidden']
@@ -280,7 +277,7 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
 
 
 //------- PUT -------//
-exports.tripcomparebooking_put = async (req, res, next) => {
+exports.tripcomparebooking_put_byselect = async (req, res, next) => {
   try {
     const allTripCompareBookingSelect = req.body
     const length = allTripCompareBookingSelect.length

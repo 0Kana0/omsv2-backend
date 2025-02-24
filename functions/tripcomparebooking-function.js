@@ -1,5 +1,8 @@
 const db = require("../models");
 const moment = require("moment");
+const Sequelize = require("sequelize");
+const Op = Sequelize.Op;
+
 const TripCompareBooking2025Model = db.TripCompareBooking2025Model;
 
 const VehicleBookingStatus2023Model = db.VehicleBookingStatus2023Model
@@ -40,26 +43,31 @@ const choose_database_fromyear_vbk_sql = async(selectYear) => {
 exports.tripcomparebooking_daily_create = async (req, res) => {
   try {
     const selectDate = moment().format('YYYY-MM-DD');
-    //const selectDate = '2025-02-13';
+    //const selectDate = '2025-02-23';
+    
+    const previousDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
+    //const previousDate = '2025-02-22'
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
-    const startDateYear = moment(selectDate).year();
-    const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
+    const startDateYear_previousDate = moment(previousDate).year();
+    const chooseVbkDB_previousDate = await choose_database_fromyear_vbk(startDateYear_previousDate)
 
-    const dataVehicleBookingStatus = await chooseVbkDB.findAll({
-      where: {date: selectDate + " 07:00:00"},
+    const dataVbk = await chooseVbkDB_previousDate.findAll({
+      where: {
+        date: previousDate + " 07:00:00",
+        networkId: {
+          [Op.ne]: [25]
+        },
+      },
       order: [['teamId', 'ASC']] 
     })
 
-    console.log(dataVehicleBookingStatus.length);
-    
-
-    for (const item of dataVehicleBookingStatus) {
+    console.log(dataVbk.length);
+    for (const item of dataVbk) {
       await TripCompareBooking2025Model.create({
         date: selectDate,
         compareStatus: 'abnormal',
         clarification: null,
         vehicleId: item.vehicleId,
-        teamId: item.teamId,
       })
     }
 

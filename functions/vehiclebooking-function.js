@@ -156,7 +156,7 @@ exports.vehiclebooking_daily_create = async (req, res) => {
       }
     }
   }
-  console.log("Add VehicleBookingStatus Daily Data Success");
+  console.log(`Add VehicleBookingStatus ${currentDate} Data Success`);
 }
 
 exports.vehiclebooking_daily_create_hidden = async (req, res) => {

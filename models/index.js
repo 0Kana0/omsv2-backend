@@ -184,12 +184,15 @@ db.TripCompareBookingModel.belongsTo(db.VehicleModel)
 
 db.TripCompareBooking2025Model = require("./tripcomparebooking2025-model.js")(sequelize, Sequelize);
 db.TripCompareBooking2025Model.belongsTo(db.VehicleModel)
-db.TripCompareBooking2025Model.belongsTo(db.TeamModel)
 
 // MODEL ส่วนของการจัดการ MA Summary
 db.MaintenanceSummaryModel = require("./maintenancesummary-model.js")(sequelize, Sequelize);
 db.MaintenanceSummaryModel.belongsTo(db.CustomerModel)
 db.MaintenanceSummaryModel.belongsTo(db.NetworkModel)
 db.MaintenanceSummaryModel.belongsTo(db.ServiceTypeModel)
+
+// MODEL ส่วนของการจัดการข้อมูลคนขับรถและคนขับ
+db.VehicleMatchDriver2025Model = require("./vehiclematchdriver2025-model.js")(sequelize, Sequelize);
+db.VehicleMatchDriver2025Model.belongsTo(db.VehicleModel)
 
 module.exports = db;

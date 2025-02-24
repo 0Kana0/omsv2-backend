@@ -9444,10 +9444,9 @@ exports.tripdetail_put = async (req, res, next) => {
     } = req.body
     
     const edit_id = req.params.id
-    const edit_date = req.params.date
 
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
-    const startDateYear = moment(edit_date).year();
+    const startDateYear = moment(date).year();
     const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
 
     const dataTripdetailPreviousOne = await chooseTripDB.findOne(

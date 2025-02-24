@@ -32,7 +32,7 @@ router.post('/postvehiclebookingchangeexcelwithdb', controller.vehiclebooking_ch
 //------- PUT -------//
 router.put('/putvehiclebookingstatus/:id', controller.vehiclebookingstatus_put)
 router.put('/putvehiclebookingstatusbyselect', controller.vehiclebookingstatus_put_byselect)
-router.put('/putvehiclebookingstatusfromexcel', controller.vehiclebookingstatus_put_byexel)
+router.put('/putvehiclebookingstatusbyexcel', controller.vehiclebookingstatus_put_byexcel)
 // router.put('/putvehiclebookingstatustruckownerfromexcel', controller.vehiclebookingstatus_put_truckowner_byexcel)
 
 //------- DELETE -------//
