@@ -13,6 +13,8 @@ const VehicleBookingStatus2023Model = db.VehicleBookingStatus2023Model
 const VehicleBookingStatus2024Model = db.VehicleBookingStatus2024Model
 const VehicleBookingStatus2025Model = db.VehicleBookingStatus2025Model
 
+const VehicleMatchDriverModel = db.VehicleMatchDriverModel
+
 const choose_database_fromyear_vbk = async(selectYear) => {
   try {
     let vbkDB
@@ -82,9 +84,6 @@ exports.maintenance_get_all = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -93,13 +92,17 @@ exports.maintenance_get_all = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
     let line = 1
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
-      
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
+
       if (item.problemIssue == 'parkingNoJob') {
         item.problemIssue = 'Parking (No job)'
       } else if (item.problemIssue == 'parkingNoDriver') {
@@ -127,6 +130,11 @@ exports.maintenance_get_all = async (req, res, next) => {
         "available": item.available,
         "available_start": item.available_start,
         "available_end": item.available_end,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -140,7 +148,8 @@ exports.maintenance_get_all = async (req, res, next) => {
         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
         "customer_name": item.customer.customer_name,
         "network_name": item.network.network_name,
-        "team_name": item.team.team_name
+        "team_name": item.team.team_name,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -190,9 +199,6 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -201,13 +207,17 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
     let line = 1
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
-      
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
+
       if (item.problemIssue == 'parkingNoJob') {
         item.problemIssue = 'Parking (No job)'
       } else if (item.problemIssue == 'parkingNoDriver') {
@@ -235,6 +245,11 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
         "available": item.available,
         "available_start": item.available_start,
         "available_end": item.available_end,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -248,7 +263,8 @@ exports.maintenance_get_all_bydate = async (req, res, next) => {
         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
         "customer_name": item.customer.customer_name,
         "network_name": item.network.network_name,
-        "team_name": item.team.team_name
+        "team_name": item.team.team_name,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -308,9 +324,6 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -319,13 +332,17 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
     let line = 1
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
-      
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
+
       if (item.problemIssue == 'parkingNoJob') {
         item.problemIssue = 'Parking (No job)'
       } else if (item.problemIssue == 'parkingNoDriver') {
@@ -353,6 +370,11 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
         "available": item.available,
         "available_start": item.available_start,
         "available_end": item.available_end,
+        "ownerRental": item.ownerRental,
+        "ownedBy": item.ownedBy,
+        "rentalBy": item.rentalBy,
+        "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -366,7 +388,8 @@ exports.maintenance_get_all_rangedate = async (req, res, next) => {
         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
         "customer_name": item.customer.customer_name,
         "network_name": item.network.network_name,
-        "team_name": item.team.team_name
+        "team_name": item.team.team_name,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -398,7 +421,7 @@ exports.maintenance_groupby_remark_byyear = async (req, res, next) => {
       const dataMaintenanceGroupByRemark = await db.sequelize.query(`
         SELECT ${chooseVbkDB}.remark, COUNT(${chooseVbkDB}.remark) as count
         FROM ${chooseVbkDB}
-        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND status !== 'Active' AND ${chooseVbkDB}.networkId !== 25 AND ${chooseVbkDB}.approveStatus !== 'Hidden'
+        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND status !== 'Active' AND ${chooseVbkDB}.approveStatus !== 'Hidden'
         GROUP BY ${chooseVbkDB}.remark  
         ORDER BY ${chooseVbkDB}.remark ASC
       `)

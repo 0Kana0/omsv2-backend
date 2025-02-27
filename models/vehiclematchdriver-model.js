@@ -1,8 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const VehicleMatchDriver2025Model = sequelize.define("vehiclematchdriver2025", {
-    date: {
-      type: Sequelize.DATE,
-    },
+  const VehicleMatchDriverModel = sequelize.define("vehiclematchdriver", {
     driver_name: {
       type: Sequelize.STRING,
     },
@@ -12,7 +9,13 @@ module.exports = (sequelize, Sequelize) => {
     supervisor_name: {
       type: Sequelize.STRING,
     },
+    status: {
+      type: Sequelize.STRING,
+    },
+    approve: {
+      type: Sequelize.STRING,
+    },
   })
 
-  return VehicleMatchDriver2025Model
+  return VehicleMatchDriverModel
 }

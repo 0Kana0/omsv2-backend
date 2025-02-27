@@ -37,6 +37,9 @@ module.exports = (sequelize, Sequelize) => {
     quantity: {
       type: Sequelize.DOUBLE,
     },
+    lateStatus: {
+      type: Sequelize.STRING,
+    },
     createBy: {
       type: Sequelize.STRING,
     },

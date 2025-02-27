@@ -192,7 +192,11 @@ db.MaintenanceSummaryModel.belongsTo(db.NetworkModel)
 db.MaintenanceSummaryModel.belongsTo(db.ServiceTypeModel)
 
 // MODEL ส่วนของการจัดการข้อมูลคนขับรถและคนขับ
-db.VehicleMatchDriver2025Model = require("./vehiclematchdriver2025-model.js")(sequelize, Sequelize);
-db.VehicleMatchDriver2025Model.belongsTo(db.VehicleModel)
+db.VehicleMatchDriverModel = require("./vehiclematchdriver-model.js")(sequelize, Sequelize);
+db.VehicleMatchDriverModel.belongsTo(db.VehicleModel)
+
+// MODEL ส่วนของการเก็บประวัตืการจัดการข้อมูลคนขับรถและคนขับ
+db.VmdHistoryModel = require("./vmdhistory-model.js")(sequelize, Sequelize);
+db.VmdHistoryModel.belongsTo(db.VehicleModel)
 
 module.exports = db;

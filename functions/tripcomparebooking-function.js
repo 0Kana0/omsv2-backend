@@ -43,10 +43,10 @@ const choose_database_fromyear_vbk_sql = async(selectYear) => {
 exports.tripcomparebooking_daily_create = async (req, res) => {
   try {
     const selectDate = moment().format('YYYY-MM-DD');
-    //const selectDate = '2025-02-23';
+    //const selectDate = '2025-02-24';
     
     const previousDate = moment().subtract(1, 'days').format('YYYY-MM-DD');
-    //const previousDate = '2025-02-22'
+    //const previousDate = '2025-02-23'
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear_previousDate = moment(previousDate).year();
     const chooseVbkDB_previousDate = await choose_database_fromyear_vbk(startDateYear_previousDate)
@@ -54,9 +54,6 @@ exports.tripcomparebooking_daily_create = async (req, res) => {
     const dataVbk = await chooseVbkDB_previousDate.findAll({
       where: {
         date: previousDate + " 07:00:00",
-        networkId: {
-          [Op.ne]: [25]
-        },
       },
       order: [['teamId', 'ASC']] 
     })

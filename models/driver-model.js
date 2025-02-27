@@ -18,6 +18,12 @@ module.exports = (sequelize, Sequelize) => {
     birthDate: {
       type: Sequelize.DATE,
     },
+    start_date: {
+      type: Sequelize.DATEONLY,
+    },
+    resignation_date: {
+      type: Sequelize.DATEONLY,
+    },
     idCard: {
       type: Sequelize.STRING,
     },

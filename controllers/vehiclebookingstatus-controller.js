@@ -21,6 +21,7 @@ const VehicleBookingStatus2024Model = db.VehicleBookingStatus2024Model
 const VehicleBookingStatus2025Model = db.VehicleBookingStatus2025Model
 
 const VbkHistoryModel = db.VbkHistoryModel;
+const VehicleMatchDriverModel = db.VehicleMatchDriverModel
 
 const choose_database_fromyear_vbk = async(selectYear) => {
   try {
@@ -84,9 +85,6 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
       }],
       where: {
         date: selectDate + " 07:00:00",
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -110,6 +108,7 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
       { header: "problemIssue", key: "problemIssue", width: 50 },
       { header: "reason", key: "reason", width: 20 },
       { header: "approve", key: "approve", width: 15 },
+      { header: "supervisor_name", key: "supervisor_name", width: 20 },
       { header: "approveStatus", key: "approveStatus", width: 15 },
       { header: "available", key: "available", width: 10 },
       { header: "available_start", key: "available_start", width: 15 },
@@ -118,10 +117,14 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
       { header: "ownedBy", key: "ownedBy", width: 15 },
       { header: "rentalBy", key: "rentalBy", width: 15 },
       { header: "replacement", key: "replacement", width: 15 },
+      { header: "lateStatus", key: "lateStatus", width: 15 },
       { header: "updatedAt", key: "updatedAt", width: 20 }
     ]
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     await data.map((item, idx) => {
       if (item.problemIssue == 'parkingNoJob') {
@@ -137,6 +140,7 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
       }
 
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
       const adUpdateAt = moment(item.updatedAt);
       sheet.addRow({
         plateNumber: item.vehicle.plateNumber,
@@ -152,6 +156,7 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
         problemIssue: item.problemIssue,
         reason: item.reason,
         approve: item.approve,
+        supervisor_name: dataVehicleMatchDriverResult.supervisor_name,
         approveStatus: item.approveStatus,
         available: item.available,
         available_start: item.available_start,
@@ -160,6 +165,7 @@ exports.vehiclebookingstatus_get_all_bydate_withexcel = async (req, res, next) =
         ownedBy: item.ownedBy,
         rentalBy: item.rentalBy,
         replacement: item.replacement,
+        lateStatus: item.lateStatus,
         updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
       })
     })
@@ -226,9 +232,6 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
         ],
         where: {
           date: sixDaysAgo.format('YYYY-MM-DD') + " 07:00:00",
-          networkId: {
-            [Op.ne]: [25]
-          },
           approveStatus: {
             [Op.ne]: ['Hidden']
           },
@@ -256,6 +259,7 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
       { header: "problemIssue", key: "problemIssue", width: 50 },
       { header: "reason", key: "reason", width: 20 },
       { header: "approve", key: "approve", width: 15 },
+      { header: "supervisor_name", key: "supervisor_name", width: 20 },
       { header: "approveStatus", key: "approveStatus", width: 15 },
       { header: "available", key: "available", width: 10 },
       { header: "available_start", key: "available_start", width: 15 },
@@ -264,10 +268,14 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
       { header: "ownedBy", key: "ownedBy", width: 15 },
       { header: "rentalBy", key: "rentalBy", width: 15 },
       { header: "replacement", key: "replacement", width: 15 },
+      { header: "lateStatus", key: "lateStatus", width: 15 },
       { header: "updatedAt", key: "updatedAt", width: 20 }
     ]
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     dataWeek.map((item, idx) => {
       if (item.problemIssue == 'parkingNoJob') {
@@ -283,6 +291,7 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
       }
 
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
       const adUpdateAt = moment(item.updatedAt);
       sheet.addRow({
         plateNumber: item.vehicle.plateNumber,
@@ -298,6 +307,7 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
         problemIssue: item.problemIssue,
         reason: item.reason,
         approve: item.approve,
+        supervisor_name: dataVehicleMatchDriverResult.supervisor_name,
         approveStatus: item.approveStatus,
         available: item.available,
         available_start: item.available_start,
@@ -306,6 +316,7 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
         ownedBy: item.ownedBy,
         rentalBy: item.rentalBy,
         replacement: item.replacement,
+        lateStatus: item.lateStatus,
         updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
       })
     })
@@ -326,11 +337,9 @@ exports.vehiclebookingstatus_get_all_byweek_withexcel = async (req, res, next) =
         res.end();
         console.log("genExel successfully.");
       });
-    }
-    
+    }  
   } catch (error) {
     console.log(error);
-    
   }
 }
 
@@ -391,9 +400,6 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
         date: {
           [Op.between]: [firstDayOfMonth.format('YYYY-MM-DD') + " 07:00:00", lastDayOfMonth.format('YYYY-MM-DD') + " 07:00:00"],
         },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -417,6 +423,7 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
       { header: "problemIssue", key: "problemIssue", width: 50 },
       { header: "reason", key: "reason", width: 20 },
       { header: "approve", key: "approve", width: 15 },
+      { header: "supervisor_name", key: "supervisor_name", width: 20 },
       { header: "approveStatus", key: "approveStatus", width: 15 },
       { header: "available", key: "available", width: 10 },
       { header: "available_start", key: "available_start", width: 15 },
@@ -425,10 +432,14 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
       { header: "ownedBy", key: "ownedBy", width: 15 },
       { header: "rentalBy", key: "rentalBy", width: 15 },
       { header: "replacement", key: "replacement", width: 15 },
+      { header: "lateStatus", key: "lateStatus", width: 15 },
       { header: "updatedAt", key: "updatedAt", width: 20 }
     ]
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     await data.map((item, idx) => {
       if (item.problemIssue == 'parkingNoJob') {
@@ -444,6 +455,7 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
       }
 
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
       const adUpdateAt = moment(item.updatedAt);
       sheet.addRow({
         plateNumber: item.vehicle.plateNumber,
@@ -459,6 +471,7 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
         problemIssue: item.problemIssue,
         reason: item.reason,
         approve: item.approve,
+        supervisor_name: dataVehicleMatchDriverResult.supervisor_name,
         approveStatus: item.approveStatus,
         available: item.available,
         available_start: item.available_start,
@@ -467,6 +480,7 @@ exports.vehiclebookingstatus_get_all_bymonth_withexcel = async (req, res, next) 
         ownedBy: item.ownedBy,
         rentalBy: item.rentalBy,
         replacement: item.replacement,
+        lateStatus: item.lateStatus,
         updatedAt: adUpdateAt.format('MM/DD/YYYY HH:mm:ss')
       })
     })
@@ -527,9 +541,6 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -542,6 +553,9 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
@@ -549,6 +563,7 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
       const dataVehicleRealtimeResult = dataVehicleRealtime.find(index => index.plateNumber === item.vehicle.plateNumber);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
 
       let realTimeStatus;
       let time;
@@ -592,6 +607,7 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         "ownedBy": item.ownedBy,
         "rentalBy": item.rentalBy,
         "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -607,7 +623,8 @@ exports.vehiclebookingstatus_get_all = async (req, res, next) => {
         "network_name": item.network.network_name,
         "team_name": item.team.team_name,
         "realTimeStatus": realTimeStatus,
-        "time": time
+        "time": time,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -653,9 +670,6 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -668,12 +682,16 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
     })
     
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
     data.map((item, index) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
       const dataVehicleRealtimeResult = dataVehicleRealtime.find(index => index.plateNumber === item.vehicle.plateNumber);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
 
       let realTimeStatus;
       let time;
@@ -719,6 +737,7 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         "ownedBy": item.ownedBy,
         "rentalBy": item.rentalBy,
         "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -734,7 +753,8 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
         "network_name": item.network.network_name,
         "team_name": item.team.team_name,
         "realTimeStatus": realTimeStatus,
-        "time": time
+        "time": time,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
     })
@@ -781,9 +801,6 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
         ownerRental: {
           [Op.or]: ['TKN', 'Sold']
         },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -796,6 +813,9 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
@@ -803,6 +823,7 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
       const dataVehicleRealtimeResult = dataVehicleRealtime.find(index => index.plateNumber === item.vehicle.plateNumber);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
 
       let realTimeStatus;
       let time;
@@ -846,6 +867,7 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
         "ownedBy": item.ownedBy,
         "rentalBy": item.rentalBy,
         "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -862,6 +884,7 @@ exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
         "team_name": item.team.team_name,
         "realTimeStatus": realTimeStatus,
         "time": time,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -922,9 +945,6 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
         // ownerRental: {
         //   [Op.or]: ['Owner', 'Rental']
         // },
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.ne]: ['Hidden']
         },
@@ -933,12 +953,16 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
 
     const transformedData = []
 
     let line = 1
     data.map((item) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
       
       if (item.problemIssue == 'parkingNoJob') {
         item.problemIssue = 'Parking (No job)'
@@ -970,6 +994,7 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
         "ownedBy": item.ownedBy,
         "rentalBy": item.rentalBy,
         "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -983,7 +1008,8 @@ exports.vehiclebookingstatus_get_all_rangedate = async (req, res, next) => {
         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
         "customer_name": item.customer.customer_name,
         "network_name": item.network.network_name,
-        "team_name": item.team.team_name
+        "team_name": item.team.team_name,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
       line += 1
@@ -1026,9 +1052,6 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
       }],
       where: {
         date: currentDate + " 07:00:00", 
-        networkId: {
-          [Op.ne]: [25]
-        },
         approveStatus: {
           [Op.or]: ['Completed', 'Completed By Trip']
         },
@@ -1042,11 +1065,16 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
     })
 
     const dataVehicleType = await VehicleTypeModel.findAll()
+    const dataVehicleMatchDriver = await VehicleMatchDriverModel.findAll({
+      attributes: ['vehicleId', 'supervisor_name'],
+    })
+
     const transformedData = []
 
     data.map((item, index) => {
       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === item.vehicle.vehicletypeId);
       const dataVehicleRealtimeResult = dataVehicleRealtime.find(index => index.plateNumber === item.vehicle.plateNumber);
+      const dataVehicleMatchDriverResult = dataVehicleMatchDriver.find(index => index.vehicleId === item.vehicleId);
 
       let realTimeStatus;
       let time;
@@ -1090,6 +1118,7 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
         "ownedBy": item.ownedBy,
         "rentalBy": item.rentalBy,
         "replacement": item.replacement,
+        "lateStatus": item.lateStatus,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "vehicleId": item.vehicleId,
@@ -1105,7 +1134,8 @@ exports.vehiclebookingstatus_get_all_available = async (req, res, next) => {
         "network_name": item.network.network_name,
         "team_name": item.team.team_name,
         "realTimeStatus": realTimeStatus,
-        "time": time
+        "time": time,
+        "supervisor_name": dataVehicleMatchDriverResult.supervisor_name,
       }
       transformedData.push(dataindex)
     })
@@ -1158,9 +1188,6 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
       where: {
         date: {
           [Op.between]: [firstDayOfMonthFormat + " 07:00:00", lastDayOfMonthFormat + " 07:00:00"],
-        },
-        networkId: {
-          [Op.ne]: [25]
         },
         approveStatus: 'Pending'
       },
@@ -1223,7 +1250,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
       const dataVehicleBookingGroupByStatus = await db.sequelize.query(`
         SELECT ${chooseVbkDB}.status, COUNT(${chooseVbkDB}.status) as count
         FROM ${chooseVbkDB}
-        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.networkId !== 25 AND ${chooseVbkDB}.approveStatus !== 'Hidden'
+        WHERE ${chooseVbkDB}.date >= '${startDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.date < '${endDate.format('YYYY-MM-DD')}' AND ${chooseVbkDB}.approveStatus !== 'Hidden'
         GROUP BY ${chooseVbkDB}.status  
         ORDER BY ${chooseVbkDB}.status ASC;
       `)
@@ -1249,7 +1276,7 @@ exports.vehiclebookingstatus_groupby_status_byyear = async (req, res, next) => {
 //------- POST -------//
 exports.vehiclebookingstatus_post = async (req, res, next) => {
   try {
-    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, servicetypeId, ownerRental, ownedBy, rentalBy, replacement } = req.body
+    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, servicetypeId, ownerRental, ownedBy, rentalBy, replacement, lateStatus } = req.body
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(date).year();
     const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
@@ -1270,6 +1297,7 @@ exports.vehiclebookingstatus_post = async (req, res, next) => {
       ownedBy: ownedBy,
       rentalBy: rentalBy,
       replacement: replacement,
+      lateStatus: lateStatus,
       customerId: customerId,
       teamId: teamId,
       vehicleId: vehicleId, 
@@ -1472,7 +1500,7 @@ exports.vehiclebooking_change_excelwithdb = async (req, res) => {
 //------- PUT -------//
 exports.vehiclebookingstatus_put = async (req, res, next) => {
   try {
-    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, available_start, available_end, ownerRental, ownedBy, rentalBy, replacement, servicetypeId } = req.body
+    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, available_start, available_end, ownerRental, ownedBy, rentalBy, replacement, lateStatus, servicetypeId } = req.body
     const edit_id = req.params.id
     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
     const startDateYear = moment(date).year();
@@ -1497,6 +1525,7 @@ exports.vehiclebookingstatus_put = async (req, res, next) => {
         ownedBy: ownedBy,
         rentalBy: rentalBy,
         replacement: replacement,
+        lateStatus: lateStatus,
         customerId: customerId,
         teamId: teamId,
         vehicleId: vehicleId, 
@@ -1580,6 +1609,7 @@ exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
           ownedBy: allVehicleBookingSelect[index].ownedBy,
           rentalBy: allVehicleBookingSelect[index].rentalBy,
           replacement: allVehicleBookingSelect[index].replacement,
+          lateStatus: allVehicleBookingSelect[index].lateStatus,
           customerId: allVehicleBookingSelect[index].customerId,
           teamId: allVehicleBookingSelect[index].teamId,
           vehicleId: allVehicleBookingSelect[index].vehicleId, 
@@ -1643,6 +1673,7 @@ exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
             ownedBy: allVehicleBookingSelect[index].ownedBy,
             rentalBy: allVehicleBookingSelect[index].rentalBy,
             replacement: allVehicleBookingSelect[index].replacement,
+            lateStatus: null,
             customerId: allVehicleBookingSelect[index].customerId,
             teamId: allVehicleBookingSelect[index].teamId,
             vehicleId: allVehicleBookingSelect[index].vehicleId, 
@@ -1666,6 +1697,7 @@ exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
             ownedBy: allVehicleBookingSelect[index].ownedBy,
             rentalBy: allVehicleBookingSelect[index].rentalBy,
             replacement: allVehicleBookingSelect[index].replacement,
+            lateStatus: null,
             customerId: allVehicleBookingSelect[index].customerId,
             teamId: allVehicleBookingSelect[index].teamId,
             vehicleId: allVehicleBookingSelect[index].vehicleId, 
@@ -1776,6 +1808,7 @@ exports.vehiclebookingstatus_put_byexcel = async (req, res, next) => {
           ownedBy: item.ownedBy,
           rentalBy: item.rentalBy,
           replacement: item.replacement,
+          lateStatus: item.lateStatus,
           customerId: dataCustomer.id,
           teamId: dataTeam.id,
           networkId: dataNetwork.id,
@@ -1838,6 +1871,7 @@ exports.vehiclebookingstatus_put_byexcel = async (req, res, next) => {
           ownedBy: item.ownedBy,
           rentalBy: item.rentalBy,
           replacement: item.replacement,
+          lateStatus: null,
           customerId: dataCustomer.id,
           teamId: dataTeam.id,
           vehicleId: dataVehicle.id, 
@@ -1861,6 +1895,7 @@ exports.vehiclebookingstatus_put_byexcel = async (req, res, next) => {
           ownedBy: item.ownedBy,
           rentalBy: item.rentalBy,
           replacement: item.replacement,
+          lateStatus: null,
           customerId: dataCustomer.id,
           teamId: dataTeam.id,
           vehicleId: dataVehicle.id, 
@@ -1948,9 +1983,6 @@ exports.vehiclebookingstatus_delete = async (req, res, next) => {
 //         // ownerRental: {
 //         //   [Op.or]: ['Owner', 'Rental']
 //         // },
-//         networkId: {
-//           [Op.ne]: [25]
-//         },
 //       },
 //       order: [['networkId', 'ASC']] 
 //     })

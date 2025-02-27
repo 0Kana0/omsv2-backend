@@ -54,6 +54,9 @@ module.exports = (sequelize, Sequelize) => {
     replacement: {
       type: Sequelize.STRING,
     },
+    lateStatus: {
+      type: Sequelize.STRING,
+    },
   })
 
   return VehicleBookingStatus2023Model

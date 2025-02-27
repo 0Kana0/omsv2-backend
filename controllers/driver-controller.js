@@ -13,6 +13,8 @@ exports.driver_get_all_withexcel = async (req, res, next) => {
       { header: "PrefixName", key: "prefixName", width: 10 },
       { header: "FullName", key: "fullName", width: 25 },
       { header: "BirthDate", key: "birthDate", width: 15 },
+      { header: "StartDate", key: "start_date", width: 15 },
+      { header: "ResignationDate", key: "resignation_date", width: 15 },
       { header: "IDCard", key: "idCard", width: 20 },
       { header: "Phone", key: "phone", width: 15 },
       { header: "Status", key: "driverstatus", width: 15 },
@@ -36,6 +38,8 @@ exports.driver_get_all_withexcel = async (req, res, next) => {
         prefixName: item.prefixName,
         fullName: item.fullName,
         birthDate: item.birthDate,
+        start_date: item.start_date,
+        resignation_date: item.resignation_date,
         idCard: item.idCard,
         phone: item.phone,
         driverstatus: item.status,
@@ -70,38 +74,9 @@ exports.driver_get_all_withexcel = async (req, res, next) => {
 
 exports.driver_get_all = async (req, res, next) => {
   try {
-    const data = await DriverModel.findAll(
-      {
-        include: [{
-          model: ProjectModel,
-          attributes: ['project_name']
-        }]
-      }
-    )
+    const dataDriver = await DriverModel.findAll()
 
-    const transformedData = []
-
-    data.map((item) => {
-      const dataindex = {
-        "id": item.id,
-        "driverNumber": item.driverNumber,
-        "prefixName": item.prefixName,
-        "name": item.name,
-        "surName": item.surName,
-        "fullName": item.fullName,
-        "birthDate": item.birthDate,
-        "idCard": item.idCard,
-        "phone": item.phone,
-        "status": item.status,
-        "createdAt": item.createdAt,
-        "updatedAt": item.updatedAt,
-        "projectId" : item.projectId,
-        "project_name": item.project.project_name
-      }
-      transformedData.push(dataindex)
-    })
-
-    res.send(transformedData);
+    res.send(dataDriver);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)
@@ -163,37 +138,16 @@ exports.driver_get_all_assistant = async (req, res, next) => {
 exports.driver_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id
-    const data = await DriverModel.findOne(
+    const dataDriver = await DriverModel.findOne(
       { 
         where: {id: get_id},
-        include: [{
-          model: ProjectModel,
-          attributes: ['project_name']
-        }]
       }
     )
-    if (data == null) {
+    if (dataDriver == null) {
       return res.send({message: 'No Data Found'});
     }
 
-    const transformedData = {
-      "id": data.id,
-      "driverNumber": data.driverNumber,
-      "prefixName": data.prefixName,
-      "name": data.name,
-      "surName": data.surName,
-      "fullName": data.fullName,
-      "birthDate": data.birthDate,
-      "idCard": data.idCard,
-      "phone": data.phone,
-      "status": data.status,
-      "createdAt": data.createdAt,
-      "updatedAt": data.updatedAt,
-      "projectId" : data.projectId,
-      "project_name": data.project.project_name
-    }
-
-    res.send(transformedData);
+    res.send(dataDriver);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message)
@@ -203,7 +157,7 @@ exports.driver_get_one = async (req, res, next) => {
 //------- POST -------//
 exports.driver_post = async (req, res, next) => {
   try {
-    const { driverNumber, prefixName, name, surName, fullName, birthDate, idCard, phone, status, projectId } = req.body
+    const { driverNumber, prefixName, name, surName, fullName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
     await DriverModel.create({
       driverNumber: driverNumber,
       prefixName: prefixName,
@@ -211,10 +165,12 @@ exports.driver_post = async (req, res, next) => {
       surName: surName,
       fullName: fullName,
       birthDate: birthDate,
+      start_date: start_date,
+      resignation_date: resignation_date,
       idCard: idCard,
       phone: phone,
       status: status,
-      projectId: projectId
+      role: role,
     })
     res.send({message: 'Add Data Success'})
   } catch (error) {
@@ -226,7 +182,7 @@ exports.driver_post = async (req, res, next) => {
 //------- PUT -------//
 exports.driver_put = async (req, res, next) => {
   try {
-    const { driverNumber, prefixName, name, surName, fullName, birthDate, idCard, phone, status, projectId } = req.body
+    const { driverNumber, prefixName, name, surName, fullName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
     const edit_id = req.params.id
     const data = await DriverModel.update({
       driverNumber: driverNumber,
@@ -235,10 +191,12 @@ exports.driver_put = async (req, res, next) => {
       surName: surName,
       fullName: fullName,
       birthDate: birthDate,
+      start_date: start_date,
+      resignation_date: resignation_date,
       idCard: idCard,
       phone: phone,
       status: status,
-      projectId: projectId
+      role: role,
     }, { where: { id: edit_id } }
     )
     if (data == 0) {

@@ -119,9 +119,6 @@ exports.tripcomparebooking_get_all_bydate = async (req, res, next) => {
         }],
         where: {
           date: selectDate + " 07:00:00",
-          networkId: {
-            [Op.ne]: [25]
-          },
           approveStatus: {
             [Op.ne]: ['Hidden']
           },
