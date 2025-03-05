@@ -1498,52 +1498,6 @@ exports.vehiclebooking_change_excelwithdb = async (req, res) => {
 }
 
 //------- PUT -------//
-exports.vehiclebookingstatus_put = async (req, res, next) => {
-  try {
-    const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, available_start, available_end, ownerRental, ownedBy, rentalBy, replacement, lateStatus, servicetypeId } = req.body
-    const edit_id = req.params.id
-    // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
-    const startDateYear = moment(date).year();
-    const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
-    
-    const data = await chooseVbkDB.update(
-      {
-        date: date,
-        status: status,
-        remark: remark,
-        issueDate: issueDate,
-        forecastCompleteDate: forecastCompleteDate,
-        completeDate: completeDate,
-        problemIssue: problemIssue,
-        reason: reason,
-        approve: approve,
-        approveStatus: approveStatus,
-        available: available,
-        available_start: available_start,
-        available_end: available_end,
-        ownerRental: ownerRental,
-        ownedBy: ownedBy,
-        rentalBy: rentalBy,
-        replacement: replacement,
-        lateStatus: lateStatus,
-        customerId: customerId,
-        teamId: teamId,
-        vehicleId: vehicleId, 
-        networkId: networkId,
-        servicetypeId: servicetypeId
-      }, { where: { id: edit_id } }
-    )
-
-    if (data == 0) {
-      return res.send({message: 'No Data Found'})
-    }
-    res.send({message: 'Edit Data Success'})
-  } catch (error) {
-    console.log(error);
-    res.status(500).send(error.message)
-  }
-}
-
 exports.vehiclebookingstatus_put_byselect = async (req, res, next) => {
   try {
     const allVehicleBookingSelect = req.body
@@ -2563,6 +2517,52 @@ exports.vehiclebookingstatus_delete = async (req, res, next) => {
 //           // }
 //         }
 //       }
+//     }
+//     res.send({message: 'Edit Data Success'})
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send(error.message)
+//   }
+// }
+
+// exports.vehiclebookingstatus_put = async (req, res, next) => {
+//   try {
+//     const { date, customerId, teamId, vehicleId, networkId, status, remark, issueDate, forecastCompleteDate, completeDate, problemIssue, reason, approve, approveStatus, available, available_start, available_end, ownerRental, ownedBy, rentalBy, replacement, lateStatus, servicetypeId } = req.body
+//     const edit_id = req.params.id
+//     // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+//     const startDateYear = moment(date).year();
+//     const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
+    
+//     const data = await chooseVbkDB.update(
+//       {
+//         date: date,
+//         status: status,
+//         remark: remark,
+//         issueDate: issueDate,
+//         forecastCompleteDate: forecastCompleteDate,
+//         completeDate: completeDate,
+//         problemIssue: problemIssue,
+//         reason: reason,
+//         approve: approve,
+//         approveStatus: approveStatus,
+//         available: available,
+//         available_start: available_start,
+//         available_end: available_end,
+//         ownerRental: ownerRental,
+//         ownedBy: ownedBy,
+//         rentalBy: rentalBy,
+//         replacement: replacement,
+//         lateStatus: lateStatus,
+//         customerId: customerId,
+//         teamId: teamId,
+//         vehicleId: vehicleId, 
+//         networkId: networkId,
+//         servicetypeId: servicetypeId
+//       }, { where: { id: edit_id } }
+//     )
+
+//     if (data == 0) {
+//       return res.send({message: 'No Data Found'})
 //     }
 //     res.send({message: 'Edit Data Success'})
 //   } catch (error) {

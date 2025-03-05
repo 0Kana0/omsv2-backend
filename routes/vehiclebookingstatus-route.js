@@ -28,12 +28,11 @@ router.post('/postvehiclebookingstatus', controller.vehiclebookingstatus_post)
 router.post('/postvehiclebookingcheckexcelwithdb', controller.vehiclebooking_check_excelwithdb)
 router.post('/postvehiclebookingchangeexcelwithdb', controller.vehiclebooking_change_excelwithdb)
 
-
 //------- PUT -------//
-router.put('/putvehiclebookingstatus/:id', controller.vehiclebookingstatus_put)
 router.put('/putvehiclebookingstatusbyselect', controller.vehiclebookingstatus_put_byselect)
 router.put('/putvehiclebookingstatusbyexcel', controller.vehiclebookingstatus_put_byexcel)
 // router.put('/putvehiclebookingstatustruckownerfromexcel', controller.vehiclebookingstatus_put_truckowner_byexcel)
+// router.put('/putvehiclebookingstatus/:id', controller.vehiclebookingstatus_put)
 
 //------- DELETE -------//
 router.delete('/deletevehiclebookingstatus/:id/:date', controller.vehiclebookingstatus_delete)

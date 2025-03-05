@@ -40,6 +40,12 @@ module.exports = (sequelize, Sequelize) => {
     lateStatus: {
       type: Sequelize.STRING,
     },
+    barcode_number: {
+      type: Sequelize.STRING,
+    },
+    route_number: {
+      type: Sequelize.STRING,
+    },
     createBy: {
       type: Sequelize.STRING,
     },

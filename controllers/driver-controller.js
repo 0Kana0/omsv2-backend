@@ -2,6 +2,8 @@ const db = require("../models");
 const DriverModel = db.DriverModel
 const ProjectModel = db.ProjectModel
 const exceljs = require('exceljs')
+const Sequelize = require("sequelize");
+const { Op, literal, query, fn, col } = require('sequelize');
 
 //------- GET -------//
 exports.driver_get_all_withexcel = async (req, res, next) => {
@@ -99,7 +101,7 @@ exports.driver_get_all_withoutnoinfo = async (req, res, next) => {
     const dataDriver = await DriverModel.findAll(
       { where: { 
         status: {
-          [Op.ne]: ['ไม่มีข้อมูล']
+          [Op.ne]: null // เลือกเฉพาะค่าที่ไม่ใช่ NULL
         },
       }}
     )
