@@ -12,9 +12,6 @@ module.exports = (sequelize, Sequelize) => {
     status: {
       type: Sequelize.STRING,
     },
-    approve: {
-      type: Sequelize.STRING,
-    },
   })
 
   return VehicleMatchDriverModel

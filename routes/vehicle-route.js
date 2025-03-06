@@ -3,11 +3,13 @@ const controller = require('../controllers/vehicle-controller')
 const router = express.Router()
 
 //------- GET -------//
-router.get('/getvehicles', controller.vehicle_get_all)
-router.get('/getvehicle/:id', controller.vehicle_get_one)
 router.get('/getvehicleswithexcel', controller.vehicle_get_all_withexcel)
+router.get('/getvehiclevbkusewithexcel', controller.vehicle_get_all_vbkuse_withexcel)
 
+router.get('/getvehicles', controller.vehicle_get_all)
 router.get('/getvehiclevbkuse', controller.vehicle_get_all_vbkuse)
+
+router.get('/getvehicle/:id', controller.vehicle_get_one)
 
 //------- POST -------//
 router.post('/postvehicle', controller.vehicle_post)

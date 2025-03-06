@@ -1590,181 +1590,6 @@ exports.tripdetail_get_pivot_daily_byclient_withexcel = async (req, res, next) =
 
 
 
-// exports.tripdetail_get_all_rangedate = async (req, res, next) => {
-//   try {
-//     let startDate = req.params.startDate;
-//     let endDate = req.params.endDate;
-
-//     const data = await .findAll(
-//       {
-//         include: [{
-//           model: MonthModel,
-//           attributes: ['id', 'month_name']
-//         },
-//         {
-//           model: CustomerModel,
-//           attributes: ['id', 'customer_name']
-//         },
-//         {
-//           model: NetworkModel,
-//           attributes: ['id', 'network_name']
-//         },
-//         {
-//           model: TypeModel,
-//           attributes: ['id', 'type_name']
-//         },
-//         {
-//           model: ServiceTypeModel,
-//           attributes: ['id', 'servicetype_name']
-//         },
-//         {
-//           model: TeamModel,
-//           attributes: ['id', 'team_name']
-//         },
-//         {
-//           model: GasStationModel,
-//           attributes: ['id', 'gasstation_name']
-//         }],
-//         order: [['JobOrderNumber', 'DESC']],
-//         where: {
-//           date: {
-//             [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
-//           },
-//         },
-//       }
-//     )
-
-//     const dataBusinessType = await BusinessTypeModel.findAll()
-//     const dataOperationType = await OperationTypeModel.findAll()
-//     const dataSector = await SectorModel.findAll()
-//     const dataClient = await ClientModel.findAll()
-//     const dataClientGroup = await ClientGroupModel.findAll()
-
-//     const dataVehicle = await VehicleModel.findAll()
-
-//     const dataDriver = await DriverModel.findAll()
-
-//     const dataVehicleType = await VehicleTypeModel.findAll()
-
-//     const transformedData = []
-
-//     data.map((item, index) => {
-//       //console.log(index+1, item.plateNumber);
-//       const dataClientGroupResult = dataClientGroup.find(index => index.customerId === item.customer.id);
-
-//       const dataVehicleResult = dataVehicle.find(index => index.plateNumber === item.plateNumber);
-//       const dataDriverOneResult = dataDriver.find(index => index.fullName === item.driverOne);
-//       const dataDriverTwoResult = dataDriver.find(index => index.fullName === item.driverTwo);
-
-//       //console.log(dataVehicleResult);
-//       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === dataVehicleResult.vehicletypeId);
-
-//       let sector
-//       let businesstype
-//       let operationtype
-//       let client_code
-//       let client_name_EN
-
-//       if (dataClientGroupResult == undefined) {
-//         sector = ''
-//         businesstype = ''
-//         operationtype = ''
-//         client_code = ''
-//         client_name_EN = ''
-//       } else {
-//         const dataBusinessTypeResult = dataBusinessType.find(index => index.id === dataClientGroupResult.businesstypeId);
-//         const dataOperationTypeResult = dataOperationType.find(index => index.id === dataClientGroupResult.operationtypeId);
-//         const dataSectorResult = dataSector.find(index => index.id === dataClientGroupResult.sectorId);
-//         const dataClientResult = dataClient.find(index => index.id === dataClientGroupResult.clientId);
-
-//         sector = dataSectorResult.sector_name
-//         businesstype = dataBusinessTypeResult.businesstype_name
-//         operationtype = dataOperationTypeResult.operationtype_name
-//         client_code = dataClientResult.client_code
-//         client_name_EN = dataClientResult.client_name_EN
-//       }
-
-//       let prefixNameOne
-//       let fullNameOne
-//       if (dataDriverOneResult == undefined) {
-//         prefixNameOne = ''
-//         fullNameOne = ''
-//       } else {
-//         prefixNameOne = dataDriverOneResult.prefixName
-//         fullNameOne = dataDriverOneResult.fullName
-//       }
-
-//       let prefixNameTwo
-//       let fullNameTwo
-//       if (dataDriverTwoResult == undefined) {
-//         prefixNameTwo = ''
-//         fullNameTwo = ''
-//       } else {
-//         prefixNameTwo = dataDriverTwoResult.prefixName
-//         fullNameTwo = dataDriverTwoResult.fullName
-//       }
-
-//       const dataindex = {
-//         "id": item.id,
-//         "line": index + 1,
-//         "jobOrderNumber": item.JobOrderNumber,
-//         "date": item.date,
-//         "numberoftrip": item.numberoftrip,
-//         "totalDistance": item.totalDistance,
-//         "remark": item.remark,
-//         "mile_start": item.mile_start,
-//         "mile_end": item.mile_end,
-//         "quantity": item.quantity,
-//         "createdAt": item.createdAt,
-//         "updatedAt": item.updatedAt,
-
-//         "month_id": item.month.id,
-//         "month_name": item.month.month_name,
-//         "type_id": item.type.id,
-//         "type_name": item.type.type_name,
-//         "team_id": item.team.id,
-//         "team_name": item.team.team_name,
-//         "network_id": item.network.id,
-//         "network_name": item.network.network_name,
-
-//         "customer_id": item.customer.id,
-//         "customer_name": item.customer.customer_name,
-//         "client_code": client_code,
-//         "client_name_EN": client_name_EN,
-//         "businesstype_name": businesstype,
-//         "sector_name": sector,
-//         "operationtype_name": operationtype,
-
-//         "vehicle_id": dataVehicleResult.id,
-//         "plateNumber": dataVehicleResult.plateNumber,
-//         "servicetype_id": item.servicetype.id,
-//         "servicetype_name": item.servicetype.servicetype_name,
-//         "vehicletype_id": dataVehicleTypeResult.id,
-//         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
-
-//         "prefixNameOne": prefixNameOne,
-//         "fullNameOne": fullNameOne,
-
-//         "prefixNameTwo": prefixNameTwo,
-//         "fullNameTwo": fullNameTwo,
-
-//         "fleetCardNumber": item.fleetCardNumber,
-//         "gasstationId": item.gasstation.id,
-//         "gasstation_name": item.gasstation.gasstation_name,
-
-//         "createBy": item.createBy,
-//         "updateBy": item.updateBy,
-//       }
-//       transformedData.push(dataindex)
-//     })
-
-//     res.send(transformedData);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send(error.message)
-//   }
-// }
-
 exports.tripdetail_get_all_rangedate = async (req, res, next) => {
   try {
     let startDate = req.params.startDate;
@@ -9797,6 +9622,8 @@ exports.tripdetail_put = async (req, res, next) => {
   }
 }
 
+//------- DELETE -------//
+
 exports.tripdetailbyselect_put = async (req, res, next) => {
   try {
     const allTripdetailBooking = req.body
@@ -9885,7 +9712,6 @@ exports.tripdetailbyselect_put = async (req, res, next) => {
   }
 }
 
-//------- DELETE -------//
 // const tridetail_resetjob_delete = async(selectDate) => {
 //   try {
 //     const dataTripDetail = await .findAll(
@@ -9938,6 +9764,181 @@ exports.tripdetailbyselect_put = async (req, res, next) => {
 //     tridetail_resetjob_delete(formattedDate);
 
 //     res.send({message: 'Delete Data Success'});
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send(error.message)
+//   }
+// }
+
+// exports.tripdetail_get_all_rangedate = async (req, res, next) => {
+//   try {
+//     let startDate = req.params.startDate;
+//     let endDate = req.params.endDate;
+
+//     const data = await .findAll(
+//       {
+//         include: [{
+//           model: MonthModel,
+//           attributes: ['id', 'month_name']
+//         },
+//         {
+//           model: CustomerModel,
+//           attributes: ['id', 'customer_name']
+//         },
+//         {
+//           model: NetworkModel,
+//           attributes: ['id', 'network_name']
+//         },
+//         {
+//           model: TypeModel,
+//           attributes: ['id', 'type_name']
+//         },
+//         {
+//           model: ServiceTypeModel,
+//           attributes: ['id', 'servicetype_name']
+//         },
+//         {
+//           model: TeamModel,
+//           attributes: ['id', 'team_name']
+//         },
+//         {
+//           model: GasStationModel,
+//           attributes: ['id', 'gasstation_name']
+//         }],
+//         order: [['JobOrderNumber', 'DESC']],
+//         where: {
+//           date: {
+//             [Op.between]: [startDate + " 07:00:00", endDate + " 07:00:00"],
+//           },
+//         },
+//       }
+//     )
+
+//     const dataBusinessType = await BusinessTypeModel.findAll()
+//     const dataOperationType = await OperationTypeModel.findAll()
+//     const dataSector = await SectorModel.findAll()
+//     const dataClient = await ClientModel.findAll()
+//     const dataClientGroup = await ClientGroupModel.findAll()
+
+//     const dataVehicle = await VehicleModel.findAll()
+
+//     const dataDriver = await DriverModel.findAll()
+
+//     const dataVehicleType = await VehicleTypeModel.findAll()
+
+//     const transformedData = []
+
+//     data.map((item, index) => {
+//       //console.log(index+1, item.plateNumber);
+//       const dataClientGroupResult = dataClientGroup.find(index => index.customerId === item.customer.id);
+
+//       const dataVehicleResult = dataVehicle.find(index => index.plateNumber === item.plateNumber);
+//       const dataDriverOneResult = dataDriver.find(index => index.fullName === item.driverOne);
+//       const dataDriverTwoResult = dataDriver.find(index => index.fullName === item.driverTwo);
+
+//       //console.log(dataVehicleResult);
+//       const dataVehicleTypeResult = dataVehicleType.find(index => index.id === dataVehicleResult.vehicletypeId);
+
+//       let sector
+//       let businesstype
+//       let operationtype
+//       let client_code
+//       let client_name_EN
+
+//       if (dataClientGroupResult == undefined) {
+//         sector = ''
+//         businesstype = ''
+//         operationtype = ''
+//         client_code = ''
+//         client_name_EN = ''
+//       } else {
+//         const dataBusinessTypeResult = dataBusinessType.find(index => index.id === dataClientGroupResult.businesstypeId);
+//         const dataOperationTypeResult = dataOperationType.find(index => index.id === dataClientGroupResult.operationtypeId);
+//         const dataSectorResult = dataSector.find(index => index.id === dataClientGroupResult.sectorId);
+//         const dataClientResult = dataClient.find(index => index.id === dataClientGroupResult.clientId);
+
+//         sector = dataSectorResult.sector_name
+//         businesstype = dataBusinessTypeResult.businesstype_name
+//         operationtype = dataOperationTypeResult.operationtype_name
+//         client_code = dataClientResult.client_code
+//         client_name_EN = dataClientResult.client_name_EN
+//       }
+
+//       let prefixNameOne
+//       let fullNameOne
+//       if (dataDriverOneResult == undefined) {
+//         prefixNameOne = ''
+//         fullNameOne = ''
+//       } else {
+//         prefixNameOne = dataDriverOneResult.prefixName
+//         fullNameOne = dataDriverOneResult.fullName
+//       }
+
+//       let prefixNameTwo
+//       let fullNameTwo
+//       if (dataDriverTwoResult == undefined) {
+//         prefixNameTwo = ''
+//         fullNameTwo = ''
+//       } else {
+//         prefixNameTwo = dataDriverTwoResult.prefixName
+//         fullNameTwo = dataDriverTwoResult.fullName
+//       }
+
+//       const dataindex = {
+//         "id": item.id,
+//         "line": index + 1,
+//         "jobOrderNumber": item.JobOrderNumber,
+//         "date": item.date,
+//         "numberoftrip": item.numberoftrip,
+//         "totalDistance": item.totalDistance,
+//         "remark": item.remark,
+//         "mile_start": item.mile_start,
+//         "mile_end": item.mile_end,
+//         "quantity": item.quantity,
+//         "createdAt": item.createdAt,
+//         "updatedAt": item.updatedAt,
+
+//         "month_id": item.month.id,
+//         "month_name": item.month.month_name,
+//         "type_id": item.type.id,
+//         "type_name": item.type.type_name,
+//         "team_id": item.team.id,
+//         "team_name": item.team.team_name,
+//         "network_id": item.network.id,
+//         "network_name": item.network.network_name,
+
+//         "customer_id": item.customer.id,
+//         "customer_name": item.customer.customer_name,
+//         "client_code": client_code,
+//         "client_name_EN": client_name_EN,
+//         "businesstype_name": businesstype,
+//         "sector_name": sector,
+//         "operationtype_name": operationtype,
+
+//         "vehicle_id": dataVehicleResult.id,
+//         "plateNumber": dataVehicleResult.plateNumber,
+//         "servicetype_id": item.servicetype.id,
+//         "servicetype_name": item.servicetype.servicetype_name,
+//         "vehicletype_id": dataVehicleTypeResult.id,
+//         "vehicletype_name": dataVehicleTypeResult.vehicletype_name,
+
+//         "prefixNameOne": prefixNameOne,
+//         "fullNameOne": fullNameOne,
+
+//         "prefixNameTwo": prefixNameTwo,
+//         "fullNameTwo": fullNameTwo,
+
+//         "fleetCardNumber": item.fleetCardNumber,
+//         "gasstationId": item.gasstation.id,
+//         "gasstation_name": item.gasstation.gasstation_name,
+
+//         "createBy": item.createBy,
+//         "updateBy": item.updateBy,
+//       }
+//       transformedData.push(dataindex)
+//     })
+
+//     res.send(transformedData);
 //   } catch (error) {
 //     console.log(error);
 //     res.status(500).send(error.message)

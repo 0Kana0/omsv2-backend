@@ -13,39 +13,304 @@ exports.driver_get_all_withexcel = async (req, res, next) => {
     sheet.columns = [
       { header: "DriverNumber", key: "driverNumber", width: 15 },
       { header: "PrefixName", key: "prefixName", width: 10 },
+      { header: "Name", key: "name", width: 15 },
+      { header: "SurName", key: "surName", width: 15 },
       { header: "FullName", key: "fullName", width: 25 },
       { header: "BirthDate", key: "birthDate", width: 15 },
       { header: "StartDate", key: "start_date", width: 15 },
       { header: "ResignationDate", key: "resignation_date", width: 15 },
       { header: "IDCard", key: "idCard", width: 20 },
       { header: "Phone", key: "phone", width: 15 },
-      { header: "Status", key: "driverstatus", width: 15 },
-      { header: "Project", key: "project", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Role", key: "role", width: 15 },
       { header: "CreatedAt", key: "createdAt", width: 20 },
       { header: "UpdatedAt", key: "updatedAt", width: 20 },
     ]
 
-    const dataDriver = await DriverModel.findAll(
-      {
-        include: [{
-          model: ProjectModel,
-          attributes: ['project_name']
-        }]
-      }
-    )
+    const dataDriver = await DriverModel.findAll()
 
     dataDriver.map((item) => {
       sheet.addRow({
         driverNumber: item.driverNumber,
         prefixName: item.prefixName,
+        name: item.name,
+        surName: item.surName,
         fullName: item.fullName,
         birthDate: item.birthDate,
         start_date: item.start_date,
         resignation_date: item.resignation_date,
         idCard: item.idCard,
         phone: item.phone,
-        driverstatus: item.status,
-        project: item.project.project_name,
+        status: item.status,
+        role: item.role,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })
+    })
+
+    const filename = `ข้อมูล driver`;
+    res.setHeader(
+      "Content-Type", 
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename*=UTF-8''" + encodeURI(`${filename}.xlsx`)
+    );
+
+    if (dataDriver.length !== 0) {
+      workbook.xlsx.write(res).then(function (data) {
+        res.end();
+        console.log("genExel successfully.");
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.driver_get_all_active_withexcel = async (req, res, next) => {
+  try {
+    let workbook = new exceljs.Workbook();
+    const sheet = workbook.addWorksheet("driver");
+    sheet.columns = [
+      { header: "DriverNumber", key: "driverNumber", width: 15 },
+      { header: "PrefixName", key: "prefixName", width: 10 },
+      { header: "Name", key: "name", width: 15 },
+      { header: "SurName", key: "surName", width: 15 },
+      { header: "FullName", key: "fullName", width: 25 },
+      { header: "BirthDate", key: "birthDate", width: 15 },
+      { header: "StartDate", key: "start_date", width: 15 },
+      { header: "ResignationDate", key: "resignation_date", width: 15 },
+      { header: "IDCard", key: "idCard", width: 20 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "CreatedAt", key: "createdAt", width: 20 },
+      { header: "UpdatedAt", key: "updatedAt", width: 20 },
+    ]
+
+    const dataDriver = await DriverModel.findAll(
+      { where: { status: 'ทำงาน' }}
+    )
+
+    dataDriver.map((item) => {
+      sheet.addRow({
+        driverNumber: item.driverNumber,
+        prefixName: item.prefixName,
+        name: item.name,
+        surName: item.surName,
+        fullName: item.fullName,
+        birthDate: item.birthDate,
+        start_date: item.start_date,
+        resignation_date: item.resignation_date,
+        idCard: item.idCard,
+        phone: item.phone,
+        status: item.status,
+        role: item.role,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })
+    })
+
+    const filename = `ข้อมูล driver`;
+    res.setHeader(
+      "Content-Type", 
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename*=UTF-8''" + encodeURI(`${filename}.xlsx`)
+    );
+
+    if (dataDriver.length !== 0) {
+      workbook.xlsx.write(res).then(function (data) {
+        res.end();
+        console.log("genExel successfully.");
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.driver_get_all_withoutnoinfo_withexcel = async (req, res, next) => {
+  try {
+    let workbook = new exceljs.Workbook();
+    const sheet = workbook.addWorksheet("driver");
+    sheet.columns = [
+      { header: "DriverNumber", key: "driverNumber", width: 15 },
+      { header: "PrefixName", key: "prefixName", width: 10 },
+      { header: "Name", key: "name", width: 15 },
+      { header: "SurName", key: "surName", width: 15 },
+      { header: "FullName", key: "fullName", width: 25 },
+      { header: "BirthDate", key: "birthDate", width: 15 },
+      { header: "StartDate", key: "start_date", width: 15 },
+      { header: "ResignationDate", key: "resignation_date", width: 15 },
+      { header: "IDCard", key: "idCard", width: 20 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "CreatedAt", key: "createdAt", width: 20 },
+      { header: "UpdatedAt", key: "updatedAt", width: 20 },
+    ]
+
+    const dataDriver = await DriverModel.findAll(
+      { where: { 
+        status: {
+          [Op.ne]: null // เลือกเฉพาะค่าที่ไม่ใช่ NULL
+        },
+      }}
+    )
+
+    dataDriver.map((item) => {
+      sheet.addRow({
+        driverNumber: item.driverNumber,
+        prefixName: item.prefixName,
+        name: item.name,
+        surName: item.surName,
+        fullName: item.fullName,
+        birthDate: item.birthDate,
+        start_date: item.start_date,
+        resignation_date: item.resignation_date,
+        idCard: item.idCard,
+        phone: item.phone,
+        status: item.status,
+        role: item.role,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })
+    })
+
+    const filename = `ข้อมูล driver`;
+    res.setHeader(
+      "Content-Type", 
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename*=UTF-8''" + encodeURI(`${filename}.xlsx`)
+    );
+
+    if (dataDriver.length !== 0) {
+      workbook.xlsx.write(res).then(function (data) {
+        res.end();
+        console.log("genExel successfully.");
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.driver_get_all_only_withexcel = async (req, res, next) => {
+  try {
+    let workbook = new exceljs.Workbook();
+    const sheet = workbook.addWorksheet("driver");
+    sheet.columns = [
+      { header: "DriverNumber", key: "driverNumber", width: 15 },
+      { header: "PrefixName", key: "prefixName", width: 10 },
+      { header: "Name", key: "name", width: 15 },
+      { header: "SurName", key: "surName", width: 15 },
+      { header: "FullName", key: "fullName", width: 25 },
+      { header: "BirthDate", key: "birthDate", width: 15 },
+      { header: "StartDate", key: "start_date", width: 15 },
+      { header: "ResignationDate", key: "resignation_date", width: 15 },
+      { header: "IDCard", key: "idCard", width: 20 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "CreatedAt", key: "createdAt", width: 20 },
+      { header: "UpdatedAt", key: "updatedAt", width: 20 },
+    ]
+
+    const dataDriver = await DriverModel.findAll(
+      { where: { role: 'พนักงานขับรถ' }}
+    )
+
+    dataDriver.map((item) => {
+      sheet.addRow({
+        driverNumber: item.driverNumber,
+        prefixName: item.prefixName,
+        name: item.name,
+        surName: item.surName,
+        fullName: item.fullName,
+        birthDate: item.birthDate,
+        start_date: item.start_date,
+        resignation_date: item.resignation_date,
+        idCard: item.idCard,
+        phone: item.phone,
+        status: item.status,
+        role: item.role,
+        createdAt: item.createdAt,
+        updatedAt: item.updatedAt,
+      })
+    })
+
+    const filename = `ข้อมูล driver`;
+    res.setHeader(
+      "Content-Type", 
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename*=UTF-8''" + encodeURI(`${filename}.xlsx`)
+    );
+
+    if (dataDriver.length !== 0) {
+      workbook.xlsx.write(res).then(function (data) {
+        res.end();
+        console.log("genExel successfully.");
+      });
+    }
+
+  } catch (error) {
+    console.log(error);
+  }
+}
+exports.driver_get_all_assistant_withexcel = async (req, res, next) => {
+  try {
+    let workbook = new exceljs.Workbook();
+    const sheet = workbook.addWorksheet("driver");
+    sheet.columns = [
+      { header: "DriverNumber", key: "driverNumber", width: 15 },
+      { header: "PrefixName", key: "prefixName", width: 10 },
+      { header: "Name", key: "name", width: 15 },
+      { header: "SurName", key: "surName", width: 15 },
+      { header: "FullName", key: "fullName", width: 25 },
+      { header: "BirthDate", key: "birthDate", width: 15 },
+      { header: "StartDate", key: "start_date", width: 15 },
+      { header: "ResignationDate", key: "resignation_date", width: 15 },
+      { header: "IDCard", key: "idCard", width: 20 },
+      { header: "Phone", key: "phone", width: 15 },
+      { header: "Status", key: "status", width: 15 },
+      { header: "Role", key: "role", width: 15 },
+      { header: "CreatedAt", key: "createdAt", width: 20 },
+      { header: "UpdatedAt", key: "updatedAt", width: 20 },
+    ]
+
+    const dataDriver = await DriverModel.findAll(
+      { where: { role: 'ผู้ช่วยพนักงานขับรถ' }}
+    )
+
+    dataDriver.map((item) => {
+      sheet.addRow({
+        driverNumber: item.driverNumber,
+        prefixName: item.prefixName,
+        name: item.name,
+        surName: item.surName,
+        fullName: item.fullName,
+        birthDate: item.birthDate,
+        start_date: item.start_date,
+        resignation_date: item.resignation_date,
+        idCard: item.idCard,
+        phone: item.phone,
+        status: item.status,
+        role: item.role,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
       })
@@ -115,7 +380,7 @@ exports.driver_get_all_withoutnoinfo = async (req, res, next) => {
 exports.driver_get_all_only = async (req, res, next) => {
   try {
     const dataDriver = await DriverModel.findAll(
-      { where: { role: 'พขร' }}
+      { where: { role: 'พนักงานขับรถ' }}
     )
 
     res.send(dataDriver);
@@ -127,7 +392,7 @@ exports.driver_get_all_only = async (req, res, next) => {
 exports.driver_get_all_assistant = async (req, res, next) => {
   try {
     const dataDriver = await DriverModel.findAll(
-      { where: { role: 'ผู้ช่วย' }}
+      { where: { role: 'ผู้ช่วยพนักงานขับรถ' }}
     )
 
     res.send(dataDriver);
@@ -159,20 +424,57 @@ exports.driver_get_one = async (req, res, next) => {
 //------- POST -------//
 exports.driver_post = async (req, res, next) => {
   try {
-    const { driverNumber, prefixName, name, surName, fullName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
+    const { driverNumber, prefixName, name, surName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
+    
+    let driverNumber_tran = null
+    let idCard_tran = null
+    let phone_tran = null
+    let status_tran = null
+    let role_tran = null
+
+    if (driverNumber == '' || driverNumber == ' ' || driverNumber == '-') {
+      driverNumber_tran = null
+    } else {
+      driverNumber_tran = driverNumber
+    }
+
+    if (idCard == '' || idCard == ' ' || idCard == '-') {
+      idCard_tran = null
+    } else {
+      idCard_tran = idCard
+    }
+
+    if (phone == '' || phone == ' ' || phone == '-') {
+      phone_tran = null
+    } else {
+      phone_tran = phone
+    }
+
+    if (status == '' || status == ' ' || status == '-') {
+      status_tran = null
+    } else {
+      status_tran = status
+    }
+
+    if (role == '' || role == ' ' || role == '-') {
+      role_tran = null
+    } else {
+      role_tran = role
+    }
+    
     await DriverModel.create({
-      driverNumber: driverNumber,
+      driverNumber: driverNumber_tran,
       prefixName: prefixName,
       name: name,
       surName: surName,
-      fullName: fullName,
+      fullName: name + ' ' + surName,
       birthDate: birthDate,
       start_date: start_date,
       resignation_date: resignation_date,
-      idCard: idCard,
-      phone: phone,
-      status: status,
-      role: role,
+      idCard: idCard_tran,
+      phone: phone_tran,
+      status: status_tran,
+      role: role_tran,
     })
     res.send({message: 'Add Data Success'})
   } catch (error) {
@@ -184,21 +486,58 @@ exports.driver_post = async (req, res, next) => {
 //------- PUT -------//
 exports.driver_put = async (req, res, next) => {
   try {
-    const { driverNumber, prefixName, name, surName, fullName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
+    const { driverNumber, prefixName, name, surName, birthDate, start_date, resignation_date, idCard, phone, status, role } = req.body
     const edit_id = req.params.id
+
+    let driverNumber_tran = null
+    let idCard_tran = null
+    let phone_tran = null
+    let status_tran = null
+    let role_tran = null
+
+    if (driverNumber == '' || driverNumber == ' ' || driverNumber == '-') {
+      driverNumber_tran = null
+    } else {
+      driverNumber_tran = driverNumber
+    }
+
+    if (idCard == '' || idCard == ' ' || idCard == '-') {
+      idCard_tran = null
+    } else {
+      idCard_tran = idCard
+    }
+
+    if (phone == '' || phone == ' ' || phone == '-') {
+      phone_tran = null
+    } else {
+      phone_tran = phone
+    }
+
+    if (status == '' || status == ' ' || status == '-') {
+      status_tran = null
+    } else {
+      status_tran = status
+    }
+
+    if (role == '' || role == ' ' || role == '-') {
+      role_tran = null
+    } else {
+      role_tran = role
+    }
+
     const data = await DriverModel.update({
-      driverNumber: driverNumber,
+      driverNumber: driverNumber_tran,
       prefixName: prefixName,
       name: name,
       surName: surName,
-      fullName: fullName,
+      fullName: name + ' ' + surName,
       birthDate: birthDate,
       start_date: start_date,
       resignation_date: resignation_date,
-      idCard: idCard,
-      phone: phone,
-      status: status,
-      role: role,
+      idCard: idCard_tran,
+      phone: phone_tran,
+      status: status_tran,
+      role: role_tran,
     }, { where: { id: edit_id } }
     )
     if (data == 0) {
