@@ -46,6 +46,9 @@ module.exports = (sequelize, Sequelize) => {
     route_number: {
       type: Sequelize.STRING,
     },
+    job_code: {
+      type: Sequelize.STRING,
+    },
     createBy: {
       type: Sequelize.STRING,
     },

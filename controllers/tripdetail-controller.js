@@ -160,6 +160,7 @@ exports.tripdetail_get_all_bymonth_withexcel = async (req, res, next) => {
       { header: "LateStatus", key: "lateStatus", width: 20 },
       { header: "BarcodeNumber", key: "barcode_number", width: 20 },
       { header: "RouteNumber", key: "route_number", width: 20 },
+      { header: "JobCode", key: "job_code", width: 20 },
       { header: "createBy", key: "createBy", width: 20 },
       { header: "updateBy", key: "updateBy", width: 20 },
       { header: "createdAt", key: "createdAt", width: 20 },
@@ -330,6 +331,7 @@ exports.tripdetail_get_all_bymonth_withexcel = async (req, res, next) => {
         lateStatus: item.lateStatus,
         barcode_number: item.barcode_number,
         route_number: item.route_number,
+        job_code: item.job_code,
         createBy: item.createBy,
         updateBy: item.updateBy,
         createdAt: adCreateAt.format('YYYY-MM-DD HH:mm:ss'),
@@ -408,6 +410,7 @@ exports.tripdetail_get_all_rangedate_withexcel = async (req, res, next) => {
       { header: "LateStatus", key: "lateStatus", width: 20 },
       { header: "BarcodeNumber", key: "barcode_number", width: 20 },
       { header: "RouteNumber", key: "route_number", width: 20 },
+      { header: "JobCode", key: "job_code", width: 20 },
       { header: "createBy", key: "createBy", width: 20 },
       { header: "updateBy", key: "updateBy", width: 20 },
       { header: "createdAt", key: "createdAt", width: 20 },
@@ -577,6 +580,7 @@ exports.tripdetail_get_all_rangedate_withexcel = async (req, res, next) => {
         lateStatus: item.lateStatus,
         barcode_number: item.barcode_number,
         route_number: item.route_number,
+        job_code: item.job_code,
         createBy: item.createBy,
         updateBy: item.updateBy,
         createdAt: adCreateAt.format('YYYY-MM-DD HH:mm:ss'),
@@ -1735,6 +1739,7 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
         "lateStatus": item.lateStatus,
         "barcode_number": item.barcode_number,
         "route_number": item.route_number,
+        "job_code": item.job_code,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
 
@@ -1909,6 +1914,7 @@ exports.tripdetail_get_one = async (req, res, next) => {
       "quantity": data.quantity,
       "barcode_number": data.barcode_number,
       "route_number": data.route_number,
+      "job_code": data.job_code,
       "lateStatus": data.lateStatus,
       "createdAt": data.createdAt,
       "updatedAt": data.updatedAt,
@@ -3750,6 +3756,7 @@ exports.tripdetail_post = async (req, res, next) => {
       lateStatus,
       barcode_number,
       route_number,
+      job_code,
       plateNumber, 
       driverOne, 
       driverTwo, 
@@ -3878,6 +3885,7 @@ exports.tripdetail_post = async (req, res, next) => {
         lateStatus: lateStatus,
         barcode_number: barcode_number,
         route_number: route_number,
+        job_code: job_code,
         plateNumber: formatPlaceNumber,
         driverOne: driverOne,
         driverTwo: driverTwo,
@@ -3907,6 +3915,7 @@ exports.tripdetail_post = async (req, res, next) => {
           lateStatus: lateStatus,
           barcode_number: barcode_number,
           route_number: route_number,
+          job_code: job_code,
           plateNumber: formatPlaceNumber,
           driverOne: driverOne,
           driverTwo: driverTwo,
@@ -3941,6 +3950,7 @@ exports.tripdetail_post = async (req, res, next) => {
           lateStatus: lateStatus,
           barcode_number: barcode_number,
           route_number: route_number,
+          job_code: job_code,
           plateNumber: formatPlaceNumber,
           driverOne: driverOne,
           driverTwo: driverTwo,
@@ -4514,6 +4524,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -4562,6 +4573,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -4616,6 +4628,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -4929,6 +4942,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -4969,6 +4983,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -5015,6 +5030,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -5331,6 +5347,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           lateStatus: filteredDataOld[index].lateStatus,
                           barcode_number: filteredDataOld[index].barcode_number,
                           route_number: filteredDataOld[index].route_number,
+                          job_code: filteredDataOld[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredDataOld[index].driverOne,
                           driverTwo: filteredDataOld[index].driverTwo,
@@ -5371,6 +5388,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredDataOld[index].lateStatus,
                             barcode_number: filteredDataOld[index].barcode_number,
                             route_number: filteredDataOld[index].route_number,
+                            job_code: filteredDataOld[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataOld[index].driverOne,
                             driverTwo: filteredDataOld[index].driverTwo,
@@ -5417,6 +5435,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredDataOld[index].lateStatus,
                             barcode_number: filteredDataOld[index].barcode_number,
                             route_number: filteredDataOld[index].route_number,
+                            job_code: filteredDataOld[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataOld[index].driverOne,
                             driverTwo: filteredDataOld[index].driverTwo,
@@ -5754,6 +5773,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           lateStatus: filteredDataNew[index].lateStatus,
                           barcode_number: filteredDataNew[index].barcode_number,
                           route_number: filteredDataNew[index].route_number,
+                          job_code: filteredDataNew[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredDataNew[index].driverOne,
                           driverTwo: filteredDataNew[index].driverTwo,
@@ -5802,6 +5822,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredDataNew[index].lateStatus,
                             barcode_number: filteredDataNew[index].barcode_number,
                             route_number: filteredDataNew[index].route_number,
+                            job_code: filteredDataNew[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataNew[index].driverOne,
                             driverTwo: filteredDataNew[index].driverTwo,
@@ -5856,6 +5877,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredDataNew[index].lateStatus,
                             barcode_number: filteredDataNew[index].barcode_number,
                             route_number: filteredDataNew[index].route_number,
+                            job_code: filteredDataNew[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataNew[index].driverOne,
                             driverTwo: filteredDataNew[index].driverTwo,
@@ -6205,6 +6227,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -6253,6 +6276,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -6307,6 +6331,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -7045,6 +7070,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -7093,6 +7119,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -7147,6 +7174,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -7564,6 +7592,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -7604,6 +7633,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -7650,6 +7680,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -8070,6 +8101,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                           lateStatus: filteredDataOld[index].lateStatus,
                           barcode_number: filteredDataOld[index].barcode_number,
                           route_number: filteredDataOld[index].route_number,
+                          job_code: filteredDataOld[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredDataOld[index].driverOne,
                           driverTwo: filteredDataOld[index].driverTwo,
@@ -8110,6 +8142,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredDataOld[index].lateStatus,
                             barcode_number: filteredDataOld[index].barcode_number,
                             route_number: filteredDataOld[index].route_number,
+                            job_code: filteredDataOld[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataOld[index].driverOne,
                             driverTwo: filteredDataOld[index].driverTwo,
@@ -8156,6 +8189,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredDataOld[index].lateStatus,
                             barcode_number: filteredDataOld[index].barcode_number,
                             route_number: filteredDataOld[index].route_number,
+                            job_code: filteredDataOld[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataOld[index].driverOne,
                             driverTwo: filteredDataOld[index].driverTwo,
@@ -8588,6 +8622,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                           lateStatus: filteredDataNew[index].lateStatus,
                           barcode_number: filteredDataNew[index].barcode_number,
                           route_number: filteredDataNew[index].route_number,
+                          job_code: filteredDataNew[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredDataNew[index].driverOne,
                           driverTwo: filteredDataNew[index].driverTwo,
@@ -8636,6 +8671,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredDataNew[index].lateStatus,
                             barcode_number: filteredDataNew[index].barcode_number,
                             route_number: filteredDataNew[index].route_number,
+                            job_code: filteredDataNew[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataNew[index].driverOne,
                             driverTwo: filteredDataNew[index].driverTwo,
@@ -8690,6 +8726,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredDataNew[index].lateStatus,
                             barcode_number: filteredDataNew[index].barcode_number,
                             route_number: filteredDataNew[index].route_number,
+                            job_code: filteredDataNew[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredDataNew[index].driverOne,
                             driverTwo: filteredDataNew[index].driverTwo,
@@ -9134,6 +9171,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                           lateStatus: filteredData[index].lateStatus,
                           barcode_number: filteredData[index].barcode_number,
                           route_number: filteredData[index].route_number,
+                          job_code: filteredData[index].job_code,
                           plateNumber: formatPlaceNumber,
                           driverOne: filteredData[index].driverOne,
                           driverTwo: filteredData[index].driverTwo,
@@ -9182,6 +9220,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -9236,6 +9275,7 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
                             lateStatus: filteredData[index].lateStatus,
                             barcode_number: filteredData[index].barcode_number,
                             route_number: filteredData[index].route_number,
+                            job_code: filteredData[index].job_code,
                             plateNumber: formatPlaceNumber,
                             driverOne: filteredData[index].driverOne,
                             driverTwo: filteredData[index].driverTwo,
@@ -9330,46 +9370,6 @@ exports.tripdetail_post_byexcel_matchingvbk_v3 = async (req, res, next) => {
 }
 
 //------- PUT -------//
-const tridetail_resetjob_put = async(selectDate) => {
-  try {
-    const selectDateFormat = moment(selectDate).format("YYYY-MM-DD")
-
-    // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
-    const startDateYear = moment(selectDateFormat).year();
-    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
-
-    const dataTripDetail = await chooseTripDB.findAll(
-      { 
-        attributes: ['id'],
-        where: { date: selectDateFormat + " 07:00:00"} 
-      }
-    )
-
-    for (let index = 0; index < dataTripDetail.length; index++) {
-      let JobOrderNumber
-      let kdr = "KDR"
-      const formattedDateKdr = selectDateFormat.split("-").join("");
-
-      const lastRunNumberInt = index + 1
-      const lastRunNumberStr = lastRunNumberInt.toString().padStart(4, '0')
-
-      JobOrderNumber = kdr + formattedDateKdr + "-" + lastRunNumberStr
-      // console.log(JobOrderNumber);
-
-      const dataTripDetailResetJob = await chooseTripDB.update(
-        {
-          JobOrderNumber: JobOrderNumber
-        },
-        { where: {id: dataTripDetail[index].id} }
-      )
-    }
-
-    console.log('Reset JobOrderNumber Success');
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 exports.tripdetail_put = async (req, res, next) => {
   try {
     // รับข้อมูลที่จะเเก้ไขจาก API 
@@ -9387,6 +9387,7 @@ exports.tripdetail_put = async (req, res, next) => {
       lateStatus,
       barcode_number,
       route_number,
+      job_code,
       driverOne, 
       driverTwo, 
       customerId, 
@@ -9514,6 +9515,7 @@ exports.tripdetail_put = async (req, res, next) => {
         lateStatus: lateStatus,
         barcode_number: barcode_number,
         route_number: route_number,
+        job_code: job_code,
         plateNumber: formatPlaceNumber,
         driverOne: driverOne,
         driverTwo: driverTwo,
@@ -9539,6 +9541,7 @@ exports.tripdetail_put = async (req, res, next) => {
           lateStatus: lateStatus,
           barcode_number: barcode_number,
           route_number: route_number,
+          job_code: job_code,
           plateNumber: formatPlaceNumber,
           driverOne: driverOne,
           driverTwo: driverTwo,
@@ -9569,6 +9572,7 @@ exports.tripdetail_put = async (req, res, next) => {
           lateStatus: lateStatus,
           barcode_number: barcode_number,
           route_number: route_number,
+          job_code: job_code,
           plateNumber: formatPlaceNumber,
           driverOne: driverOne,
           driverTwo: driverTwo,
@@ -9623,6 +9627,46 @@ exports.tripdetail_put = async (req, res, next) => {
 }
 
 //------- DELETE -------//
+
+const tridetail_resetjob_put = async(selectDate) => {
+  try {
+    const selectDateFormat = moment(selectDate).format("YYYY-MM-DD")
+
+    // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+    const startDateYear = moment(selectDateFormat).year();
+    const chooseTripDB = await choose_database_fromyear_trip(startDateYear)
+
+    const dataTripDetail = await chooseTripDB.findAll(
+      { 
+        attributes: ['id'],
+        where: { date: selectDateFormat + " 07:00:00"} 
+      }
+    )
+
+    for (let index = 0; index < dataTripDetail.length; index++) {
+      let JobOrderNumber
+      let kdr = "KDR"
+      const formattedDateKdr = selectDateFormat.split("-").join("");
+
+      const lastRunNumberInt = index + 1
+      const lastRunNumberStr = lastRunNumberInt.toString().padStart(4, '0')
+
+      JobOrderNumber = kdr + formattedDateKdr + "-" + lastRunNumberStr
+      // console.log(JobOrderNumber);
+
+      const dataTripDetailResetJob = await chooseTripDB.update(
+        {
+          JobOrderNumber: JobOrderNumber
+        },
+        { where: {id: dataTripDetail[index].id} }
+      )
+    }
+
+    console.log('Reset JobOrderNumber Success');
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 exports.tripdetailbyselect_put = async (req, res, next) => {
   try {
