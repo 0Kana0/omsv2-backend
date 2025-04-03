@@ -39,7 +39,7 @@ db.GasStationModel = require("./gasstation-model.js")(sequelize, Sequelize);
 
 db.FleetCardTrackingModel = require("./fleetcardtracking-model")(sequelize, Sequelize);
 
-// MODEL ที่ใช้ JOIN ข้อมูลกับ Tripdetail VehicleBooking Driver
+// MODEL ที่ใช้ JOIN ข้อมูลกับ Database หลัก เป็นส่วนย่อยของจ้อมูลใน KDR
 db.VehicleTypeModel = require("./vehicletype-model.js")(sequelize, Sequelize);
 db.TypeModel = require("./type-model.js")(sequelize, Sequelize);
 db.TeamModel = require("./team-model.js")(sequelize, Sequelize);
@@ -48,6 +48,7 @@ db.MonthModel = require("./month-model.js")(sequelize, Sequelize);
 db.ProjectModel = require("./project-model.js")(sequelize, Sequelize);
 db.CustomerModel = require("./customer-model.js")(sequelize, Sequelize);
 db.VehicleCompanyModel = require("./vehiclecompany-model.js")(sequelize, Sequelize);
+db.UnitModel = require("./unit-model.js")(sequelize, Sequelize);
 
 // MODEL ส่วนของการรับข้อมูล GPS ของรถยนต์มาจาก 8GPS 
 db.MDSModel = require("./mds-model.js")(sequelize, Sequelize);
@@ -191,12 +192,59 @@ db.MaintenanceSummaryModel.belongsTo(db.CustomerModel)
 db.MaintenanceSummaryModel.belongsTo(db.NetworkModel)
 db.MaintenanceSummaryModel.belongsTo(db.ServiceTypeModel)
 
-// MODEL ส่วนของการจัดการข้อมูลคนขับรถและคนขับ
+// MODEL ส่วนของการจัดการข้อมูลรถและคนขับ
 db.VehicleMatchDriverModel = require("./vehiclematchdriver-model.js")(sequelize, Sequelize);
 db.VehicleMatchDriverModel.belongsTo(db.VehicleModel)
 
-// MODEL ส่วนของการเก็บประวัตืการจัดการข้อมูลคนขับรถและคนขับ
+// MODEL ส่วนของการเก็บประวัติการจัดการข้อมูลรถและคนขับ
 db.VmdHistoryModel = require("./vmdhistory-model.js")(sequelize, Sequelize);
 db.VmdHistoryModel.belongsTo(db.VehicleModel)
+
+// MODEL ส่วนของการเเจ้งลาออกของคนขับ
+db.ResigningDriverModel = require("./resigningdriver-model.js")(sequelize, Sequelize);
+db.ResigningDriverModel.belongsTo(db.UnitModel, {
+  foreignKey: "resign_unit",
+  as: "ResignUnit",
+})
+db.ResigningDriverModel.belongsTo(db.NetworkModel, {
+  foreignKey: "resign_network",
+  as: "ResignNetwork",
+})
+db.ResigningDriverModel.belongsTo(db.CustomerModel, {
+  foreignKey: "resign_customer",
+  as: "ResignCustomer",
+})
+db.ResigningDriverModel.belongsTo(db.VehicleModel, {
+  foreignKey: "resign_plateNumber",
+  as: "ResignPlateNumber",
+})
+db.ResigningDriverModel.belongsTo(db.VehicleModel, {
+  foreignKey: "resign_plateNumber_special",
+  as: "ResignPlateNumberSpecial",
+})
+db.ResigningDriverModel.belongsTo(db.UnitModel, {
+  foreignKey: "recruit_unit",
+  as: "RecruitUnit",
+})
+db.ResigningDriverModel.belongsTo(db.NetworkModel, {
+  foreignKey: "recruit_network",
+  as: "RecruitNetwork",
+})
+db.ResigningDriverModel.belongsTo(db.CustomerModel, {
+  foreignKey: "recruit_customer",
+  as: "RecruitCustomer",
+})
+db.ResigningDriverModel.belongsTo(db.VehicleModel, {
+  foreignKey: "recruit_plateNumber",
+  as: "RecruitPlateNumber",
+})
+db.ResigningDriverModel.belongsTo(db.VehicleModel, {
+  foreignKey: "recruit_plateNumber_special",
+  as: "RecruitPlateNumberSpecial",
+})
+
+// MODEL ส่วนของการเเจ้งสรรหาคนขับ
+db.RecruitingDriverModel = require("./recruitingdriver-model.js")(sequelize, Sequelize);
+db.RecruitingDriverModel.belongsTo(db.ResigningDriverModel)
 
 module.exports = db;

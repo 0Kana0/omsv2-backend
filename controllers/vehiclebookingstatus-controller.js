@@ -766,6 +766,53 @@ exports.vehiclebookingstatus_get_all_bydate = async (req, res, next) => {
   }
 }
 
+exports.vehiclebookingstatus_get_all_recruit = async (req, res, next) => {
+  try {
+    let selectDate = req.params.date
+    // console.log(selectDate);
+    // ส่วนของการตรวจสอบว่าข้อมูลนี้ต้องใช้ Database ของปีไหน
+    const startDateYear = moment(selectDate).year();
+    const chooseVbkDB = await choose_database_fromyear_vbk(startDateYear)
+
+    const dataVbkRecruit = await chooseVbkDB.findAll({
+      attributes: ['status', 'vehicleId'],
+      include: [{
+        model: VehicleModel,
+        attributes: ['plateNumber']
+      }],
+      where: {
+        date: selectDate + " 07:00:00",
+        status: {
+          [Op.or]: ['No Driver', 'MA No Driver']
+        },
+        approveStatus: {
+          [Op.ne]: ['Hidden']
+        },
+      },
+      order: [['networkId', 'ASC']] 
+    })
+
+    const transformedData = []
+
+    dataVbkRecruit.map((item, index) => {
+      const dataindex = {
+        "vehicleId": item.vehicleId,
+        "plateNumber": item.vehicle.plateNumber
+      }
+      transformedData.push(dataindex)
+    })
+    
+    res.send({
+      status: 'success',
+      message: 'Get VehicleBooking Recruit Success',
+      length: dataVbkRecruit.length,
+      data: transformedData
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 // ข้อมูล VehicleBookingStatus ที่เป็น TKN และ Sold
 exports.vehiclebookingstatus_get_tkn_sold = async (req, res, next) => {
   try {
