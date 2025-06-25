@@ -7,6 +7,8 @@ router.get('/gettypes', controller.type_get_all)
 router.get('/gettype/:id', controller.type_get_one)
 router.get('/gettypebyname/:name', controller.type_get_one_byname)
 
+router.get('/gettypeactive', controller.type_get_all_active)
+
 //------- POST -------//
 router.post('/posttype', controller.type_post)
 

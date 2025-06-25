@@ -12,6 +12,23 @@ exports.gasstation_get_all = async (req, res, next) => {
   }
 }
 
+exports.gasstation_get_all_active = async (req, res, next) => {
+  try {
+    const dataGasStation = await GasStationModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get GasStation Active Success',
+      length: dataGasStation.length,
+      data: dataGasStation
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.gasstation_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id

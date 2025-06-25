@@ -12,6 +12,23 @@ exports.unit_get_all = async (req, res, next) => {
   }
 }
 
+exports.unit_get_all_active = async (req, res, next) => {
+  try {
+    const dataUnit = await UnitModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get Unit Active Success',
+      length: dataUnit.length,
+      data: dataUnit
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.unit_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id

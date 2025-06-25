@@ -3,6 +3,9 @@ module.exports = (sequelize, Sequelize) => {
     resign_date: {
       type: Sequelize.DATEONLY,
     },
+    resign_prefix_driver: {
+      type: Sequelize.STRING,
+    },
     resign_driver: {
       type: Sequelize.STRING,
     },

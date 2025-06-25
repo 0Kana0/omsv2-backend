@@ -12,6 +12,23 @@ exports.type_get_all = async (req, res, next) => {
   }
 }
 
+exports.type_get_all_active = async (req, res, next) => {
+  try {
+    const dataType = await TypeModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get Type Active Success',
+      length: dataType.length,
+      data: dataType
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.type_get_one_byname = async (req, res, next) => {
   try {
     const get_name = req.params.name

@@ -18,6 +18,7 @@ const ClientModel = db.ClientModel
 const ClientGroupByTeamModel = db.ClientGroupByTeamModel;
 const VehicleCompanyModel = db.VehicleCompanyModel
 const ProjectModel = db.ProjectModel
+const UnitModel = db.UnitModel
 
 const ShellFleetCardModel = db.ShellFleetCardModel;
 const PTmaxFleetCardModel = db.PTmaxFleetCardModel;
@@ -1645,6 +1646,10 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
         {
           model: GasStationModel,
           attributes: ['id', 'gasstation_name']
+        },
+        {
+          model: UnitModel,
+          attributes: ['id', 'unit_name']
         }],
         order: [['JobOrderNumber', 'DESC']],
         where: {
@@ -1745,12 +1750,14 @@ exports.tripdetail_get_all_rangedate = async (req, res, next) => {
 
         "month_id": item.month.id,
         "month_name": item.month.month_name,
-        "type_id": item.type.id,
-        "type_name": item.type.type_name,
+        "subtype_id": item.type.id,
+        "subtype_name": item.type.type_name,
         "team_id": item.team.id,
         "team_name": item.team.team_name,
         "network_id": item.network.id,
         "network_name": item.network.network_name,
+        "type_id": item.unit.id,
+        "type_name": item.unit.unit_name,
 
         "customer_id": item.customer.id,
         "customer_name": item.customer.customer_name,
@@ -4031,6 +4038,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
 
     let errorCustomerList = []
     let errorTypeList = []
+    let errorSubTypeList = []
     let errorServiceTypeList = []
     let errorTeamList = []
     let errorNetworkList = []
@@ -4039,6 +4047,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
     const uniqueDates = [...new Set(allTripData.map(item => item.date))];
     const uniqueCustomers = [...new Set(allTripData.map(item => item.customer))];
     const uniqueTypes = [...new Set(allTripData.map(item => item.type))];
+    const uniqueSubTypes = [...new Set(allTripData.map(item => item.subType))];
     const uniqueServiceTypes = [...new Set(allTripData.map(item => item.serviceType))];
     const uniqueTeams = [...new Set(allTripData.map(item => item.team))];
     const uniqueNetworks = [...new Set(allTripData.map(item => item.network))];
@@ -4061,13 +4070,23 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
       }
     }
     for (let index = 0; index < uniqueTypes.length; index++) {
-      const dataTypeCheck = await TypeModel.findOne(
-        {where: {type_name: uniqueTypes[index]}}
+      const dataTypeCheck = await UnitModel.findOne(
+        {where: {unit_name: uniqueTypes[index]}}
       )
       if (dataTypeCheck == null) {
         console.log('found uniqueTypes');
         errorTypeList.push(uniqueTypes[index])
         allTripData = allTripData.filter(item => item.type !== uniqueTypes[index]);
+      }
+    }
+    for (let index = 0; index < uniqueSubTypes.length; index++) {
+      const dataSubTypeCheck = await TypeModel.findOne(
+        {where: {type_name: uniqueSubTypes[index]}}
+      )
+      if (dataSubTypeCheck == null) {
+        console.log('found uniqueSubTypes');
+        errorSubTypeList.push(uniqueSubTypes[index])
+        allTripData = allTripData.filter(item => item.subtype !== uniqueSubTypes[index]);
       }
     }
     for (let index = 0; index < uniqueServiceTypes.length; index++) {
@@ -4158,13 +4177,13 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
         console.log('Data In Database Of Date', dataTripdetailPreviousNoCus.length);
 
         for (let index1 = 0; index1 < uniqueCustomers.length; index1++) {
-          const filteredDataNoType = filteredDataNoCus.filter(find => find.customer.toLowerCase() === uniqueCustomers[index1].toLowerCase());
-          const lengthCus = filteredDataNoType.length;
+          const filteredDataNoSubType = filteredDataNoCus.filter(find => find.customer.toLowerCase() === uniqueCustomers[index1].toLowerCase());
+          const lengthCus = filteredDataNoSubType.length;
 
           const dataTripdetailPreviousNoNetwork = dataTripdetailPreviousNoCus.filter(find => find.customer.customer_name.toLowerCase() === uniqueCustomers[index1].toLowerCase());
-          const dataTripdetailPreviousNotype = dataTripdetailPreviousNoNetwork.filter(find => find.network.network_name === findNetwork);
+          const dataTripdetailPreviousNoSubType = dataTripdetailPreviousNoNetwork.filter(find => find.network.network_name === findNetwork);
              
-          const previouslengthCus = dataTripdetailPreviousNotype.length;
+          const previouslengthCus = dataTripdetailPreviousNoSubType.length;
 
           if (lengthCus !== 0) {
             console.log('------------------------------------------------');
@@ -4172,20 +4191,20 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
             console.log('Data In Excel Of Date Of Customer', lengthCus);
             console.log('Data In Database Of Date Of Customer', previouslengthCus);
           
-            for (let index2 = 0; index2 < uniqueTypes.length; index2++) {
-              const findType = uniqueTypes[index2];
+            for (let index2 = 0; index2 < uniqueSubTypes.length; index2++) {
+              const findSubType = uniqueSubTypes[index2];
   
-              const filteredData = filteredDataNoType.filter(find => find.type.toLowerCase() === findType.toLowerCase());
+              const filteredData = filteredDataNoSubType.filter(find => find.subType.toLowerCase() === findSubType.toLowerCase());
               const length = filteredData.length;
               
-              const dataTripdetailPrevious = dataTripdetailPreviousNotype.filter(find => find.type.type_name.toLowerCase() === findType.toLowerCase());
+              const dataTripdetailPrevious = dataTripdetailPreviousNoSubType.filter(find => find.type.type_name.toLowerCase() === findSubType.toLowerCase());
               const previouslength = dataTripdetailPrevious.length;
             
               if (length !== 0) {
                 console.log('----------------------');
-                console.log(findType);
-                console.log('Data In Excel Of Date Of Customer Of Type', length);
-                console.log('Data In Database Of Date Of Customer Of Type', previouslength);
+                console.log(findSubType);
+                console.log('Data In Excel Of Date Of Customer Of SubType', length);
+                console.log('Data In Database Of Date Of Customer Of SubType', previouslength);
 
                 const findCustomerID = await CustomerModel.findOne(
                   { where: {customer_name: uniqueCustomers[index1]} }
@@ -4193,8 +4212,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                 const findNetworkID = await NetworkModel.findOne(
                   { where: {network_name: findNetwork} }
                 )
-                const findTypeID = await TypeModel.findOne(
-                  { where: {type_name: findType} }
+                const findSubTypeID = await TypeModel.findOne(
+                  { where: {type_name: findSubType} }
                 )
     
                 // กรณีที่ไม่มีข้อมูลใน Database ให้บันทึกข้อมูลใน Excel เข้าไปใหม่
@@ -4388,8 +4407,11 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       const customerData = await CustomerModel.findOne(
                         { where: {customer_name: filteredData[index].customer} }
                       )
-                      const typeData = await TypeModel.findOne(
-                        { where: {type_name: filteredData[index].type} }
+                      const typeData = await UnitModel.findOne(
+                        { where: {unit_name: filteredData[index].type} }
+                      )
+                      const subTypeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].subType} }
                       )
                       const teamData = await TeamModel.findOne(
                         { where: {team_name: filteredData[index].team} }
@@ -4479,7 +4501,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           {
                             date: formattedDate + " 07:00:00",
                             plateNumber: formatPlaceNumber,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             customerId: customerData.id,
                             servicetypeId: serviceTypeData.id,
                             driverOne: filteredData[index].driverOne,
@@ -4531,7 +4554,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           fleetCardNumber: fleetCardNumber,
                           monthId: month + 1,
                           customerId: customerData.id,
-                          typeId: typeData.id,
+                          typeId: subTypeData.id,
+                          unitId: typeData.id,
                           teamId: teamData.id,
                           networkId: networkData.id,
                           servicetypeId: serviceTypeData.id,
@@ -4580,7 +4604,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -4635,7 +4660,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -4663,9 +4689,10 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       driverOne: null,
                       driverTwo: null,
                       typeId: null,
+                      unitId: null,
                       servicetypeId: null,
                     },
-                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findSubTypeID.id} }
                   )
         
                   for (let index = 0; index < length; index++) {
@@ -4809,8 +4836,11 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       const customerData = await CustomerModel.findOne(
                         { where: {customer_name: filteredData[index].customer} }
                       )
-                      const typeData = await TypeModel.findOne(
-                        { where: {type_name: filteredData[index].type} }
+                      const typeData = await UnitModel.findOne(
+                        { where: {unit_name: filteredData[index].type} }
+                      )
+                      const subTypeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].subType} }
                       )
                       const teamData = await TeamModel.findOne(
                         { where: {team_name: filteredData[index].team} }
@@ -4901,7 +4931,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           {
                             date: dataTripdetailPrevious[index].date,
                             plateNumber: formatPlaceNumber,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             customerId: customerData.id,
                             servicetypeId: serviceTypeData.id,
                             driverOne: filteredData[index].driverOne,
@@ -4948,7 +4979,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           driverTwo: filteredData[index].driverTwo,
                           fleetCardNumber: fleetCardNumber,
                           customerId: customerData.id,
-                          typeId: typeData.id,
+                          typeId: subTypeData.id,
+                          unitId: typeData.id,
                           teamId: teamData.id,
                           networkId: networkData.id,
                           servicetypeId: serviceTypeData.id,
@@ -4989,7 +5021,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             driverTwo: filteredData[index].driverTwo,
                             fleetCardNumber: fleetCardNumber,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5036,7 +5069,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             driverTwo: filteredData[index].driverTwo,
                             fleetCardNumber: fleetCardNumber,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5068,9 +5102,10 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       driverOne: null,
                       driverTwo: null,
                       typeId: null,
+                      unitId: null,
                       servicetypeId: null,
                     },
-                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findSubTypeID.id} }
                   )
         
                   for (let index = 0; index < filteredDataOld.length; index++) {
@@ -5214,8 +5249,11 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       const customerData = await CustomerModel.findOne(
                         { where: {customer_name: filteredDataOld[index].customer} }
                       )
-                      const typeData = await TypeModel.findOne(
-                        { where: {type_name: filteredDataOld[index].type} }
+                      const typeData = await UnitModel.findOne(
+                        { where: {unit_name: filteredData[index].type} }
+                      )
+                      const subTypeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].subType} }
                       )
                       const teamData = await TeamModel.findOne(
                         { where: {team_name: filteredDataOld[index].team} }
@@ -5306,7 +5344,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           {
                             date: dataTripdetailPrevious[index].date,
                             plateNumber: formatPlaceNumber,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             customerId: customerData.id,
                             servicetypeId: serviceTypeData.id,
                             driverOne: filteredDataOld[index].driverOne,
@@ -5353,7 +5392,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           driverTwo: filteredDataOld[index].driverTwo,
                           fleetCardNumber: fleetCardNumber,
                           customerId: customerData.id,
-                          typeId: typeData.id,
+                          typeId: subTypeData.id,
+                          unitId: typeData.id,
                           teamId: teamData.id,
                           networkId: networkData.id,
                           servicetypeId: serviceTypeData.id,
@@ -5394,7 +5434,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             driverTwo: filteredDataOld[index].driverTwo,
                             fleetCardNumber: fleetCardNumber,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5441,7 +5482,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             driverTwo: filteredDataOld[index].driverTwo,
                             fleetCardNumber: fleetCardNumber,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5639,8 +5681,11 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       const customerData = await CustomerModel.findOne(
                         { where: {customer_name: filteredDataNew[index].customer} }
                       )
-                      const typeData = await TypeModel.findOne(
-                        { where: {type_name: filteredDataNew[index].type} }
+                      const typeData = await UnitModel.findOne(
+                        { where: {unit_name: filteredData[index].type} }
+                      )
+                      const subTypeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].subType} }
                       )
                       const teamData = await TeamModel.findOne(
                         { where: {team_name: filteredDataNew[index].team} }
@@ -5728,7 +5773,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           {
                             date: formattedDate + " 07:00:00",
                             plateNumber: formatPlaceNumber,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             customerId: customerData.id,
                             servicetypeId: serviceTypeData.id,
                             driverOne: filteredDataNew[index].driverOne,
@@ -5780,7 +5826,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           fleetCardNumber: fleetCardNumber,
                           monthId: month + 1,
                           customerId: customerData.id,
-                          typeId: typeData.id,
+                          typeId: subTypeData.id,
+                          unitId: typeData.id,
                           teamId: teamData.id,
                           networkId: networkData.id,
                           servicetypeId: serviceTypeData.id,
@@ -5829,7 +5876,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5884,7 +5932,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -5904,7 +5953,7 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                   resetStatus = true;
 
                   await chooseTripDB.destroy(
-                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findTypeID.id} }
+                    { where: {date: findDate + " 07:00:00", customerId: findCustomerID.id, networkId: findNetworkID.id, createBy: findCreateBy, typeId: findSubTypeID.id} }
                   )
 
                   for (let index = 0; index < length; index++) {
@@ -6093,8 +6142,11 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                       const customerData = await CustomerModel.findOne(
                         { where: {customer_name: filteredData[index].customer} }
                       )
-                      const typeData = await TypeModel.findOne(
-                        { where: {type_name: filteredData[index].type} }
+                      const typeData = await UnitModel.findOne(
+                        { where: {unit_name: filteredData[index].type} }
+                      )
+                      const subTypeData = await TypeModel.findOne(
+                        { where: {type_name: filteredData[index].subType} }
                       )
                       const teamData = await TeamModel.findOne(
                         { where: {team_name: filteredData[index].team} }
@@ -6182,7 +6234,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           {
                             date: formattedDate + " 07:00:00",
                             plateNumber: formatPlaceNumber,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             customerId: customerData.id,
                             servicetypeId: serviceTypeData.id,
                             driverOne: filteredData[index].driverOne,
@@ -6234,7 +6287,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                           fleetCardNumber: fleetCardNumber,
                           monthId: month + 1,
                           customerId: customerData.id,
-                          typeId: typeData.id,
+                          typeId: subTypeData.id,
+                          unitId: typeData.id,
                           teamId: teamData.id,
                           networkId: networkData.id,
                           servicetypeId: serviceTypeData.id,
@@ -6283,7 +6337,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,
@@ -6338,7 +6393,8 @@ exports.tripdetail_post_byexcel_v3 = async (req, res, next) => {
                             fleetCardNumber: fleetCardNumber,
                             monthId: month + 1,
                             customerId: customerData.id,
-                            typeId: typeData.id,
+                            typeId: subTypeData.id,
+                            unitId: typeData.id,
                             teamId: teamData.id,
                             networkId: networkData.id,
                             servicetypeId: serviceTypeData.id,

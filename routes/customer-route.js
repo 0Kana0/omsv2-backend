@@ -7,6 +7,8 @@ router.get('/getcustomers', controller.customer_get_all)
 router.get('/getcustomer/:id', controller.customer_get_one)
 router.get('/getcustomerbyname/:name', controller.customer_get_one_byname)
 
+router.get('/getcustomeractive', controller.customer_get_all_active)
+
 //------- POST -------//
 router.post('/postcustomer', controller.customer_post)
 

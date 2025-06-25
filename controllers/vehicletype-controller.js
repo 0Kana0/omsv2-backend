@@ -12,6 +12,24 @@ exports.vehicletype_get_all = async (req, res, next) => {
   }
 }
 
+exports.vehicletype_get_all_active = async (req, res, next) => {
+  try {
+    const dataVehicleType = await VehicleTypeModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get VehicleType Active Success',
+      length: dataVehicleType.length,
+      data: dataVehicleType
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+
 exports.vehicletype_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id

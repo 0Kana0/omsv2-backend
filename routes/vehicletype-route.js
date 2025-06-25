@@ -6,6 +6,8 @@ const router = express.Router()
 router.get('/getvehicletypes', controller.vehicletype_get_all)
 router.get('/getvehicletype/:id', controller.vehicletype_get_one)
 
+router.get('/getvehicletypeactive', controller.vehicletype_get_all_active)
+
 //------- POST -------//
 router.post('/postvehicletype', controller.vehicletype_post)
 

@@ -21,6 +21,23 @@ exports.customer_get_all = async (req, res, next) => {
   }
 }
 
+exports.customer_get_all_active = async (req, res, next) => {
+  try {
+    const dataCustomer = await CustomerModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get Customer Active Success',
+      length: dataCustomer.length,
+      data: dataCustomer
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.customer_get_one_byname = async (req, res, next) => {
   try {
     const get_name = req.params.name

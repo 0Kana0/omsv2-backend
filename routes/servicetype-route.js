@@ -6,6 +6,8 @@ const router = express.Router()
 router.get('/getservicetypes', controller.servicetype_get_all)
 router.get('/getservicetype/:id', controller.servicetype_get_one)
 
+router.get('/getservicetypeactive', controller.servicetype_get_all_active)
+
 //------- POST -------//
 router.post('/postservicetype', controller.servicetype_post)
 

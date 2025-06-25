@@ -100,6 +100,7 @@ db.TripDetail2023Model.belongsTo(db.TeamModel)
 db.TripDetail2023Model.belongsTo(db.NetworkModel)
 db.TripDetail2023Model.belongsTo(db.ServiceTypeModel)
 db.TripDetail2023Model.belongsTo(db.GasStationModel)
+db.TripDetail2023Model.belongsTo(db.UnitModel)
 
 db.TripDetail2024Model = require("./tripdetail2024-model.js")(sequelize, Sequelize);
 db.TripDetail2024Model.belongsTo(db.MonthModel)
@@ -109,6 +110,7 @@ db.TripDetail2024Model.belongsTo(db.TeamModel)
 db.TripDetail2024Model.belongsTo(db.NetworkModel)
 db.TripDetail2024Model.belongsTo(db.ServiceTypeModel)
 db.TripDetail2024Model.belongsTo(db.GasStationModel)
+db.TripDetail2024Model.belongsTo(db.UnitModel)
 
 db.TripDetail2025Model = require("./tripdetail2025-model.js")(sequelize, Sequelize);
 db.TripDetail2025Model.belongsTo(db.MonthModel)
@@ -118,6 +120,7 @@ db.TripDetail2025Model.belongsTo(db.TeamModel)
 db.TripDetail2025Model.belongsTo(db.NetworkModel)
 db.TripDetail2025Model.belongsTo(db.ServiceTypeModel)
 db.TripDetail2025Model.belongsTo(db.GasStationModel)
+db.TripDetail2025Model.belongsTo(db.UnitModel)
 
 // MODEL ส่วนของการจัดการข้อมูล Client
 db.ClientGroupModel = require("./clientgroup-model.js")(sequelize, Sequelize);
@@ -241,6 +244,14 @@ db.ResigningDriverModel.belongsTo(db.VehicleModel, {
 db.ResigningDriverModel.belongsTo(db.VehicleModel, {
   foreignKey: "recruit_plateNumber_special",
   as: "RecruitPlateNumberSpecial",
+})
+db.ResigningDriverModel.belongsTo(db.VehicleTypeModel, {
+  foreignKey: "recruit_vehicleType",
+  as: "RecruitVehicleType",
+})
+db.ResigningDriverModel.belongsTo(db.ServiceTypeModel, {
+  foreignKey: "recruit_serviceType",
+  as: "RecruitServiceType",
 })
 
 // MODEL ส่วนของการเเจ้งสรรหาคนขับ

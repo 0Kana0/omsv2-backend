@@ -68,7 +68,7 @@ exports.vehiclebooking_daily_create = async (req, res) => {
   })
 
   for (const item of dataVehicleBookingStatus) {
-    if (item.networkId == 10 || item.networkId == 25 || item.networkId == 26 || item.networkId == 27) {
+    if (item.teamId == 5 || item.teamId == 18 || item.teamId == 19 || item.teamId == 20) {
       await chooseVbkDB.create({
         date: currentDate,
         status: item.status,

@@ -37,22 +37,23 @@ exports.network_get_all = async (req, res, next) => {
 
 exports.network_get_all_active = async (req, res, next) => {
   try {
-    const data = await NetworkModel.findAll(
+    const dataNetwork = await NetworkModel.findAll(
       {
         include: [{
           model: TeamModel,
           attributes: ['team_name']
         }],
-        where: {status: 'ACTIVE'}
+        where: { status: 'ACTIVE'}
       }
     )
 
     const transformedData = [] 
 
-    data.map((item) => {
+    dataNetwork.map((item) => {
       const dataindex = {
         "id": item.id,
         "network_name": item.network_name,
+        "status": item.status,
         "createdAt": item.createdAt,
         "updatedAt": item.updatedAt,
         "teamId": item.teamId,
@@ -61,10 +62,14 @@ exports.network_get_all_active = async (req, res, next) => {
       transformedData.push(dataindex)
     })
 
-    res.send(transformedData);
+    res.send({
+      status: 'success',
+      message: 'Get Network Active Success',
+      length: transformedData.length,
+      data: transformedData
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send(error.message)
   }
 }
 

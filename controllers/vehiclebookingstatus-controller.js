@@ -1228,8 +1228,8 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
     const dataVehicleBookingStatusMonth = await chooseVbkDB.findAll({
       include: [
         {
-          model: NetworkModel,
-          attributes: ['network_name']
+          model: TeamModel,
+          attributes: ['team_name']
         }
       ],
       where: {
@@ -1239,7 +1239,7 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
         approveStatus: 'Pending'
       },
       order: [['date', 'ASC']],
-      attributes: ['date', 'approveStatus', 'NetworkId']
+      attributes: ['date', 'approveStatus', 'TeamId']
     })
 
     const alertArray = []
@@ -1252,14 +1252,14 @@ exports.vehiclebookingstatus_checkpendinginmonth = async (req, res, next) => {
       const dataVehicleBookingStatusMonthByDate = dataVehicleBookingStatusMonth.filter(data => new Date(data.date).getTime() === targetDate);
       //console.log(currentDate.format('YYYY-MM-DD'), dataVehicleBookingStatusMonthByDate.length);
 
-      const uniqueNetworks = [...new Set(dataVehicleBookingStatusMonthByDate.map(item => item.network.network_name))];
-      //console.log(uniqueNetworks);
+      const uniqueTeams = [...new Set(dataVehicleBookingStatusMonthByDate.map(item => item.team.team_name))];
+      //console.log(uniqueTeams);
 
       if (dataVehicleBookingStatusMonthByDate.length > 0) {
         const dataindexCount = {
           [currentDate.format('YYYY-MM-DD')]: {
             count: dataVehicleBookingStatusMonthByDate.length,
-            network: uniqueNetworks
+            team: uniqueTeams
           }
         }
 

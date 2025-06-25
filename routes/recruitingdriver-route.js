@@ -21,7 +21,11 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 //------- GET -------//
+// เเสดงประวัติที่เป็น No Driver หรือ MA No Driver, รอสรรหา, นัดหมายและชื่อคนขับ
 router.get('/getrecruitingdriverfromresigning/:resigningdriverId', controller.recruitingdriver_get_from_resigning)
+
+// เเสดงประวัติที่เป็น นัดหมาย และต่อจากนั้นของคนขับเเต่ละคน
+router.get('/getrecruitingdriverfromresigningbydriver/:resigningdriverId/:fullName', controller.recruitingdriver_get_from_resigning_bydriver)
 
 //------- POST -------//
 router.post('/postrecruitingdriverswithfile', 

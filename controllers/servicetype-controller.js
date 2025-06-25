@@ -12,6 +12,23 @@ exports.servicetype_get_all = async (req, res, next) => {
   }
 }
 
+exports.servicetype_get_all_active = async (req, res, next) => {
+  try {
+    const dataServiceType = await ServiceTypeModel.findAll(
+      { where: { status: "ACTIVE" }}
+    )
+
+    res.send({
+      status: 'success',
+      message: 'Get ServiceType Active Success',
+      length: dataServiceType.length,
+      data: dataServiceType
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 exports.servicetype_get_one = async (req, res, next) => {
   try {
     const get_id = req.params.id

@@ -22,7 +22,7 @@ const upload = multer({ storage });
 
 //------- GET -------//
 router.get('/getresigningdriversbymonthbyyearwithexcel/:month/:year', controller.resigningdriver_get_all_bymonth_byyear_withexcel)
-
+router.get('/getresigningdriversrangedatewithexcel/:startDate/:endDate', controller.resigningdriver_get_all_rangedate_withexcel)
 
 router.get('/getresigningdriversbymonthbyyear/:month/:year', controller.resigningdriver_get_all_bymonth_byyear)
 router.get('/getresigningdriver/:id', controller.resigningdriver_get_one)

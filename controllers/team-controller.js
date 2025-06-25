@@ -14,13 +14,18 @@ exports.team_get_all = async (req, res, next) => {
 
 exports.team_get_all_active = async (req, res, next) => {
   try {
-    const data = await TeamModel.findAll(
-      {where: {status: 'ACTIVE'}}
+    const dataTeam = await TeamModel.findAll(
+      { where: { status: 'ACTIVE' }}
     )
-    res.send(data);
+
+    res.send({
+      status: 'success',
+      message: 'Get Team Active Success',
+      length: dataTeam.length,
+      data: dataTeam
+    });
   } catch (error) {
     console.log(error);
-    res.status(500).send(error.message)
   }
 }
 

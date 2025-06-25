@@ -6,6 +6,8 @@ const router = express.Router()
 router.get('/getgasstations', controller.gasstation_get_all)
 router.get('/getgasstation/:id', controller.gasstation_get_one)
 
+router.get('/getgasstationactive', controller.gasstation_get_all_active)
+
 //------- POST -------//
 router.post('/postgasstation', controller.gasstation_post)
 

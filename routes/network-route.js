@@ -4,9 +4,10 @@ const router = express.Router()
 
 //------- GET -------//
 router.get('/getnetworks', controller.network_get_all)
-router.get('/getactivenetworks', controller.network_get_all_active)
 router.get('/getnetwork/:id', controller.network_get_one)
 router.get('/getnetworkbyname/:name', controller.network_get_one_byname)
+
+router.get('/getnetworkactive', controller.network_get_all_active)
 
 //------- POST -------//
 router.post('/postnetwork', controller.network_post)

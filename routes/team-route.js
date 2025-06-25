@@ -4,9 +4,10 @@ const router = express.Router()
 
 //------- GET -------//
 router.get('/getteams', controller.team_get_all)
-router.get('/getactiveteams', controller.team_get_all_active)
 router.get('/getteam/:id', controller.team_get_one)
 router.get('/getteambyname/:name', controller.team_get_one_byname)
+
+router.get('/getteamactive', controller.team_get_all_active)
 
 //------- POST -------//
 router.post('/postteam', controller.team_post)

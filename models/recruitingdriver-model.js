@@ -3,6 +3,9 @@ module.exports = (sequelize, Sequelize) => {
     appointment_date: {
       type: Sequelize.DATEONLY,
     },
+    prefix_fullName: {
+      type: Sequelize.STRING,
+    },
     fullName: {
       type: Sequelize.STRING,
     },
